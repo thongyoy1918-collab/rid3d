@@ -748,7 +748,21 @@ const exEl = document.getElementById('explode');
 function setExplode(v) { explode = v; exEl.value = v; document.getElementById('exl').textContent = explode ? `${Math.round(explode * 100)}%` : 'ปิด'; }
 exEl.oninput = () => setExplode(+exEl.value);
 document.getElementById('exl').textContent = 'ปิด';
+// when the floors are pulled apart, fade the lifted main roof so floor 2 can be seen underneath
+const roofFade = [];
+function updateRoofFade() {
+  if (!roofFade.length) ['roofTile', 'roofTrim'].forEach(id => (PART_OBJS[id] || []).forEach(e => { if (e.obj.userData.level === 2) roofFade.push({ id, e, fade: null }); }));
+  const k = Math.min(1, explode * 3);
+  roofFade.forEach(r => {
+    const { id, e } = r; if ((MODE[id] || 'show') !== 'show') return;
+    if (e.edge) { e.obj.visible = edgesOn; return; }
+    if (k <= 0.001) { if (e.obj.material !== e.orig) { e.obj.material = e.orig; e.obj.castShadow = true; } return; }
+    if (!r.fade) { r.fade = e.orig.clone(); r.fade.transparent = true; r.fade.depthWrite = false; }
+    r.fade.opacity = 1 - 0.82 * k; e.obj.material = r.fade; e.obj.castShadow = k < 0.5;
+  });
+}
 function updateExplode(dt) {
+  updateRoofFade();
   for (let L = 0; L < 3; L++) { const target = EX_GAP[L] * explode;
     levelObjs[L].forEach(o => { const ty = (o.userData.baseY || 0) + target; o.position.y += (ty - o.position.y) * Math.min(1, dt * 8); }); }
 }
