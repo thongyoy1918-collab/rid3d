@@ -18,7 +18,7 @@
 :root{--bg:#eef1f4;--bar:#ecebe5;--ink:#1f2f29;--dark:#233d33;--mut:#6b7a70;--sub:#6e8173;--pill:#dfe6d4;--panel:#f4f2ec;--line:#d9d6cc;--ok:#3f7d4e;--warn:#b7791f;--bad:#b4382f}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);font-family:'IBM Plex Sans Thai',system-ui,sans-serif;color:var(--ink);font-size:13.5px}
-#c{position:fixed;inset:0;display:block}
+#c{position:fixed;inset:0;display:block;width:100vw!important;height:100vh!important}
 button{font:inherit;color:inherit;cursor:pointer}
 /* แถบบน */
 #topbar{position:fixed;left:0;right:0;top:0;height:64px;background:var(--bar);border-bottom:1px solid #d8d5cb;display:flex;align-items:center;padding:0 14px;z-index:10}
@@ -1359,18 +1359,21 @@ function zen(on) {
   if (on === ZEN.on) return; ZEN.on = on;
   if (on) {
     ZEN.prev = { atm: ATMC.cur, rot: controls.autoRotate, rs: controls.autoRotateSpeed, labels: showLabels, music: AU.mode };
+    try { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {}); } catch (e) {}
     closeSide(); $('musicBox').hidden = true; document.body.classList.add('zen');
     setAtm('night'); controls.autoRotate = true; controls.autoRotateSpeed = 0.35; showLabels = false; flyTo({ pos: [-130, 70, 150], tgt: [10, 10, 4] }, 2.2);
     if (!AU.mode || AU.mode === 'off' || AU.muted) { auInit(); AU.ctx.resume?.(); setMusic('t:hanami'); }
     const h = $('zenHint'); h.hidden = false; h.style.opacity = 1; setTimeout(() => { if (ZEN.on) h.style.opacity = 0; }, 3500);
     setTimeout(() => { addEventListener('pointerdown', zenExit, true); addEventListener('keydown', zenExit, true); }, 400);
   } else {
+    try { if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); } catch (e) {}
     document.body.classList.remove('zen'); $('zenHint').hidden = true; removeEventListener('pointerdown', zenExit, true); removeEventListener('keydown', zenExit, true);
     const P = ZEN.prev || {}; setAtm(P.atm || 'day'); controls.autoRotate = !!P.rot; controls.autoRotateSpeed = P.rs || 0.5; showLabels = P.labels !== false;
   }
 }
 function zenExit(e) { e.stopPropagation(); zen(false); }
 $('tZen').onclick = () => zen(true);
+document.addEventListener('fullscreenchange', () => { resize(); if (!document.fullscreenElement && ZEN.on) zen(false); });
 
 /* ---- แผงควบคุม ---- */
 function setScenOn(k) { document.querySelectorAll('#scen button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); }
