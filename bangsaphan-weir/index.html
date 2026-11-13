@@ -166,11 +166,11 @@ body.sideopen #compass{right:430px}
 #tSound.on,#tMusic.on{background:var(--pill)}
 #tright{align-items:center}
 #atmList{display:flex;gap:2px;padding:4px;border:1px solid #d6d3c9;border-radius:30px;background:#f1efe9}
-#atmList button{border:0;background:none;width:38px;height:36px;border-radius:20px;font-size:17px;display:grid;place-items:center}
-#atmList button.on{background:var(--dark);box-shadow:inset 0 0 0 2px var(--dark)}
-#atmList button:not(.on):hover{background:#e4e2da}
+#atmList button{border:0;background:none;width:38px;height:36px;border-radius:20px;display:grid;place-items:center;color:#3b4a43;transition:background .15s,color .15s}
+#atmList button.on{background:var(--dark);color:#fff}
+#atmList button:not(.on):hover{background:#e4e2da;color:var(--dark)}
 #atmLbl{font-size:12px;color:#5d6a62;margin-right:2px;white-space:nowrap}
-@media (max-width:1250px){#atmList button{width:32px;height:32px;font-size:15px}}
+@media (max-width:1250px){#atmList button{width:32px;height:32px}}
 @media (max-width:900px){#atmList{position:fixed;right:10px;top:72px;flex-direction:column;border-radius:22px}}
 body.night #hero h1,body.night #hero .k{color:#eef2f7}body.night #hero h2{color:#c9d6cf}body.night #hero p{color:#d5dde6}
 #dock::-webkit-scrollbar{display:none}
@@ -1342,7 +1342,15 @@ function atmUpdate(dt) {
   if (RAIN.pts) { RAIN.pts.visible = RAIN.k > 0.02; RAIN.pts.material.opacity = 0.65 * RAIN.k;
     if (RAIN.pts.visible) { const a = RAIN.pts.geometry.attributes.position.array; for (let i = 1; i < a.length; i += 3) { a[i] -= RAIN.vel * dt; a[i - 1] += 3 * dt; if (a[i] < 8) { a[i] += 70; a[i - 1] = Math.random() * 300 - 140; } } RAIN.pts.geometry.attributes.position.needsUpdate = true; } }
 }
-$('atmList').innerHTML = Object.entries(ATM).map(([k, a]) => `<button data-a="${k}" title="${a.name.split(' ').slice(1).join(' ')}">${a.name.split(' ')[0]}</button>`).join('');
+const ATM_ICON = {   // ไอคอนเส้นชุดเดียวกัน (stroke = currentColor)
+  day: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/>',
+  morning: '<path d="M7.5 16a4.5 4.5 0 0 1 9 0"/><path d="M2.5 16h19M5 20h14M12 4v4M9.5 6.5L12 4l2.5 2.5M4.6 10.6l1.4 1.4M19.4 10.6L18 12"/>',
+  evening: '<path d="M7.5 16a4.5 4.5 0 0 1 9 0"/><path d="M2.5 16h19M5 20h14M12 8V4M9.5 5.5L12 8l2.5-2.5M4.6 10.6l1.4 1.4M19.4 10.6L18 12"/>',
+  night: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/><path d="M17 3.5l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5z"/>',
+  cloudy: '<path d="M7 18h10.5a3.8 3.8 0 0 0 .4-7.6A5.5 5.5 0 0 0 7.3 9.3 4.4 4.4 0 0 0 7 18z"/>',
+  rain: '<path d="M7 14.5h10.5a3.6 3.6 0 0 0 .4-7.2A5.3 5.3 0 0 0 7.3 6.3 4.1 4.1 0 0 0 7 14.5z"/><path d="M8.5 17.5l-1 2.5M12.5 17.5l-1 2.5M16.5 17.5l-1 2.5"/>',
+};
+$('atmList').innerHTML = Object.entries(ATM).map(([k, a]) => `<button data-a="${k}" title="${a.name.split(' ').slice(1).join(' ')}" aria-label="${a.name.split(' ').slice(1).join(' ')}"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ATM_ICON[k]}</svg></button>`).join('');
 document.querySelectorAll('#atmList button').forEach(b => b.onclick = () => setAtm(b.dataset.a));
 
 /* ---- โหมดพักสายตา (กลางคืน + หมุนช้า + เพลงชิล + ซ่อนเมนู) ---- */
