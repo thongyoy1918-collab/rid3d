@@ -1135,7 +1135,7 @@ function selectPart(id, fly = true) {
   if (fly) flyTo(camFor(p));
   if (mode !== 'tour') { showInfo(p); openSide('explore'); $('side').scrollTop = 0; }
 }
-const PIMG = { weir: 1, gates: 1, sand: 1, bridge: 1, hoist: 1, walls: 1 };
+const PIMG = { weir: 1, gates: 1, sand: 1, bridge: 1, hoist: 1, walls: 1, blocks: 1 };
 const pimgHTML = id => PIMG[id] ? `<figure class="pimg"><img src="img/part-${id}.jpg" alt="" loading="lazy" data-zoom><figcaption>ภาพจากแบบจำลอง · คลิกเพื่อขยาย</figcaption></figure>` : '';
 document.addEventListener('click', e => { const im = e.target.closest && e.target.closest('img[data-zoom]'); if (!im) return;
   const z = document.createElement('div'); z.id = 'pzoom'; z.innerHTML = `<img src="${im.src}">`; z.onclick = () => z.remove(); document.body.appendChild(z); });
