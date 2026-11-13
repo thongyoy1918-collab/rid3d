@@ -86,7 +86,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .spd button{border:0;background:none;padding:3px 9px;border-radius:6px;font-size:12px}
 .spd button.on{background:#fff;box-shadow:0 1px 3px #0002;font-weight:600}
 #fold{border:0;background:#f1f5f9;border-radius:7px;padding:3px 9px}
-#simBody{display:grid;grid-template-columns:104px 1.1fr 1.2fr 1.9fr;gap:14px;align-items:start}
+#simBody{display:grid;grid-template-columns:104px 1.2fr 2.2fr;gap:14px;align-items:start}
 #sim.folded #simBody{display:none}
 .gauge{position:relative;width:100px;height:100px;text-align:center}
 .gauge svg{width:100px;height:100px}
@@ -114,6 +114,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 #chartCard .ch button{border:0;background:#f1f5f9;border-radius:6px;padding:1px 8px;font-size:12px}
 #chartCard .ch span{margin-right:auto}
 #chartCard.folded #spark{display:none}
+#gateCtl label{margin-bottom:6px}
+#chartCard{max-height:calc(100vh - 90px);overflow:auto}
 #spark{width:100%;height:auto;aspect-ratio:760/400;display:block;background:#f8fafc;border-radius:8px;cursor:zoom-in}
 #chartBig{position:fixed;inset:0;background:#0f172a66;display:grid;place-items:center;z-index:45}
 #chartBig .card{position:relative;padding:16px 18px 12px;width:min(1100px,94vw)}
@@ -155,7 +157,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 #tSound.on{background:#dcfce7;color:#15803d}
 [hidden]{display:none!important}
 @media (max-width:1100px){#simBody{grid-template-columns:96px 1fr 1fr}.kpis{grid-column:1/-1}#chartCard{width:330px}#parts,#info{max-height:calc(100vh - 420px)}#hint,#compass{display:none}}
-@media (max-width:760px){#chartCard{display:none}#parts{display:none}#parts.open{display:block;max-height:50vh;z-index:5}#brand small{display:none}#modes{position:fixed;top:62px;left:50%;transform:translateX(-50%)}#tools button.hm{display:none}#info,#tour{left:10px;right:10px;width:auto;top:112px;max-height:35vh}#simBody{grid-template-columns:1fr 1fr}.gauge{display:none}.kpis{grid-template-columns:repeat(3,1fr)}#sim{max-height:48vh;overflow:auto}}
+@media (max-width:760px){#chartCard{left:10px;right:10px;width:auto}#chartCard #spark,#chartCard .ch:first-child{display:none}#parts{display:none}#parts.open{display:block;max-height:50vh;z-index:5}#brand small{display:none}#modes{position:fixed;top:62px;left:50%;transform:translateX(-50%)}#tools button.hm{display:none}#info,#tour{left:10px;right:10px;width:auto;top:112px;max-height:35vh}#simBody{grid-template-columns:1fr 1fr}.gauge{display:none}.kpis{grid-template-columns:repeat(3,1fr)}#sim{max-height:48vh;overflow:auto}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
@@ -215,17 +217,19 @@ button{font:inherit;color:inherit;cursor:pointer}
       </div>
       <label style="margin-top:6px"><input type="checkbox" id="auto"> ควบคุมบานอัตโนมัติ <em>(เปิดบานเมื่อระดับ &gt; +14.50)</em></label>
     </div>
-    <div class="ctl">
+    <div class="kpis" id="kpis"></div>
+  </div>
+  <div id="log" title="คลิกเพื่อดูบันทึกทั้งหมด"></div>
+</section>
+<aside id="chartCard" class="card"><div class="ch"><span>📈 กราฟระดับน้ำ</span><button id="chartMax" title="ขยาย">⤢ ขยาย</button><button id="chartFold" title="ย่อ/แสดง">–</button></div><canvas id="spark" width="760" height="400" title="คลิกเพื่อขยายกราฟ"></canvas>
+  <div class="ch" style="margin:10px 0 4px"><span>🎛 สั่งการบานระบาย</span></div>
+<div class="ctl" id="gateCtl">
       <label>บาน 1 (เหนือ) ยก <b id="vA1"></b> <em id="eA1"></em><input id="a1" type="range" min="0" max="7" step="0.05" value="0"></label>
       <label>บาน 2 ยก <b id="vA2"></b> <em id="eA2"></em><input id="a2" type="range" min="0" max="7" step="0.05" value="0"></label>
       <label>บานระบายทราย ยก <b id="vAS"></b> <em id="eAS"></em><input id="aS" type="range" min="0" max="3.5" step="0.05" value="0"></label>
             <div class="btnrow" style="margin-top:2px"><button class="btn red" id="emerg">⚠ เปิดบานเต็มที่</button><button class="btn" id="closeAll">ปิดบานทั้งหมด</button></div>
     </div>
-    <div class="kpis" id="kpis"></div>
-  </div>
-  <div id="log" title="คลิกเพื่อดูบันทึกทั้งหมด"></div>
-</section>
-<aside id="chartCard" class="card"><div class="ch"><span>📈 กราฟระดับน้ำ</span><button id="chartMax" title="ขยาย">⤢ ขยาย</button><button id="chartFold" title="ย่อ/แสดง">–</button></div><canvas id="spark" width="760" height="400" title="คลิกเพื่อขยายกราฟ"></canvas></aside>
+</aside>
 <div id="logFull" class="card" hidden></div>
 <div id="musicBox" class="card" hidden>
   <button class="x" id="musicX">✕</button>
@@ -1290,7 +1294,7 @@ function updateScene(dt, time) {
 /* ================= loop ================= */
 function layoutPanels() {
   const sh = $('sim').offsetHeight + 20, cc = $('chartCard');
-  cc.style.bottom = sh + 'px'; $('hint').style.bottom = sh + 'px'; $('compass').style.bottom = (sh + 30) + 'px'; $('logFull').style.bottom = sh + 'px';
+  cc.style.bottom = sh + 'px'; cc.style.maxHeight = Math.max(200, innerHeight - sh - 80) + 'px'; $('hint').style.bottom = sh + 'px'; $('compass').style.bottom = (sh + 30) + 'px'; $('logFull').style.bottom = sh + 'px';
   const ch = cc.offsetParent ? cc.offsetHeight + 10 : 0, avail = innerHeight - sh - ch - 82;
   for (const id of ['info', 'tour']) $(id).style.maxHeight = Math.max(160, avail) + 'px';
   $('tour').style.overflow = 'auto'; $('parts').style.maxHeight = Math.max(160, innerHeight - sh - 82) + 'px';
