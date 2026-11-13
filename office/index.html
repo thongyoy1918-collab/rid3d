@@ -218,7 +218,7 @@ const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 800);
 camera.position.set(34, 22, 40);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = 0.07;
-controls.maxPolarAngle = Math.PI * 0.49; controls.minDistance = 3; controls.maxDistance = 140;
+controls.maxPolarAngle = Math.PI * 0.49; controls.minDistance = 2.5; controls.maxDistance = 60; controls.zoomSpeed = 0.6;
 controls.target.set(0, 4, 0); controls.autoRotateSpeed = 0.6;
 
 // ---------- build meshes from SketchUp faces ----------
@@ -921,11 +921,25 @@ setH(9.5); setCut(10.6); renderStory(); resize();
 setTimeout(() => goStop(0), 900);
 if (camera.aspect < 1.2) { camera.position.sub(controls.target).multiplyScalar(Math.min(2.2, Math.pow(1.2 / camera.aspect, 0.9))).add(controls.target); }
 
+
+// keep the camera out of the building volume (zoom stops at the roof / walls) and within a sensible range
+const camBox = new THREE.Box3(), camRay = new THREE.Ray(), camHit = new THREE.Vector3();
+function keepCameraOutside() {
+  controls.maxDistance = camera.aspect < 1.2 ? 95 : 60;
+  const t = controls.target; t.x = THREE.MathUtils.clamp(t.x, -24, 24); t.z = THREE.MathUtils.clamp(t.z, -20, 22); t.y = THREE.MathUtils.clamp(t.y, 0, 9);
+  if (fly) return;
+  const roofOpen = MODE.roofTile === 'hide' && MODE.roofTrim === 'hide';
+  let top = Math.min(roofOpen ? 7.2 : 10.7, clip.constant + 0.3) + EX_GAP[2] * explode;
+  camBox.min.set(-11.9, -2, -9.0); camBox.max.set(11.9, top, 9.1);
+  const c = camera.position; if (!camBox.containsPoint(c)) return;
+  const dir = c.clone().sub(t); if (dir.lengthSq() < 1e-6) dir.set(0, 1, 0); dir.normalize();
+  camRay.set(c, dir); if (camRay.intersectBox(camBox, camHit)) c.copy(camHit).addScaledVector(dir, 0.05);
+}
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
   if (fly) { fly.t = Math.min(fly.t + dt / fly.dur, 1); const k = ease(fly.t); camera.position.lerpVectors(fly.p0, fly.p1, k); controls.target.lerpVectors(fly.t0, fly.t1, k); if (fly.t === 1) { fly = null; controls.enabled = true; } }
-  updateExplode(dt); updateStaff(dt, clock.elapsedTime); controls.update(); composer.render(); placeHotspots();
+  updateExplode(dt); updateStaff(dt, clock.elapsedTime); controls.update(); keepCameraOutside(); composer.render(); placeHotspots();
 });
 const ld = document.getElementById('load'); ld.style.opacity = 0; setTimeout(() => ld.remove(), 700);
 console.log('faces', DATA.faces.length, 'tris', triCount, 'buckets', buckets.size);
