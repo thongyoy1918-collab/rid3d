@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ฝายทดน้ำคลองบางสะพาน 3D · จำลองการทำงาน</title>
+<meta name="description" content="แบบจำลอง 3 มิติ ฝายทดน้ำคลองบางสะพาน (ฝายวังยาว กม.20+127) จำลองการไหลผ่านสันฝาย บานระบาย น้ำกระโดดในแอ่งน้ำนิ่ง พร้อมโหมดทัวร์เรียนรู้และรูปตัด">
+<meta property="og:title" content="ฝายทดน้ำคลองบางสะพาน · 3D จำลองการทำงาน">
+<meta property="og:description" content="ลองเปิดบาน ปล่อยน้ำหลาก 670 ลบ.ม./วินาที แล้วดูน้ำไหลผ่านฝายแบบ 3 มิติ — ตามแบบกรมชลประทานเลขที่ 184979–184981">
+<meta property="og:image" content="https://thongyoy1918-collab.github.io/rid3d/thumb-bangsaphan-weir.jpg">
+<meta property="og:url" content="https://thongyoy1918-collab.github.io/rid3d/bangsaphan-weir/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1f2937">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;--acc:#2563eb;--card:#fffffff2;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#eef1f4;font-family:'IBM Plex Sans Thai',system-ui,sans-serif;color:var(--ink);font-size:13px}
+#c{position:fixed;inset:0;display:block}
+button{font:inherit;color:inherit;cursor:pointer}
+.card{background:var(--card);border-radius:12px;box-shadow:0 4px 22px #0f172a1a;backdrop-filter:blur(6px)}
+/* top bar */
+#top{position:fixed;left:10px;right:10px;top:10px;display:flex;align-items:center;gap:10px;pointer-events:none}
+#top>*{pointer-events:auto}
+#brand{display:flex;gap:10px;align-items:center;padding:8px 14px 8px 8px}
+#brand .ic{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#2563eb,#0ea5e9);display:grid;place-items:center;color:#fff;font-size:20px}
+#brand b{display:block;font-size:14.5px;letter-spacing:.1px}
+#brand small{color:var(--mut);font-size:11.5px}
+#modes{margin:0 auto;display:flex;gap:2px;padding:4px}
+#modes button,#tools button{border:0;background:none;padding:7px 13px;border-radius:9px;font-weight:500;white-space:nowrap}
+#modes button.on{background:#1f2937;color:#fff}
+#modes button:not(.on):hover,#tools button:hover{background:#eef2f7}
+#tools{display:flex;gap:2px;padding:4px}
+#tools button{padding:7px 9px;font-size:14px}
+#tools button.on{background:#dbeafe;color:#1d4ed8}
+/* parts */
+#parts{position:fixed;left:10px;top:72px;width:236px;max-height:calc(100vh - 330px);overflow:auto;padding:10px 8px 10px 10px}
+#parts h4{margin:2px 4px 6px;font-size:13px}
+#parts h4 small{display:block;font-weight:400;color:var(--mut);font-size:11px}
+.gh{margin:10px 4px 3px;font-size:10.5px;color:#64748b;font-weight:600;letter-spacing:.2px;text-transform:uppercase}
+.gh i{font-style:normal;font-weight:400}
+.pr{display:grid;grid-template-columns:12px 1fr;column-gap:7px;width:100%;text-align:left;border:0;background:none;padding:5px 6px;border-radius:8px}
+.pr:hover{background:#eef4ff}.pr.sel{background:#dbeafe}
+.pr b{font-weight:600;font-size:12.5px}.pr small{grid-column:2;color:var(--mut);font-size:10.5px;line-height:1.2}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:5px}
+#legend{display:grid;grid-template-columns:1fr 1fr;gap:3px 6px;margin:6px 4px 2px;font-size:11px}
+#legend span{display:flex;align-items:center;gap:5px}#legend i{width:14px;height:5px;border-radius:3px;display:inline-block}
+/* info */
+#info{position:fixed;right:10px;top:72px;width:300px;max-height:calc(100vh - 330px);overflow:auto;padding:14px}
+#info .k{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.3px}
+#info h3{margin:2px 0 0;font-size:16px}#info .en{color:var(--mut);font-size:11.5px}
+#info p{line-height:1.6;margin:8px 0}
+.spec{width:100%;border-collapse:collapse;font-size:11.5px;margin:6px 0}
+.spec td{padding:4px 0;border-top:1px solid var(--line)}.spec td:last-child{text-align:right;font-weight:600}
+.live{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.live div{background:#f3f6fa;border-radius:8px;padding:6px 8px}
+.live small{display:block;color:var(--mut);font-size:10.5px}.live b{font-size:16px}.live i{font-style:normal;color:var(--mut);font-size:10.5px;margin-left:3px}
+.x{position:absolute;right:8px;top:8px;border:0;background:#f1f5f9;border-radius:7px;width:26px;height:26px}
+.btnrow{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.btn{border:1px solid #d6dde6;background:#fff;border-radius:8px;padding:5px 10px;font-size:12px}
+.btn.pri{background:#1f2937;color:#fff;border-color:#1f2937}
+.btn.red{background:#dc2626;color:#fff;border-color:#dc2626}
+.btn.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+/* tour */
+#tour{position:fixed;right:10px;top:72px;width:330px;padding:16px}
+#tour .k{font-size:11px;color:#b45309;font-weight:600}
+#tour h3{margin:4px 0 6px;font-size:18px}
+#tour p{line-height:1.65;margin:6px 0}
+#tour .prog{height:4px;background:#e5e7eb;border-radius:3px;margin:10px 0}
+#tour .prog i{display:block;height:100%;background:#2563eb;border-radius:3px}
+.quiz label{display:block;padding:6px 8px;border:1px solid #e2e8f0;border-radius:8px;margin:4px 0;cursor:pointer}
+.quiz label.ok{background:#dcfce7;border-color:#86efac}.quiz label.no{background:#fee2e2;border-color:#fca5a5}
+/* cut */
+#cutbar{position:fixed;left:50%;transform:translateX(-50%);top:72px;padding:8px 14px;display:flex;align-items:center;gap:10px}
+#cutbar input{width:220px}
+/* sim */
+#sim{position:fixed;left:10px;right:10px;bottom:10px;padding:8px 12px 6px}
+#sim header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+#sim header b{font-size:13.5px}
+#status{font-weight:600;font-size:12px;padding:2px 9px;border-radius:20px;background:#dcfce7;color:var(--ok)}
+#status.warn{background:#fef3c7;color:var(--warn)}#status.danger{background:#fee2e2;color:var(--bad)}
+#clock{color:var(--mut);font-size:12px;font-variant-numeric:tabular-nums}
+.spd{margin-left:auto;display:flex;gap:2px;background:#f1f5f9;border-radius:8px;padding:2px}
+.spd button{border:0;background:none;padding:3px 9px;border-radius:6px;font-size:12px}
+.spd button.on{background:#fff;box-shadow:0 1px 3px #0002;font-weight:600}
+#fold{border:0;background:#f1f5f9;border-radius:7px;padding:3px 9px}
+#simBody{display:grid;grid-template-columns:104px 1.05fr 1.1fr 1.55fr 340px;gap:14px;align-items:start}
+#sim.folded #simBody{display:none}
+.gauge{position:relative;width:100px;height:100px;text-align:center}
+.gauge svg{width:100px;height:100px}
+.gauge .trk{fill:none;stroke:#e5e7eb;stroke-width:9}
+.gauge .arc{fill:none;stroke:#0ea5e9;stroke-width:9;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dasharray .3s}
+.gauge b{position:absolute;left:0;right:0;top:30px;font-size:21px}
+.gauge small{position:absolute;left:0;right:0;top:58px;font-size:10px;color:var(--mut);line-height:1.15}
+.ctl label{display:block;font-size:11.5px;margin-bottom:4px}
+.ctl label b{font-variant-numeric:tabular-nums}
+.ctl label em{font-style:normal;color:var(--mut);font-size:10.5px}
+.ctl input[type=range]{width:100%;margin:1px 0 0;accent-color:#2563eb;height:16px}
+.scen{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.scen button{border:1px solid #d6dde6;background:#fff;border-radius:7px;padding:3px 7px;font-size:11px}
+.scen button.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+.seg{display:inline-flex;gap:2px;background:#f1f5f9;border-radius:7px;padding:2px;margin-left:4px}
+.seg button{border:0;background:none;padding:1px 8px;border-radius:5px;font-size:11px}
+.seg button.on{background:#22c55e;color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.kpis div{background:#f3f6fa;border-radius:8px;padding:5px 7px;min-width:0}
+.kpis small{display:block;color:var(--mut);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpis b{font-size:15.5px;font-variant-numeric:tabular-nums}.kpis i{font-style:normal;color:var(--mut);font-size:10px;margin-left:2px}
+.kpis .w{background:#fef3c7}.kpis .d{background:#fee2e2}.kpis .g{background:#dcfce7}
+#spark{width:340px;height:150px;background:#f8fafc;border-radius:8px;cursor:zoom-in}
+#chartBig{position:fixed;inset:0;background:#0f172a66;display:grid;place-items:center;z-index:45}
+#chartBig .card{position:relative;padding:16px 18px 12px;width:min(1100px,94vw)}
+#chartBig canvas{width:100%;height:auto;display:block;background:#f8fafc;border-radius:10px}
+#chartBig h3{margin:0 0 8px;font-size:15px}
+#log{margin-top:6px;font-size:11.5px;color:#334155;border-top:1px solid var(--line);padding-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+#logFull{position:fixed;left:10px;bottom:230px;width:420px;max-height:260px;overflow:auto;padding:10px 12px;font-size:11.5px;line-height:1.7}
+/* labels */
+#labels{position:fixed;inset:0;pointer-events:none}
+.lb{position:absolute;transform:translate(-50%,-100%);background:#fff;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:600;box-shadow:0 2px 8px #0002;white-space:nowrap;pointer-events:auto;cursor:pointer;border-left:3px solid var(--c)}
+.lb::after{content:'';position:absolute;left:50%;bottom:-5px;width:1px;height:5px;background:#64748b}
+.lb.sel{background:#1f2937;color:#fff}
+.el{position:absolute;transform:translate(-50%,-50%);font-size:10.5px;font-weight:700;color:#0f172a;background:#fde68aee;border-radius:4px;padding:0 4px;white-space:nowrap}
+.el.w{background:#bae6fdee}
+#hint{position:fixed;left:256px;bottom:236px;font-size:11px;color:#475569;background:#ffffffc0;border-radius:7px;padding:3px 8px}
+#compass{position:fixed;right:16px;bottom:240px;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700}
+#compass .n{position:absolute;inset:4px;transition:none}
+#compass .n:before{content:'';position:absolute;left:50%;top:2px;transform:translateX(-50%);border:6px solid transparent;border-bottom:13px solid #dc2626;border-top:0}
+#compass .n span{position:absolute;left:50%;top:-14px;transform:translateX(-50%);color:#dc2626}
+/* loader */
+#loader{position:fixed;inset:0;background:#eef1f4;display:grid;place-items:center;z-index:50;text-align:center}
+#loader .bx{width:280px}
+#loader .spin{width:44px;height:44px;border-radius:50%;border:4px solid #dbeafe;border-top-color:#2563eb;margin:0 auto 14px;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#loader b{display:block;font-size:15px}#loader small{color:var(--mut)}
+#loader .bar{height:6px;background:#e2e8f0;border-radius:4px;margin:12px 0 4px;overflow:hidden}#loader .bar i{display:block;height:100%;width:0;background:#2563eb}
+#about{position:fixed;inset:0;background:#0f172a66;display:grid;place-items:center;z-index:40}
+#about .card{width:min(560px,92vw);max-height:84vh;overflow:auto;padding:20px 22px;position:relative;line-height:1.65}
+#about h3{margin:0 0 6px}
+#about li{margin:2px 0}
+[hidden]{display:none!important}
+@media (max-width:1100px){#simBody{grid-template-columns:96px 1fr 1fr}.kpis{grid-column:1/-1}#spark{grid-column:1/-1;width:100%;height:130px}#parts,#info{max-height:calc(100vh - 420px)}#hint,#compass{display:none}}
+@media (max-width:760px){#parts{display:none}#parts.open{display:block;max-height:50vh;z-index:5}#brand small{display:none}#modes{position:fixed;top:62px;left:50%;transform:translateX(-50%)}#tools button.hm{display:none}#info,#tour{left:10px;right:10px;width:auto;top:112px;max-height:35vh}#simBody{grid-template-columns:1fr 1fr}.gauge{display:none}.kpis{grid-template-columns:repeat(3,1fr)}#sim{max-height:48vh;overflow:auto}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="labels"></div>
+
+<div id="top">
+  <div id="brand" class="card"><a href="../" title="← RID Prachuap 3D" style="text-decoration:none"><div class="ic">≋</div></a><div><b>Bang Saphan Diversion Weir 3D</b><small>ฝายทดน้ำคลองบางสะพาน (ฝายวังยาว กม.20+127) · ต.พงศ์ประศาสน์ อ.บางสะพาน</small></div></div>
+  <div id="modes" class="card"><button data-m="explore" class="on">🧭 สำรวจ</button><button data-m="tour">▶ ทัวร์เรียนรู้</button><button data-m="cut">✂ รูปตัด</button></div>
+  <div id="tools" class="card">
+    <button id="tParts" title="ส่วนประกอบ" class="hm" style="display:none">☰</button>
+    <button id="tLabels" class="on" title="ป้ายชื่อ">🏷</button>
+    <button id="tFlow" class="on" title="แสดงเส้นทางไหล">≈</button>
+    <button id="tXray" title="X-ray คอนกรีตโปร่ง">◐</button>
+    <button id="tRot" title="หมุนอัตโนมัติ" class="hm">⟳</button>
+    <button id="tReset" title="มุมเริ่มต้น">⌂</button>
+    <button id="tShot" title="บันทึกภาพ 4K" class="hm">📷</button>
+    <button id="tFull" title="เต็มจอ" class="hm">⛶</button>
+    <button id="tAbout" title="ที่มาข้อมูล">ⓘ</button>
+    <a href="../" title="กลับหน้ารวม RID Prachuap 3D" style="display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:600;color:#1f4fa8;text-decoration:none;white-space:nowrap" class="hm">← RID 3D</a>
+  </div>
+</div>
+
+<aside id="parts" class="card">
+  <h4>ส่วนประกอบของฝาย<small>คลิกเพื่อดูตำแหน่งและหน้าที่</small></h4>
+  <div id="plist"></div>
+  <div class="gh">สัญลักษณ์เส้นทางไหล</div>
+  <div id="legend"></div>
+</aside>
+
+<aside id="info" class="card" hidden></aside>
+<aside id="tour" class="card" hidden></aside>
+<div id="cutbar" class="card" hidden>
+  <b>รูปตัดตามแนวน้ำไหล</b>
+  <input id="cutZ" type="range" min="-28" max="28.6" step="0.05" value="5">
+  <span id="cutName" style="min-width:150px"></span>
+</div>
+
+<div id="hint">ลาก = หมุน · ล้อเมาส์ = ซูม · คลิกขวาลาก = เลื่อน · คลิกส่วนประกอบเพื่อดูรายละเอียด</div>
+<div id="compass" class="card"><div class="n"><span>N</span></div></div>
+
+<section id="sim" class="card">
+  <header>
+    <b>แผงควบคุมฝายทดน้ำ</b><span id="status">● ทำงานปกติ</span><span id="clock"></span>
+    <span class="spd"><button data-s="0">❚❚</button><button data-s="1" class="on">1×</button><button data-s="5">5×</button><button data-s="20">20×</button><button data-s="60">60×</button></span>
+    <button id="fold">▾</button>
+  </header>
+  <div id="simBody">
+    <div class="gauge"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" class="trk"/><circle id="gArc" cx="50" cy="50" r="42" class="arc" stroke-dasharray="0 264"/></svg><b id="gPct">0%</b><small>ของน้ำหลาก<br>ออกแบบ 670</small></div>
+    <div class="ctl">
+      <label>น้ำไหลเข้า <b id="vQin"></b> <em>ลบ.ม./วินาที</em><input id="qin" type="range" min="0" max="900" step="0.5" value="8"></label>
+      <div class="scen" id="scen">
+        <button data-k="dry">☀ หน้าแล้ง</button><button data-k="normal" class="on">🌤 ปกติ</button><button data-k="flood">🌧 น้ำหลากตามแบบ 670</button><button data-k="over">⛈ เกินแบบ 870</button><button data-k="flush">⟲ ล้างตะกอน</button>
+      </div>
+      <label style="margin-top:6px"><input type="checkbox" id="auto"> ควบคุมบานอัตโนมัติ <em>(เปิดบานเมื่อระดับ &gt; +14.50)</em></label>
+    </div>
+    <div class="ctl">
+      <label>บาน 1 (เหนือ) ยก <b id="vA1"></b> <em id="eA1"></em><input id="a1" type="range" min="0" max="7" step="0.05" value="0"></label>
+      <label>บาน 2 ยก <b id="vA2"></b> <em id="eA2"></em><input id="a2" type="range" min="0" max="7" step="0.05" value="0"></label>
+      <label>บานระบายทราย ยก <b id="vAS"></b> <em id="eAS"></em><input id="aS" type="range" min="0" max="3.5" step="0.05" value="0"></label>
+            <div class="btnrow" style="margin-top:2px"><button class="btn red" id="emerg">⚠ เปิดบานเต็มที่</button><button class="btn" id="closeAll">ปิดบานทั้งหมด</button></div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <canvas id="spark" width="680" height="300" title="คลิกเพื่อขยายกราฟ"></canvas>
+  </div>
+  <div id="log" title="คลิกเพื่อดูบันทึกทั้งหมด"></div>
+</section>
+<div id="logFull" class="card" hidden></div>
+<div id="chartBig" hidden><div class="card"><button class="x" id="chartX">✕</button><h3>ระดับน้ำเหนือฝาย / ท้ายฝาย และน้ำไหลเข้า</h3><canvas id="sparkBig" width="2000" height="900"></canvas></div></div>
+
+<div id="about" hidden><div class="card">
+  <button class="x" id="aboutX">✕</button>
+  <h3>ที่มาข้อมูลและข้อจำกัด</h3>
+  <ul>
+    <li><b>ขนาดและระดับของอาคาร</b> มาจากแบบกรมชลประทาน เลขที่ 184979 (ผังบริเวณ), 184980 (แปลน), 184981 (รูปตัด) ของโครงการชลประทานประจวบคีรีขันธ์ ลงวันที่ 18 ก.ค. 2546 และตารางข้อมูลฝายวังยาว กม.20+127</li>
+    <li>ระดับสันฝาย +13.500 · ความยาวสันฝาย 39.40 ม. · พื้นเหนือน้ำ +9.500 · พื้นท้ายน้ำ +8.000 · ธรณีบานระบาย +10.500 · บานระบาย 6.00 × 3.33 ม. จำนวน 2 บาน · Q สูงสุด 670 ลบ.ม./วินาที · พื้นที่รับน้ำฝน 351.092 ตร.กม.</li>
+    <li>รูปทรงห้องเครื่องกว้าน บันได และราวสะพาน ทำตามภาพถ่ายฝายวังยาวปี 2569 · พิกัด <a href="https://www.google.com/maps?q=11.231037,99.3041257" target="_blank">11.231037, 99.304126</a></li>
+    <li><b>สมการจำลอง:</b> น้ำล้นสันฝาย Q = C·L·H<sup>1.5</sup> (C = 2.1) · น้ำไหลใต้บาน q = C·W·√(2gy) (C = 0.61) เมื่อยกบานพ้นน้ำใช้สมการฝายสันกว้าง · ระดับน้ำท้ายฝายคำนวณจากสมการแมนนิง · ความลึกหลังน้ำกระโดด y₂ = y₁/2·(√(1+8F₁²) − 1)</li>
+    <li><b>ค่าสมมติ (ไม่มีในแบบ):</b> พื้นที่ผิวน้ำเหนือฝาย, ค่าระดับน้ำท้ายน้ำ, ความเร็วยกบาน 0.30 ม./นาที และรูปทรงภูมิประเทศรอบฝาย (วาดให้ใกล้เคียงผังบริเวณ)</li>
+    <li>หน้านี้เป็น<b>แบบจำลองเพื่อการเรียนรู้</b> ตัวเลขเป็นค่าประมาณ ไม่ใช่ข้อมูลตรวจวัดจริง และไม่ใช้แทนการคำนวณเพื่อสั่งการบานจริง</li>
+  </ul>
+</div></div>
+
+<div id="loader"><div class="bx"><div class="spin"></div><b id="ldTh">กำลังสร้างฝายทดน้ำ…</b><small>Building the 3D diversion weir</small><div class="bar"><i id="ldBar"></i></div><small id="ldPct">0%</small></div></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const $ = id => document.getElementById(id);
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+
+/* ================= ค่าออกแบบ (แบบเลขที่ 184979–184981) ================= */
+const CREST = 13.5, LW = 39.4, GSILL = 10.5, GW = 6.0, GH = 3.33, SSILL = 9.5, SW = 2.15, SH = 1.75;
+const UPFLOOR = 9.5, BASIN = 8.0, ENDSILL = 9.0, BANK_UP = 17.0, BANK_DN = 14.5, DECK = 17.4, HOIST = 21.5, QDES = 670;
+// แนวขวางลำน้ำ (z: + = ใต้) — ประตูระบายฝั่งเหนือ, ช่องระบายทรายฝั่งใต้
+const Z = { nW: [-29.15, -28.65], g1: [-28.65, -22.65], p1: [-22.65, -21.65], g2: [-21.65, -15.65], p2: [-15.65, -14.65],
+  weir: [-14.65, 25.65], p3: [25.65, 26.15], sand: [26.15, 28.3], sW: [28.3, 28.8] };
+const GX = 1.0, BX = -1.2, HX = 1.3;  // ตามภาพถ่าย: สะพานอยู่ด้านเหนือน้ำ บาน+ห้องเครื่องอยู่ท้ายสะพาน // แนวบาน / แนวสะพาน / แนวห้องเครื่องกว้าน
+const WEIR_PIERS = [[-4.95, -4.65], [5.2, 5.5], [15.35, 15.65]];
+const zc = r => (r[0] + r[1]) / 2;
+
+/* ================= ทะเบียนระบบ ================= */
+const SYSTEM = {
+  legend: [['น้ำต้นน้ำ', '#3b82f6'], ['ล้นสันฝาย', '#22d3ee'], ['ผ่านบานระบาย', '#6366f1'], ['ระบายทราย/ตะกอน', '#c2410c'], ['ท้ายน้ำ', '#0ea5e9']],
+  groups: [
+    { th: 'ต้นน้ำ', en: 'Upstream', parts: [
+      { id: 'pond', th: 'แอ่งน้ำเหนือฝาย', en: 'Upstream pool', color: '#3b82f6',
+        desc: 'ฝายยกระดับน้ำในคลองบางสะพานให้สูงถึงระดับสันฝาย +13.50 ม.รทก. เพื่อทดน้ำให้พื้นที่สองฝั่งคลองนำไปใช้ได้ตลอดฤดูแล้ง เมื่อน้ำมามากเกินระดับสัน น้ำจะไหลล้นข้ามฝายไปเอง',
+        spec: [['ระดับเก็บกัก (สันฝาย)', '+13.50 ม.รทก.'], ['ระดับตลิ่งเหนือน้ำ', '+17.00 ม.รทก.'], ['พื้นที่รับน้ำฝน', '351.09 ตร.กม.']], kpis: ['h', 'Qin', 'fb'],
+        cam: { pos: [-190, 70, 120], tgt: [-80, 12, -20] } },
+      { id: 'riprapUp', th: 'หินเรียงเหนือน้ำ', en: 'Upstream riprap', color: '#a8a29e',
+        desc: 'หินเรียงหนา 0.30 ม. ยาว 15 ม. รองด้วยกรวดทรายหนา 0.15 ม. กันท้องคลองหน้าฝายถูกกัดเซาะเมื่อน้ำไหลเร่งเข้าหาตัวฝาย',
+        spec: [['ความหนา', '0.30 ม.'], ['ความยาว', '15.00 ม.'], ['ระดับ', '+9.50 ม.รทก.']], kpis: [] },
+      { id: 'apron', th: 'พื้นคอนกรีตเหนือน้ำ', en: 'Upstream apron', color: '#cbd5e1',
+        desc: 'พื้นคอนกรีต 3 ช่วง ช่วงละ 9.00 ม. มีเดือยกันซึม (cutoff) ใต้พื้น ทำให้ทางซึมของน้ำใต้ฐานฝายยาวขึ้น ลดแรงดันยกและการพัดพาดินใต้ฐาน (piping)',
+        spec: [['ความยาว', '3 × 9.00 = 27.00 ม.'], ['ระดับพื้น', '+9.50 ม.รทก.'], ['ความหนา', '0.30 ม.']], kpis: [] },
+    ] },
+    { th: 'ตัวฝายและอาคารควบคุม', en: 'Weir & control', parts: [
+      { id: 'weir', th: 'สันฝายรูปโค้ง (Ogee)', en: 'Ogee weir crest', color: '#22d3ee',
+        desc: 'สันฝายคอนกรีตยาว 39.40 ม. รูปโค้งตามแนวน้ำล้น น้ำจึงไหลแนบผิวลงสู่แอ่งน้ำนิ่งอย่างราบเรียบ ปริมาณน้ำล้นคำนวณจาก Q = C·L·H^1.5 โดย H คือความลึกน้ำเหนือสัน',
+        spec: [['ระดับสันฝาย', '+13.50 ม.รทก.'], ['ความยาวสันฝาย', '39.40 ม. (4 ช่วง)'], ['สูงจากพื้นเหนือน้ำ', '4.00 ม.'], ['โค้งท้ายฝาย', 'R 3.621 ม. ลาด 45°']], kpis: ['Hw', 'Qw'] },
+      { id: 'gates', th: 'ประตูระบายน้ำ', en: 'Sluice gates', color: '#6366f1',
+        desc: 'บานระบายเหล็ก 2 บาน ขนาด 6.00 × 3.33 ม. ธรณี +10.50 ม.รทก. ใช้ระบายน้ำหลากและควบคุมระดับน้ำเหนือฝาย น้ำไหลใต้บานตามสูตร q = C·W·√(2gy)',
+        spec: [['จำนวน / ขนาด', '2 บาน · 6.00 × 3.33 ม.'], ['ระดับธรณีด้านเหนือน้ำ', '+10.50 ม.รทก.'], ['ระดับพื้นท้ายบาน', '+8.00 ม.รทก.']], kpis: ['a1', 'a2', 'Qg'] },
+      { id: 'sand', th: 'ช่องระบายทราย', en: 'Sand sluice', color: '#c2410c',
+        desc: 'ช่องระบายกว้าง 2.15 ม. ธรณีต่ำ +9.50 ม.รทก. อยู่ชิดตลิ่งฝั่งใต้ ใช้เปิดล้างตะกอนทรายที่ทับถมหน้าฝาย ไม่ให้ทับถมจนตื้นเขินหน้าบาน',
+        spec: [['ขนาดบาน', '1.75 × 1.75 ม.'], ['ความกว้างช่อง', '2.15 ม.'], ['ระดับธรณี', '+9.50 ม.รทก.']], kpis: ['aS', 'Qs'] },
+      { id: 'bridge', th: 'สะพานบนฝาย', en: 'Service bridge', color: '#94a3b8',
+        desc: 'สะพานคอนกรีตระดับ +17.40 ม.รทก. วางบนตอม่อทุกช่วง 9.85 ม. ราวเสาคอนกรีตกับท่อเหล็ก ใช้เป็นทางข้ามคลองและทางเข้าไปควบคุมบาน',
+        spec: [['ระดับหลังสะพาน', '+17.40 ม.รทก.'], ['ความกว้าง', '3.00 ม.'], ['ช่วงตอม่อ', '9.85 ม.']], kpis: [] },
+      { id: 'hoist', th: 'ห้องเครื่องกว้าน', en: 'Gate hoist house', color: '#2f6fd6',
+        desc: 'ลานคอนกรีตระดับ +21.50 ม.รทก. บนเสาปลายบานสามต้น หลังคาเหล็กสีฟ้า ผนังตะแกรงลวด ภายในมีเครื่องกว้านไฟฟ้าสำหรับยกบาน ขึ้นทางบันไดคอนกรีตหักกลับ 2 ช่วงที่ปลายฝั่งตลิ่งเหนือ',
+        spec: [['ระดับลาน', '+21.50 ม.รทก.'], ['เครื่องกว้าน', '6–6.5 ตัน'], ['ความเร็วยกบาน (จำลอง)', '0.30 ม./นาที']], kpis: ['a1', 'a2'] },
+      { id: 'walls', th: 'กำแพงข้างและกำแพงปีก', en: 'Training & wing walls', color: '#cbd5e1',
+        desc: 'กำแพงคอนกรีตสองฝั่งบังคับน้ำให้ไหลผ่านตัวฝาย ด้านท้ายน้ำโค้งรัศมี 13.50 ม. ให้น้ำแผ่ออกเต็มหน้าตัดคลองอย่างนุ่มนวล ลดการกัดเซาะตลิ่ง',
+        spec: [['หลังกำแพงเหนือน้ำ', '+17.00 ม.รทก.'], ['หลังกำแพงท้ายน้ำ', '+14.50 ม.รทก.'], ['รัศมีกำแพงปีก', '13.50 ม.']], kpis: [] },
+    ] },
+    { th: 'สลายพลังงาน', en: 'Energy dissipation', parts: [
+      { id: 'basin', th: 'แอ่งน้ำนิ่ง', en: 'Stilling basin', color: '#14b8a6',
+        desc: 'แอ่งคอนกรีตยาว 20.00 ม. พื้น +8.00 ม.รทก. รับน้ำความเร็วสูงที่ไหลลงจากสันฝาย ให้เกิด "น้ำกระโดด" (hydraulic jump) ภายในแอ่ง เพื่อสลายพลังงานก่อนปล่อยลงคลอง ถ้าน้ำท้ายต่ำเกินไป น้ำกระโดดจะหลุดออกนอกแอ่งและกัดเซาะท้ายน้ำ',
+        spec: [['ความยาว', '20.00 ม.'], ['ระดับพื้น', '+8.00 ม.รทก.'], ['ความกว้าง', '≈ 58 ม.']], kpis: ['jump', 'F1', 'y2', 'TW'] },
+      { id: 'blocks', th: 'ฟันตะเฆ่และก้อนสลายพลังงาน', en: 'Chute & baffle blocks', color: '#64748b',
+        desc: 'ก้อนคอนกรีตแถวแรกที่ตีนฝาย (43 ก้อน ระยะ 0.90 ม.) แบ่งลำน้ำเป็นสาย และแถวที่สองกลางแอ่ง (45 ก้อน ระยะ 1.20 ม.) ปะทะกระแส ทำให้น้ำกระโดดสั้นลงและอยู่ในแอ่ง',
+        spec: [['แถวที่ 1', '43 @ 0.90 ม.'], ['แถวที่ 2', '45 @ 1.20 ม.']], kpis: ['jump'] },
+      { id: 'endsill', th: 'ธรณีท้ายแอ่ง', en: 'End sill', color: '#64748b',
+        desc: 'ธรณีคอนกรีตยกสูงถึง +9.00 ม.รทก. ปลายแอ่งน้ำนิ่ง กักน้ำในแอ่งไว้เป็นเบาะรับน้ำ และยกกระแสน้ำให้พ้นท้องคลองช่วงแรก',
+        spec: [['ระดับหลังธรณี', '+9.00 ม.รทก.'], ['สูงจากพื้นแอ่ง', '1.00 ม.']], kpis: [] },
+      { id: 'riprapDown', th: 'หินทิ้งท้ายน้ำ', en: 'Downstream riprap', color: '#a8a29e',
+        desc: 'หินทิ้งหนา 0.60 ม. ยาว 60.00 ม. รองด้วยกรวดทรายหนา 0.20 ม. กันท้องคลองท้ายแอ่งจากกระแสน้ำที่ยังปั่นป่วน',
+        spec: [['ความหนา', '0.60 ม.'], ['ความยาว', '60.00 ม.'], ['ระดับ', '+9.00 ม.รทก.']], kpis: [] },
+    ] },
+    { th: 'การใช้น้ำและท้ายน้ำ', en: 'Water use & downstream', parts: [
+      { id: 'river', th: 'คลองบางสะพานใหญ่ (ท้ายน้ำ)', en: 'Downstream channel', color: '#0ea5e9',
+        desc: 'น้ำที่ผ่านฝายทั้งหมดไหลลงคลองบางสะพานใหญ่ ระดับน้ำท้ายฝายขึ้นกับปริมาณน้ำ (คำนวณด้วยสมการแมนนิง) และต้องสูงพอให้น้ำกระโดดเกิดในแอ่ง',
+        spec: [['ปริมาณน้ำสูงสุดออกแบบ', '670 ลบ.ม./วินาที'], ['ตลิ่งท้ายน้ำ', '+14.50 ม.รทก.']], kpis: ['TW', 'Qout'],
+        cam: { pos: [70, 55, 130], tgt: [170, 9, 10] } },
+    ] },
+  ],
+};
+const PARTS = SYSTEM.groups.flatMap(g => g.parts.map(p => (p.group = g, p)));
+const findPart = id => PARTS.find(p => p.id === id);
+
+/* ================= state + ชลศาสตร์ ================= */
+const g = 9.81;
+const S = { t: 6 * 3600, h: 13.70, TW: 8.9, TWb: 9.1, Qin: 8, a1: 0, a2: 0, aS: 0, c1: 0, c2: 0, cS: 0, nP: 0, valve: 0.3,
+  Qw: 0, Qg1: 0, Qg2: 0, Qs: 0, Qp: 0, Qpipe: 0, Qout: 0, speed: 1, auto: false, hyd: null, hist: [], jump: null, peakH: 0 };
+const SIM_PER_SEC = 60;  // 1 วินาทีจริง = 1 นาทีจำลอง (ที่ 1×)
+
+function areaH(h) { if (h <= UPFLOOR) return 3000; let A = 22000 + 21000 * (Math.min(h, BANK_UP) - UPFLOOR); if (h > BANK_UP) A += 450000 * (h - BANK_UP); return A; }
+function tailwater(Q) { return Q <= 0.01 ? 8.75 : 8.7 + Math.pow(Q * 0.035 / (44 * Math.sqrt(0.001)), 0.6); }
+function gateQ(h, tw, a, sill, B) {
+  const H = h - sill; if (H <= 0 || a <= 0.002) return 0;
+  let weir = 1.7 * B * Math.pow(H, 1.5);
+  if (tw > sill) { const r = (tw - sill) / H; weir = r >= 1 ? 0 : weir * Math.pow(1 - Math.pow(r, 1.5), 0.385); }
+  const dn = Math.max(tw, sill + a * 0.61);
+  const orif = 0.61 * B * a * Math.sqrt(2 * g * Math.max(h - dn, 0));
+  return Math.min(weir, orif);
+}
+function weirQ(h, tw) {
+  const H = h - CREST; if (H <= 0) return 0;
+  let q = 2.1 * LW * Math.pow(H, 1.5);
+  if (tw > CREST) { const r = (tw - CREST) / H; q = r >= 1 ? 0 : q * Math.pow(1 - Math.pow(r, 1.5), 0.385); }
+  return q;
+}
+function jumpOf(q, E) {
+  if (q < 0.03) return null;
+  let v = Math.sqrt(2 * g * E), y = q / v;
+  for (let i = 0; i < 4; i++) { v = Math.sqrt(2 * g * Math.max(E - y, 0.05)); y = q / v; }
+  const F = v / Math.sqrt(g * y), y2 = y / 2 * (Math.sqrt(1 + 8 * F * F) - 1);
+  return { y1: y, F, y2, req: BASIN + y2 };
+}
+const SCEN = {
+  dry: { Qin: 0.4, label: 'หน้าแล้ง' }, normal: { Qin: 8, label: 'ปกติ' },
+  flood: { peak: 670, label: 'น้ำหลากตามแบบ' }, over: { peak: 870, label: 'น้ำหลากเกินแบบ' },
+};
+function hydQ(t) { const { t0, peak, base } = S.hyd, tp = 5 * 3600, tb = 20 * 3600, x = t - t0;
+  if (x > tb) return null; return base + (peak - base) * (x < tp ? Math.pow(x / tp, 1.3) : Math.pow((tb - x) / (tb - tp), 1.6)); }
+
+function step(dtReal) {
+  let dt = dtReal * S.speed * SIM_PER_SEC;
+  while (dt > 0) {
+    const d = Math.min(dt, 3); dt -= d;
+    if (S.hyd) { const q = hydQ(S.t); if (q === null) { log(`สิ้นสุด${S.hyd.label} ระดับน้ำสูงสุด +${S.peakH.toFixed(2)} ม.รทก.`); S.Qin = S.hyd.base; S.hyd = null; } else S.Qin = q; }
+    if (S.auto) {
+      if (S.h > 14.5) { S.c1 = S.c2 = clamp(S.c1 + 0.004 * d * (S.h - 14.3), 0, 7); }
+      else if (S.h < 14.0 && S.c1 > 0) { S.c1 = S.c2 = clamp(S.c1 - 0.003 * d, 0, 7); }
+    }
+    const mv = 0.005 * d; // 0.30 ม./นาที
+    S.a1 += clamp(S.c1 - S.a1, -mv, mv); S.a2 += clamp(S.c2 - S.a2, -mv, mv); S.aS += clamp(S.cS - S.aS, -mv, mv);
+    const tw = S.TW;
+    S.Qw = weirQ(S.h, tw);
+    S.Qg1 = gateQ(S.h, tw, S.a1, GSILL, GW); S.Qg2 = gateQ(S.h, tw, S.a2, GSILL, GW);
+    S.Qs = gateQ(S.h, tw, S.aS, SSILL, SW);
+    S.Qp = 0;
+    S.Qpipe = 0;
+    const out = S.Qw + S.Qg1 + S.Qg2 + S.Qs + S.Qp + S.Qpipe;
+    S.h = Math.max(UPFLOOR - 0.3, S.h + (S.Qin - out) * d / areaH(S.h));
+    S.Qout = S.Qw + S.Qg1 + S.Qg2 + S.Qs;
+    S.TW = tailwater(S.Qout);
+    S.t += d;
+    if (S.hyd) S.peakH = Math.max(S.peakH, S.h);
+  }
+  S.TWb = Math.max(S.TW, ENDSILL + Math.pow(Math.pow(S.Qout / 58, 2) / g, 1 / 3) + (S.Qout > 0.05 ? 0.02 : 0.1));
+  // น้ำกระโดด — ใช้ช่องที่วิกฤตที่สุด
+  const E = S.h - BASIN, cands = [jumpOf(S.Qw / LW, E), jumpOf(S.Qg1 / GW, E), jumpOf(S.Qg2 / GW, E), jumpOf(S.Qs / SW, E)].filter(Boolean);
+  if (cands.length) { const w = cands.reduce((a, b) => (b.req > a.req ? b : a)); S.jump = { ...w, ok: S.TWb >= w.req - 0.15 }; } else S.jump = null;
+  if (!S.hist.length || S.hist.at(-1).t < S.t - 300) { S.hist.push({ t: S.t, h: S.h, tw: S.TW, q: S.Qin }); if (S.hist.length > 288) S.hist.shift(); }
+  checkAlarms();
+}
+let lastLvl = 'ok', lastJump = true, lastPump = true;
+function checkAlarms() {
+  const lvl = S.h > BANK_UP ? 'danger' : S.h > 16.5 ? 'warn' : 'ok';
+  if (lvl !== lastLvl) {
+    log({ ok: `ระดับน้ำกลับสู่ภาวะปกติ +${S.h.toFixed(2)} ม.รทก.`, warn: `⚠ ระดับน้ำ +${S.h.toFixed(2)} ใกล้ระดับตลิ่ง +17.00 ม.รทก.`, danger: `⛔ น้ำล้นตลิ่งเหนือฝาย ระดับ +${S.h.toFixed(2)} ม.รทก.` }[lvl]);
+    lastLvl = lvl;
+  }
+  const jok = !S.jump || S.jump.ok;
+  if (jok !== lastJump) { log(jok ? 'น้ำกระโดดกลับมาเกิดภายในแอ่งน้ำนิ่ง' : '⚠ น้ำกระโดดหลุดออกนอกแอ่ง เสี่ยงกัดเซาะท้ายน้ำ (ลองเปิดบานให้สม่ำเสมอ)'); lastJump = jok; }
+  const pok = !(S.nP > 0 && S.h < 11.0);
+  if (pok !== lastPump) { log(pok ? 'ระดับน้ำพอให้ปั๊มสูบได้ตามปกติ' : '⚠ ระดับน้ำต่ำกว่า +11.00 ปั๊มเริ่มดูดอากาศ'); lastPump = pok; }
+  const st = $('status'), worst = lvl === 'danger' ? 'danger' : (lvl === 'warn' || !jok || !pok) ? 'warn' : 'ok';
+  st.className = worst; st.textContent = { ok: '● ทำงานปกติ', warn: '● เฝ้าระวัง', danger: '● อันตราย' }[worst];
+}
+const LOG = [];
+function clockStr(t) { const d = Math.floor(t / 86400) + 1, hh = Math.floor(t / 3600) % 24, mm = Math.floor(t / 60) % 60; return `วันที่ ${d} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')} น.`; }
+function log(msg) {
+  const hh = Math.floor(S.t / 3600) % 24, mm = Math.floor(S.t / 60) % 60;
+  LOG.unshift(`<b>${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}</b> ${msg}`); if (LOG.length > 60) LOG.pop();
+  $('log').innerHTML = '📋 ' + LOG[0]; if (!$('logFull').hidden) $('logFull').innerHTML = LOG.join('<br>');
+}
+
+/* ================= renderer / scene ================= */
+const canvas = $('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: false });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#eef1f4');
+scene.fog = new THREE.Fog('#eef1f4', 420, 980);
+const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 3000);
+const HOME = { pos: [-92, 52, 96], tgt: [6, 11, 0] };
+camera.position.set(...HOME.pos);
+const controls = new OrbitControls(camera, canvas);
+controls.target.set(...HOME.tgt); controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = 1.48; controls.minDistance = 6; controls.maxDistance = 750; controls.autoRotateSpeed = 0.5;
+controls.rotateSpeed = 0.7; controls.panSpeed = 0.8; controls.dampingFactor = 0.06;
+/* ซูมล้อเมาส์แบบนุ่มนวล: สะสมระยะเป้าหมายแล้วไล่เข้าหาทีละเฟรม + ซูมเข้าหาตำแหน่งเมาส์ */
+const ZOOM = { target: null, point: null }, zRay = new THREE.Raycaster(), zPlane = new THREE.Plane(), zHit = new THREE.Vector3();
+addEventListener('wheel', e => {
+  if (e.target !== canvas) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  const d = camera.position.distanceTo(controls.target), base = ZOOM.target ?? d;
+  const dy = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
+  ZOOM.target = clamp(base * Math.exp(clamp(dy, -240, 240) * 0.0011), controls.minDistance, controls.maxDistance);
+  zRay.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -e.clientY / innerHeight * 2 + 1), camera);
+  zPlane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), controls.target);
+  ZOOM.point = zRay.ray.intersectPlane(zPlane, zHit) && zHit.distanceTo(controls.target) < 600 ? zHit.clone() : null;
+  flyAnim = null;
+}, { capture: true, passive: false });
+function smoothZoom(dt) {
+  if (ZOOM.target == null) return;
+  const off = camera.position.clone().sub(controls.target), d = off.length();
+  const nd = lerp(d, ZOOM.target, 1 - Math.exp(-dt * 9));
+  if (ZOOM.point && nd < d) { const shift = ZOOM.point.clone().sub(controls.target).multiplyScalar(1 - nd / d); controls.target.add(shift); }
+  camera.position.copy(controls.target).add(off.setLength(nd));
+  if (Math.abs(nd - ZOOM.target) < ZOOM.target * 0.002) { ZOOM.target = null; ZOOM.point = null; }
+}
+
+scene.add(new THREE.HemisphereLight('#ffffff', '#9b927e', 1.05));
+const sun = new THREE.DirectionalLight('#fff6e8', 2.5);
+sun.position.set(-90, 160, 70); sun.target.position.set(10, 10, 0);
+sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096);
+Object.assign(sun.shadow.camera, { left: -150, right: 150, top: 150, bottom: -150, near: 10, far: 500 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+scene.add(sun, sun.target);
+
+/* ---------- textures ---------- */
+function canvasTex(w, h, draw, rep = [1, 1]) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(...rep); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const concreteTex = canvasTex(256, 256, (x, w, h) => {
+  x.fillStyle = '#d9d7d1'; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 2600; i++) { const v = 195 + Math.random() * 40 | 0; x.fillStyle = `rgba(${v},${v - 2},${v - 6},.35)`; x.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+  x.strokeStyle = 'rgba(120,115,105,.18)'; x.lineWidth = 1; for (let i = 0; i < 6; i++) { x.beginPath(); x.moveTo(0, i * 43); x.lineTo(w, i * 43); x.stroke(); }
+}, [0.12, 0.12]);
+const waterTex = canvasTex(256, 256, (x, w, h) => {
+  x.fillStyle = '#ffffff'; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 90; i++) { x.strokeStyle = `rgba(150,185,195,${0.15 + Math.random() * 0.3})`; x.lineWidth = 1 + Math.random() * 2; const y = Math.random() * h, x0 = Math.random() * w;
+    x.beginPath(); x.moveTo(x0, y); x.quadraticCurveTo(x0 + 15, y - 4, x0 + 30 + Math.random() * 30, y); x.stroke(); }
+}, [24, 24]);
+const sheetTex = canvasTex(128, 256, (x, w, h) => {
+  x.fillStyle = '#e8fbff'; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 70; i++) { x.fillStyle = `rgba(255,255,255,${0.4 + Math.random() * 0.6})`; x.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 3, 14 + Math.random() * 50); }
+  for (let i = 0; i < 40; i++) { x.fillStyle = `rgba(120,190,210,${0.2 + Math.random() * 0.3})`; x.fillRect(Math.random() * w, Math.random() * h, 2, 20 + Math.random() * 40); }
+}, [1, 1]);
+const hatchTex = canvasTex(64, 64, (x, w, h) => {
+  x.fillStyle = '#b9b5ad'; x.fillRect(0, 0, w, h); x.strokeStyle = '#7d786e'; x.lineWidth = 1.4;
+  for (let i = -64; i < 128; i += 10) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 64, 64); x.stroke(); }
+  for (let i = 0; i < 18; i++) { x.fillStyle = '#8d877c'; x.beginPath(); x.arc(Math.random() * w, Math.random() * h, 1.3, 0, 7); x.fill(); }
+}, [0.5, 0.5]);
+const meshTex = canvasTex(64, 64, (x, w, h) => {
+  x.clearRect(0, 0, w, h); x.strokeStyle = 'rgba(70,80,90,.85)'; x.lineWidth = 1.2;
+  for (let i = -64; i < 128; i += 8) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 64, 64); x.stroke(); x.beginPath(); x.moveTo(i + 64, 0); x.lineTo(i, 64); x.stroke(); }
+}, [3, 1]);
+const gaugeTex = canvasTex(64, 512, (x, w, h) => {
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 60; i++) { const y = h - i * h / 60; x.fillStyle = (Math.floor(i / 10) % 2) ? '#dc2626' : '#111'; x.fillRect(0, y - 4, i % 10 === 0 ? 50 : (i % 2 ? 22 : 34), 3); if (i % 10 === 0) { x.font = 'bold 20px sans-serif'; x.fillText(String(11 + i / 10), 34, y - 8); } }
+});
+
+/* ---------- materials ---------- */
+const std = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85, metalness: 0, ...o });
+const M = {
+  concrete: std('#ffffff', { map: concreteTex, side: THREE.DoubleSide }),
+  concreteOld: std('#b7b2a8', { map: concreteTex, side: THREE.DoubleSide }),
+  steel: std('#4b535c', { roughness: 0.45, metalness: 0.55 }),
+  gate: std('#3d444d', { roughness: 0.5, metalness: 0.5 }),
+  rail: std('#c9ced4', { roughness: 0.35, metalness: 0.6 }),
+  deck: std('#d8cbb2', { map: concreteTex }),
+  roof: std('#2f6fd6', { roughness: 0.5, metalness: 0.3, side: THREE.DoubleSide }),
+  fascia: std('#f4f6f8'), post: std('#1f2937', { roughness: 0.5 }),
+  meshWall: new THREE.MeshStandardMaterial({ color: '#5b6470', map: meshTex, transparent: true, alphaTest: 0.2, side: THREE.DoubleSide, metalness: 0.4, roughness: 0.6 }),
+  hoistM: std('#202326', { roughness: 0.6, metalness: 0.3 }),
+  yellow: std('#f2b705'), soil: std('#8b6f4e'), gravel: std('#bdb7ab'),
+  road: std('#d8c39b', { roughness: 1 }), white: std('#f8fafc'), roofHouse: std('#3b6fb6', { side: THREE.DoubleSide }),
+  pipe: new THREE.MeshStandardMaterial({ color: '#4b5563', transparent: true, opacity: 0.45, roughness: 0.4, metalness: 0.5, depthWrite: false }),
+  gaugeBoard: new THREE.MeshBasicMaterial({ map: gaugeTex }),
+};
+const CONCRETE_MATS = [M.concrete, M.concreteOld];
+
+/* ---------- part registry helpers ---------- */
+const partObj = {};
+function grp(id) { if (!partObj[id]) { const g0 = new THREE.Group(); g0.userData.part = id; partObj[id] = g0; scene.add(g0); } return partObj[id]; }
+function add(id, mesh, cast = true) { mesh.castShadow = cast; mesh.receiveShadow = true; grp(id).add(mesh); return mesh; }
+function box(id, x0, x1, y0, y1, z0, z1, mat) { const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0), mat); m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); return add(id, m); }
+function extrude(id, pts, z0, z1, mat) {
+  const shape = new THREE.Shape(pts.map(p => new THREE.Vector2(p[0], p[1])));
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: z1 - z0, bevelEnabled: false, curveSegments: 6 });
+  const m = new THREE.Mesh(geo, mat); m.position.z = z0; return add(id, m);
+}
+
+/* ================= โปรไฟล์ตามรูปตัด ก-ก ================= */
+const HD = 2.8;
+const ogeeY = x => CREST - 0.5 * Math.pow(x, 1.85) / Math.pow(HD, 0.85);
+const weirSurf = [[-0.6, 12.95], [-0.55, 13.18], [-0.42, 13.34], [-0.22, 13.45], [0, 13.5]];
+for (let x = 0.25; x <= 3.07; x += 0.25) weirSurf.push([x, ogeeY(x)]);
+weirSurf.push([3.07, ogeeY(3.07)]);
+const TOE = 8.41, RC = 3.621;
+for (let k = 0; k <= 10; k++) { const th = (225 + 45 * k / 10) * Math.PI / 180; weirSurf.push([TOE + RC * Math.cos(th), BASIN + RC + RC * Math.sin(th)]); }
+const weirBody = [[-2.3, 6.4], [TOE, 6.4], ...weirSurf.slice().reverse(), [-0.6, UPFLOOR], [-2.3, UPFLOOR]];
+const gateSurf = [[-2.3, 9.5], [-2.0, 10.5], [1.6, 10.5], [2.4, 10.3], [5.4, 8.55], [6.4, 8.1], [TOE, 8.0]];
+const gateBody = [[-2.3, 6.4], [TOE, 6.4], ...gateSurf.slice().reverse()];
+const sandSurf = [[-2.3, 9.5], [1.6, 9.5], [4.4, 8.15], [5.0, 8.0], [TOE, 8.0]];
+const sandBody = [[-2.3, 6.4], [TOE, 6.4], ...sandSurf.slice().reverse()];
+const basinBody = [[TOE, 6.4], [TOE, BASIN], [27.26, BASIN], [28.76, ENDSILL], [29.26, ENDSILL], [29.26, 6.2], [28.76, 6.2], [28.76, 6.9]];
+const apronBody = [[-29.3, 9.2], [-2.3, 9.2], [-2.3, 9.5], [-29.3, 9.5]];
+
+/* ================= ภูมิประเทศ ================= */
+const RIVER = [[-480, -330], [-380, -250], [-300, -170], [-220, -90], [-150, -35], [-90, -6], [-50, 0], [100, 0], [170, 6], [250, 22], [330, 40], [480, 60]];
+const RSEG = []; { let acc = 0; for (let i = 0; i < RIVER.length - 1; i++) { const [ax, az] = RIVER[i], [bx, bz] = RIVER[i + 1]; const L = Math.hypot(bx - ax, bz - az); RSEG.push({ ax, az, dx: bx - ax, dz: bz - az, L, s0: acc }); acc += L; } }
+const S0 = RSEG[6].s0 + 50;
+function riverInfo(x, z) { let best = 1e9, bs = 0; for (const s of RSEG) { const t = clamp(((x - s.ax) * s.dx + (z - s.az) * s.dz) / (s.L * s.L), 0, 1); const d = Math.hypot(x - s.ax - s.dx * t, z - s.az - s.dz * t); if (d < best) { best = d; bs = s.s0 + t * s.L; } } return [best, bs - S0]; }
+const bump = (x, z, cx, cz, r, a) => a * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (r * r));
+function groundH(x, z) {
+  return 16.3 - 1.2 * smooth(-20, 140, x) + 0.55 * Math.sin(x * 0.021 + 1) * Math.cos(z * 0.017) + 0.35 * Math.sin(x * 0.053 + z * 0.041) + 0.22 * Math.sin(z * 0.07 - x * 0.03)
+    + bump(x, z, 250, -220, 70, 2.6) + bump(x, z, -260, 160, 80, 1.8) + bump(x, z, 190, 190, 55, -0.8);
+}
+function natural(x, z) { const [d, s] = riverInfo(x, z); const bed = s < 0 ? 9.7 + (-s) * 0.0012 : 8.7 - s * 0.0008; const w = 22 + 2 * Math.sin(s * 0.02); const G = groundH(x, z); return [d < w ? bed : Math.min(G, bed + (d - w) * 0.5), d, w]; }
+const bankLevel = x => x < 2 ? BANK_UP : x < 12 ? lerp(BANK_UP, 14.6, (x - 2) / 10) : 14.6;
+const arcInner = x => 42.4 - Math.sqrt(Math.max(0, 182.25 - (x - 29.26) ** 2));
+function zoneH(x, z) {
+  const a = Math.abs(z);
+  if (x < -29.3) { const hb = 29.0 + Math.min(8.1, (-29.3 - x) * 0.9); if (a < hb) return x > -44.3 ? 9.35 : 9.5; if (x > -38.3) return BANK_UP; return Math.min(BANK_UP, Math.max(9.5 + (a - hb) * 0.5, lerp(BANK_UP, 9.5, smooth(-38.3, -52, x)))); }
+  if (x < 29.26) return a < 28.95 ? 6.8 : bankLevel(x);
+  if (x < 42.76) return a < arcInner(x) ? 8.85 : 14.6;
+  const hb = Math.max(30, 42.4 - (x - 42.76) * 0.25); return a < hb ? 8.85 : Math.min(14.6, 8.85 + (a - hb) * 0.5);
+}
+function terrainH(x, z) {
+  const [nat] = natural(x, z);
+  const w = smooth(-62, -46, x) * (1 - smooth(92, 112, x)) * (1 - smooth(70, 96, Math.abs(z)));
+  return w > 0 ? lerp(nat, zoneH(x, z), w) : nat;
+}
+const TX = [-360, 360], TZ = [-300, 300];
+function buildTerrain() {
+  const geo = new THREE.PlaneGeometry(TX[1] - TX[0], TZ[1] - TZ[0], 300, 250); geo.rotateX(-Math.PI / 2);
+  const pos = geo.attributes.position, col = new Float32Array(pos.count * 3), c = new THREE.Color();
+  const cSand = new THREE.Color('#cbb68e'), cSlope = new THREE.Color('#a9c07b'), cField = new THREE.Color('#bcd38c'), cField2 = new THREE.Color('#9fbe72'), cRock = new THREE.Color('#b9b3a7'), cBank = new THREE.Color('#c9c2b2');
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i), y = terrainH(x, z); pos.setY(i, y);
+    const [, d, w] = natural(x, z);
+    const inZone = x > -50 && x < 95 && Math.abs(z) < 60;
+    if (inZone && ((x > -44.3 && x < -29.3) || (x > 29.26 && x < 89.3)) && y < 9.6) c.copy(cRock);
+    else if (inZone && Math.abs(z) > 28.9 && x > -46 && x < 45 && y > 14) c.copy(cSlope).lerp(cBank, 0.3);
+    else if (y < 11.2) c.copy(cSand);
+    else if (d < w + 18 && y < 15.6) c.copy(cSlope).lerp(cSand, clamp((13 - y) / 3, 0, 1));
+    else { const n = 0.5 + 0.5 * Math.sin(x * 0.09) * Math.cos(z * 0.08); c.copy(cField).lerp(cField2, n * 0.7); }
+    col.set([c.r, c.g, c.b], i * 3);
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3)); geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide }));
+  m.receiveShadow = true; m.raycast = () => {}; scene.add(m);
+  // ขอบไดโอรามา
+  const skirt = (pts) => { const v = []; for (let i = 0; i < pts.length - 1; i++) { const [x0, z0] = pts[i], [x1, z1] = pts[i + 1]; const y0 = terrainH(x0, z0), y1 = terrainH(x1, z1);
+    v.push(x0, y0, z0, x1, y1, z1, x1, 2, z1, x0, y0, z0, x1, 2, z1, x0, 2, z0); } const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); g2.computeVertexNormals();
+    const sm = new THREE.Mesh(g2, new THREE.MeshStandardMaterial({ color: '#8a6d4b', roughness: 1, side: THREE.DoubleSide })); sm.raycast = () => {}; scene.add(sm); };
+  const N = 240; const edge = (fx) => Array.from({ length: N + 1 }, (_, i) => fx(i / N));
+  skirt(edge(t => [lerp(TX[0], TX[1], t), TZ[1]])); skirt(edge(t => [lerp(TX[0], TX[1], t), TZ[0]]));
+  skirt(edge(t => [TX[0], lerp(TZ[0], TZ[1], t)])); skirt(edge(t => [TX[1], lerp(TZ[0], TZ[1], t)]));
+  const base = new THREE.Mesh(new THREE.BoxGeometry(TX[1] - TX[0], 2, TZ[1] - TZ[0]), M.soil); base.position.y = 1; base.raycast = () => {}; scene.add(base);
+}
+
+/* ================= โครงสร้างฝาย ================= */
+function buildWeir() {
+  // พื้นเหนือน้ำ + เดือยกันซึม
+  extrude('apron', apronBody, Z.nW[1], Z.sW[0], M.concrete);
+  for (const x of [-29.3, -20.3, -11.3]) box('apron', x, x + 0.5, 7.4, 9.2, Z.nW[1], Z.sW[0], M.concrete);
+  // ตัวฝาย 4 ช่วง
+  extrude('weir', weirBody, Z.weir[0], Z.weir[1], M.concrete);
+  // ช่องประตูระบาย
+  extrude('gates', gateBody, Z.g1[0], Z.g1[1], M.concreteOld); extrude('gates', gateBody, Z.g2[0], Z.g2[1], M.concreteOld);
+  extrude('gates', gateBody, Z.p1[0], Z.p1[1], M.concreteOld);
+  extrude('sand', sandBody, Z.sand[0], Z.sand[1], M.concreteOld);
+  // แอ่งน้ำนิ่ง + ธรณีท้ายแอ่ง
+  extrude('basin', [[TOE, 6.4], [TOE, BASIN], [26.9, BASIN], [26.9, 6.9]], Z.nW[1], Z.sW[0], M.concrete);
+  extrude('endsill', [[26.9, 6.9], [26.9, BASIN], [27.26, BASIN], [28.76, ENDSILL], [29.26, ENDSILL], [29.26, 6.2], [28.76, 6.2], [28.76, 6.9]], Z.nW[1], Z.sW[0], M.concrete);
+  // ก้อนสลายพลังงาน
+  const chute = new THREE.InstancedMesh(new THREE.BoxGeometry(0.9, 0.6, 0.45), M.concreteOld, 64);
+  const baffle = new THREE.InstancedMesh(new THREE.BoxGeometry(0.75, 0.9, 0.6), M.concreteOld, 48);
+  const m4 = new THREE.Matrix4(); let n1 = 0, n2 = 0;
+  for (let z = Z.weir[0] + 0.5; z < Z.weir[1] - 0.3 && n1 < 64; z += 0.9) { chute.setMatrixAt(n1++, m4.makeTranslation(TOE + 0.6, BASIN + 0.3, z)); }
+  for (let z = Z.nW[1] + 0.8, k = 0; z < Z.sW[0] - 0.5 && n2 < 48; z += 1.2, k++) { baffle.setMatrixAt(n2++, m4.makeTranslation(14.5 + (k % 2) * 0.0, BASIN + 0.45, z)); }
+  chute.count = n1; baffle.count = n2; add('blocks', chute); add('blocks', baffle);
+  // ตอม่อ / กำแพงแบ่งช่อง
+  const pier = (id, z0, z1, x0, x1, top, mat) => box(id, x0, x1, 9.5, top, z0, z1, mat);
+  pier('gates', ...Z.p1, -2.3, 3.6, DECK - 0.5, M.concreteOld);
+  pier('gates', ...Z.p2, -2.3, 3.6, DECK - 0.5, M.concreteOld);
+  for (const [z0, z1] of WEIR_PIERS) pier('bridge', z0, z1, -2.8, 0.5, DECK - 0.5, M.concrete);
+  pier('sand', ...Z.p3, -2.3, 5.0, DECK - 0.5, M.concreteOld);
+  // ร่องบาน (gate slots) สีเข้ม
+  for (const zz of [Z.g1, Z.g2]) for (const e of [zz[0] - 0.02, zz[1] + 0.02]) box('gates', GX - 0.25, GX + 0.25, GSILL, DECK - 0.5, e - 0.06, e + 0.06, M.steel);
+  // กำแพงข้าง (ตามรูปตัด: เหนือน้ำ +17.00, สะพาน +17.40, ท้ายน้ำ +14.50)
+  const wallProf = [[-29.3, 7.5], [29.26, 7.5], [29.26, BANK_DN], [10, BANK_DN], [3.6, DECK], [-2.3, DECK], [-2.3, BANK_UP], [-29.3, BANK_UP]];
+  extrude('walls', wallProf, ...Z.nW, M.concreteOld); extrude('walls', wallProf, ...Z.sW, M.concreteOld);
+  // กำแพงปีกท้ายน้ำโค้ง R 13.50
+  const arcWall = (cz, sgn) => { const seg = 18; for (let i = 0; i < seg; i++) { const t0 = Math.PI / 2 * i / seg, t1 = Math.PI / 2 * (i + 1) / seg;
+    const p0 = [29.26 + 13.5 * Math.sin(t0), cz - sgn * 13.5 * Math.cos(t0)], p1 = [29.26 + 13.5 * Math.sin(t1), cz - sgn * 13.5 * Math.cos(t1)];
+    const L = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) + 0.05; const m = new THREE.Mesh(new THREE.BoxGeometry(L, 7.0, 0.5), M.concreteOld);
+    m.position.set((p0[0] + p1[0]) / 2, 11.0, (p0[1] + p1[1]) / 2); m.rotation.y = -Math.atan2(p1[1] - p0[1], p1[0] - p0[0]); add('walls', m); } };
+  arcWall(-42.4, -1); arcWall(42.3, 1);
+  // กำแพงปีกเหนือน้ำ
+  const wing = (x0, z0, x1, z1) => { const L = Math.hypot(x1 - x0, z1 - z0); const m = new THREE.Mesh(new THREE.BoxGeometry(L, 9.5, 0.5), M.concreteOld); m.position.set((x0 + x1) / 2, 12.25, (z0 + z1) / 2); m.rotation.y = -Math.atan2(z1 - z0, x1 - x0); add('walls', m); };
+  wing(-29.3, -28.9, -38.3, -37.0); wing(-29.3, 28.55, -38.3, 36.6);
+  // ดินถมชิดผนังคอนกรีต (กันร่องระหว่างกำแพงกับพื้นดิน)
+  const fillMat = std('#b1c18c', { roughness: 1 });
+  const sideFill = [[-29.3, 7.0], [29.26, 7.0], [29.26, 14.68], [12, 14.68], [2, BANK_UP + 0.08], [-29.3, BANK_UP + 0.08]];
+  const fn = extrude('walls', sideFill, Z.nW[0] - 9, Z.nW[0], fillMat); fn.castShadow = false;
+  const fs = extrude('walls', sideFill, Z.sW[1], Z.sW[1] + 9, fillMat); fs.castShadow = false;
+  const flat = (id, pts, top, depth) => { const sh = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, z)));
+    const geo = new THREE.ExtrudeGeometry(sh, { depth, bevelEnabled: false, curveSegments: 16 }); geo.rotateX(Math.PI / 2);
+    const m = new THREE.Mesh(geo, fillMat); m.position.y = top; m.receiveShadow = true; grp(id).add(m); return m; };
+  const arcPts = (cz, sgn) => Array.from({ length: 25 }, (_, i) => { const t = Math.PI / 2 * i / 24; return [29.26 + 13.25 * Math.sin(t), cz - sgn * 13.25 * Math.cos(t)]; });
+  flat('walls', [...arcPts(-42.4, -1), [43.0, -52], [29.26, -52]], 14.68, 7.5);   // หลังกำแพงปีกโค้งฝั่งเหนือ
+  flat('walls', [...arcPts(42.3, 1), [43.0, 53], [29.26, 53]], 14.68, 7.5);      // หลังกำแพงปีกโค้งฝั่งใต้
+  flat('walls', [[-29.3, -29.4], [-38.3, -37.25], [-38.3, -48], [-29.3, -48]], BANK_UP + 0.08, 9);  // หลังกำแพงปีกเหนือน้ำ
+  flat('walls', [[-29.3, 29.05], [-38.3, 36.85], [-38.3, 48], [-29.3, 48]], BANK_UP + 0.08, 9);
+  // ไม้วัดระดับน้ำ
+  const gb = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 6), M.gaugeBoard); gb.position.set(-12, 14, Z.nW[1] + 0.02); add('walls', gb, false);
+  // หินเรียง / หินทิ้ง
+  box('riprapUp', -44.3, -29.3, 9.0, 9.5, Z.nW[1], Z.sW[0], M.gravel);
+  box('riprapDown', 29.26, 89.26, 8.4, 9.0, -36, 36, M.gravel);
+  const rocks = (id, n, x0, x1, top, zf) => {
+    const im = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.42, 0), std('#ffffff', { roughness: 1, flatShading: true }), n);
+    const o = new THREE.Object3D(), c = new THREE.Color(); let k = 0;
+    for (let t = 0; t < n * 3 && k < n; t++) { const x = lerp(x0, x1, Math.random()), z = (Math.random() * 2 - 1) * zf(x);
+      if (terrainH(x, z) > top + 0.4 && !(x > -44.3 && x < -29.3)) continue;
+      o.position.set(x, top - 0.08 + Math.random() * 0.12, z); o.rotation.set(Math.random() * 3, Math.random() * 3, 0); const s = 0.6 + Math.random() * 0.9; o.scale.set(s, s * 0.7, s); o.updateMatrix();
+      im.setMatrixAt(k, o.matrix); c.setHSL(0.09, 0.06, 0.5 + Math.random() * 0.22); im.setColorAt(k, c); k++; }
+    im.count = k; add(id, im, false); };
+  rocks('riprapUp', 700, -44.2, -29.4, 9.5, () => 28.6);
+  rocks('riprapDown', 2600, 29.4, 89.2, 9.0, x => x < 42.76 ? arcInner(x) - 0.4 : Math.min(36, Math.max(30, 42.4 - (x - 42.76) * 0.25)));
+}
+
+/* ---------- สะพาน + ราว ---------- */
+function buildBridge() {
+  const bz0 = Z.nW[0] - 8, bz1 = Z.sW[1] + 8;
+  box('bridge', BX - 1.5, BX + 1.5, DECK - 0.5, DECK, bz0, bz1, M.deck);
+  for (const sg of [-1, 1]) box('bridge', BX + sg * 1.5 - (sg > 0 ? 0.32 : 0), BX + sg * 1.5 + (sg < 0 ? 0.32 : 0), DECK, DECK + 0.32, bz0, bz1, M.concrete);  // คันขอบ
+  const postG = new THREE.BoxGeometry(0.24, 1.05, 0.24); postG.translate(0, 0.525, 0);
+  const posts = new THREE.InstancedMesh(postG, M.concrete, 160);
+  const o = new THREE.Object3D(); let k = 0;
+  for (const x of [BX - 1.34, BX + 1.34]) for (let z = bz0 + 0.3; z <= bz1 - 0.2; z += 2.4) { o.position.set(x, DECK + 0.32, z); o.updateMatrix(); posts.setMatrixAt(k++, o.matrix); }
+  posts.count = k; add('bridge', posts);
+  for (const x of [BX - 1.34, BX + 1.34]) for (const y of [DECK + 0.8, DECK + 1.2]) {
+    const r = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, bz1 - bz0 - 0.4, 8), M.rail); r.rotation.x = Math.PI / 2; r.position.set(x, y, (bz0 + bz1) / 2); add('bridge', r, false); }
+  // ราวบนกำแพงข้าง
+  const wp = new THREE.InstancedMesh(new THREE.BoxGeometry(0.2, 1.0, 0.2), M.concrete, 120); k = 0;
+  for (const zz of [Z.nW, Z.sW]) for (let x = -28.8; x < 28.8; x += 3) { if (x > -2 && x < 3.5) continue; const top = x < -2.3 ? BANK_UP : x < 10 ? lerp(DECK, BANK_DN, (x - 3.6) / 6.4) : BANK_DN;
+    o.position.set(x, top + 0.5, zc(zz)); o.updateMatrix(); wp.setMatrixAt(k++, o.matrix); }
+  wp.count = k; add('walls', wp);
+  for (const zz of [Z.nW, Z.sW]) { const pts = [V3(-28.8, BANK_UP + 0.9, zc(zz)), V3(-2.3, BANK_UP + 0.9, zc(zz)), V3(3.6, DECK + 0.9, zc(zz)), V3(10, BANK_DN + 0.9, zc(zz)), V3(28.8, BANK_DN + 0.9, zc(zz))];
+    const tb = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.02), 60, 0.035, 5), M.rail); add('walls', tb, false); }
+}
+
+/* ---------- บาน + ห้องเครื่องกว้าน (ตามภาพถ่าย) ---------- */
+const GATES = {};
+function buildGates() {
+  const leaf = (id, w, h, zz, sill) => {
+    const g0 = new THREE.Group(); g0.userData.part = id;
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.18, h, w), M.gate); plate.castShadow = true; g0.add(plate);
+    for (let i = 1; i < 6; i++) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.1, w), M.steel); r.position.set(0.1, -h / 2 + i * h / 6, 0); g0.add(r); }
+    for (const s of [-1, 1]) { const st = new THREE.Mesh(new THREE.BoxGeometry(0.24, h, 0.14), M.steel); st.position.set(0.05, 0, s * (w / 2 - 0.05)); g0.add(st); }
+    g0.position.set(GX, sill + h / 2, zc(zz)); grp(id).add(g0);
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1, 8), M.steel); stem.position.set(GX, 0, zc(zz)); grp(id).add(stem);
+    return { g: g0, stem, sill, h };
+  };
+  GATES.g1 = leaf('gates', GW, GH, Z.g1, GSILL); GATES.g2 = leaf('gates', GW, GH, Z.g2, GSILL); GATES.s = leaf('sand', 2.05, SH, Z.sand, SSILL);
+  // เสาปลายบานรูปตัว T (3 ต้น) — แบบในภาพถ่าย
+  const colZ = [Z.nW[0] + 0.6, zc(Z.p1), zc(Z.p2)];
+  for (const z of colZ) {
+    box('hoist', HX - 0.7, HX + 0.7, DECK - 0.5, HOIST - 1.2, z - 0.45, z + 0.45, M.concrete);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 0.55, 1.2, 4, 1), M.concrete); cap.rotation.y = Math.PI / 4; cap.scale.set(2.2, 1, 0.75); cap.position.set(HX, HOIST - 1.15, z); add('hoist', cap);
+  }
+  const zA = Z.nW[0] - 0.5, zB = Z.p2[1] + 1.2, x0 = HX - 1.75, x1 = HX + 1.75;
+  box('hoist', x0, x1, HOIST - 0.55, HOIST, zA, zB, M.concrete);
+  box('hoist', x0 - 0.12, x1 + 0.12, HOIST - 0.62, HOIST - 0.4, zA - 0.1, zB + 0.1, M.fascia);
+  // ห้องเครื่อง: เสาเหล็กดำ + ผนังตะแกรงลวด + หลังคาเหล็กสีฟ้า (ตามภาพถ่าย)
+  const H0 = HOIST, H1 = HOIST + 2.6, xs = [HX - 1.5, HX + 1.5];
+  for (let z = zA + 0.2; z <= zB - 0.1; z += (zB - zA - 0.3) / 4) for (const x of xs) box('hoist', x - 0.07, x + 0.07, H0, H1, z - 0.07, z + 0.07, M.post);
+  for (const x of xs) { const mw = new THREE.Mesh(new THREE.PlaneGeometry(zB - zA - 0.4, 2.3), M.meshWall); mw.rotation.y = Math.PI / 2; mw.position.set(x, H0 + 1.2, (zA + zB) / 2); add('hoist', mw, false);
+    box('hoist', x - 0.04, x + 0.04, H0 + 1.0, H0 + 1.06, zA + 0.2, zB - 0.2, M.rail); }
+  for (const z of [zA + 0.2, zB - 0.2]) { const mw = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 2.3), M.meshWall); mw.position.set(HX, H0 + 1.2, z); add('hoist', mw, false); }
+  const rw = 5.6, rl = zB - zA + 2.4, rh = 0.9;
+  const roofG = new THREE.CylinderGeometry(0.5, Math.SQRT2 * 0.5, 1, 4, 1, true); roofG.rotateY(Math.PI / 4);
+  const roof = new THREE.Mesh(roofG, M.roof); roof.scale.set(rw, rh, rl); roof.position.set(HX, H1 + rh / 2, (zA + zB) / 2); add('hoist', roof);
+  box('hoist', HX - rw * 0.354, HX + rw * 0.354, H1 + rh - 0.04, H1 + rh + 0.02, (zA + zB) / 2 - rl * 0.354, (zA + zB) / 2 + rl * 0.354, M.roof);
+  box('hoist', HX - rw / 2 - 0.05, HX + rw / 2 + 0.05, H1 - 0.16, H1 + 0.02, (zA + zB) / 2 - rl / 2 - 0.05, (zA + zB) / 2 + rl / 2 + 0.05, M.fascia);
+  // เครื่องกว้าน 2 ชุดต่อบาน
+  for (const zz of [Z.g1, Z.g2]) for (const dz of [-1.6, 1.6]) {
+    const z = zc(zz) + dz; box('hoist', HX - 0.55, HX + 0.55, H0, H0 + 0.75, z - 0.45, z + 0.45, M.hoistM);
+    const mot = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.7, 12), std('#2b5fab', { metalness: 0.3, roughness: 0.5 })); mot.rotation.x = Math.PI / 2; mot.position.set(HX, H0 + 1.0, z); add('hoist', mot);
+  }
+  // บันไดคอนกรีตหักกลับ 2 ช่วง ที่ปลายห้องเครื่องฝั่งตลิ่งเหนือ (ตามภาพถ่าย) — ขึ้นจากระดับสะพาน ไปทางเหนือน้ำ แล้วหักกลับขึ้นลาน
+  const nSt = 11, stH = (HOIST - DECK) / (2 * nSt), run = 0.28, slab = 0.55;
+  const zO = zA - 2.9, zM = zA - 1.65, zI = zA - 0.4;            // ขอบนอก / ระหว่างช่วง / ขอบใน
+  const xS = BX + 1.55, xT = xS + nSt * run, xL = xT + 1.4;       // เริ่ม (ชิดขอบสะพานด้านท้ายน้ำ) / ปลายช่วง / ขอบชานพัก
+  const yL = DECK + stH * nSt;
+  for (let i = 0; i < nSt; i++) { const xa = xS + i * run, xb = xS + (i + 1) * run, yt = DECK + stH * (i + 1); box('hoist', xa, xb, yt - slab, yt, zO, zM - 0.05, M.concrete); }
+  box('hoist', xT, xL, yL - 0.28, yL, zO, zI, M.concrete);                                   // ชานพักยื่น
+  box('hoist', xT + 0.25, xL - 0.35, BANK_UP - 0.3, yL - 0.28, zO + 0.5, zI - 0.5, M.concrete); // เสารับชานพัก
+  for (let i = 0; i < nSt; i++) { const xa = xT - (i + 1) * run, xb = xT - i * run, yt = yL + stH * (i + 1); box('hoist', xa, xb, yt - slab, yt, zM + 0.05, zI, M.concrete); }
+  box('hoist', x0, xS + 0.1, HOIST - 0.45, HOIST, zO, zA + 0.05, M.concrete);                // ชานบนเชื่อมลานเครื่องกว้าน
+  box('hoist', BX + 1.4, xS + 0.02, DECK - 0.5, DECK, zO - 0.3, zM, M.concrete);             // ชานล่างระดับสะพาน
+  // ราวท่อเหล็ก (ราวบน + ราวกลาง + เสา)
+  const railSeg = (ax, ay, az, bx, by, bz) => {
+    const A = V3(ax, ay, az), B = V3(bx, by, bz), L = A.distanceTo(B);
+    for (const h of [1.0, 0.5]) { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, L, 6), M.rail);
+      c.position.copy(A).add(B).multiplyScalar(0.5).add(V3(0, h, 0)); c.quaternion.setFromUnitVectors(V3(0, 1, 0), B.clone().sub(A).normalize()); add('hoist', c, false); }
+    const n = Math.max(1, Math.round(L / 1.3));
+    for (let k = 0; k <= n; k++) { const P = A.clone().lerp(B, k / n); const po = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.0, 6), M.rail); po.position.set(P.x, P.y + 0.5, P.z); add('hoist', po, false); }
+  };
+  railSeg(xS, DECK, zO + 0.05, xT, yL, zO + 0.05);
+  railSeg(xT, yL, zO + 0.05, xL - 0.05, yL, zO + 0.05); railSeg(xL - 0.05, yL, zO + 0.05, xL - 0.05, yL, zI - 0.05); railSeg(xL - 0.05, yL, zI - 0.05, xT, yL, zI - 0.05);
+  railSeg(xT, yL, zI - 0.05, xS, HOIST, zI - 0.05);
+  railSeg(xT - 0.2, yL + 0.1, zM, xS, HOIST, zM);
+  railSeg(xS, HOIST, zO + 0.05, x0 + 0.05, HOIST, zO + 0.05); railSeg(x0 + 0.05, HOIST, zO + 0.05, x0 + 0.05, HOIST, zA);
+}
+
+/* ---------- สถานีสูบ / ท่อส่ง / ถนน / ต้นไม้ ---------- */
+const PUMP_PATH = [[-33, 10.4, -29.5], [-34.5, 13.5, -36], [-36.5, 0, -46], [-42, 0, -57], [-44, 0, -61]];
+const PIPE_PATH_UNUSED = [[-27.5, 11.25, 27.2], [-27.5, 11.25, 30.2], [-24, 0, 31.8], [-6, 0, 31.8], [10, 0, 31.8], [29, 0, 32.2], [36, 0, 46], [60, 0, 46], [100, 0, 46], [103.5, 0, 46]];
+const fixPath = P => P.map(([x, y, z]) => V3(x, y || terrainH(x, z) + 0.45, z));
+function buildUse() {
+  // ถนนลูกรัง
+  const road = (P, w = 5) => { const c = new THREE.CatmullRomCurve3(P.map(([x, z]) => V3(x, 0, z))); const n = 160, v = [], idx = [];
+    for (let i = 0; i <= n; i++) { const p = c.getPointAt(i / n), t = c.getTangentAt(i / n); const nx = -t.z, nz = t.x;
+      for (const s of [-1, 1]) { const x = p.x + nx * s * w / 2, z = p.z + nz * s * w / 2; v.push(x, terrainH(x, z) + 0.12, z); } if (i) { const a = (i - 1) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); gg.setIndex(idx); gg.computeVertexNormals();
+    const m = new THREE.Mesh(gg, M.road); m.receiveShadow = true; m.raycast = () => {}; scene.add(m); return c; };
+  ROADS.push(road([[0, -39.5], [-3, -70], [-18, -140], [8, -220], [30, -298]]), road([[0, 37], [-12, 80], [-38, 150], [-68, 230], [-95, 298]]));
+}
+const ROADS = [];
+function buildTrees() {
+  const frond = []; for (let k = 0; k < 8; k++) { const f = new THREE.BoxGeometry(3.4, 0.07, 0.75); f.translate(1.7, 0, 0); f.rotateZ(-0.38); f.rotateY(k * Math.PI * 2 / 8 + (k % 2) * 0.2); frond.push(f); }
+  const crownG = mergeGeometries(frond); crownG.translate(0, 9.2, 0);
+  const trunkG = new THREE.CylinderGeometry(0.16, 0.26, 9.4, 6); trunkG.translate(0, 4.7, 0);
+  const N = 900, trunks = new THREE.InstancedMesh(trunkG, std('#8a7a63'), N), crowns = new THREE.InstancedMesh(crownG, std('#ffffff', { side: THREE.DoubleSide }), N);
+  const tall = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.2, 0), std('#ffffff', { flatShading: true }), 260);
+  const o = new THREE.Object3D(), c = new THREE.Color(); let k = 0, kt = 0;
+  const roadPts = ROADS.flatMap(rc => rc.getSpacedPoints(80));
+  const ok = (x, z) => { const [, d, w] = natural(x, z); if (d < w + 12) return false; if (x > -70 && x < 120 && Math.abs(z) < 62) return false; if (x > -60 && x < -30 && z > -75 && z < -50) return false;
+    for (const p of roadPts) if (Math.abs(p.x - x) < 7 && Math.abs(p.z - z) < 7) return false; return true; };
+  for (let t = 0; t < 12000 && k < N; t++) {
+    const x = lerp(TX[0] + 8, TX[1] - 8, Math.random()), z = lerp(TZ[0] + 8, TZ[1] - 8, Math.random());
+    if (!ok(x, z)) continue; if (Math.sin(x * 0.03) * Math.cos(z * 0.025) < -0.55) continue; // ช่องโล่งในสวน
+    const y = terrainH(x, z), s = 0.75 + Math.random() * 0.5;
+    o.position.set(x, y - 0.2, z); o.rotation.set((Math.random() - 0.5) * 0.18, Math.random() * 6.3, (Math.random() - 0.5) * 0.18); o.scale.set(s, s * (0.9 + Math.random() * 0.4), s); o.updateMatrix();
+    trunks.setMatrixAt(k, o.matrix); crowns.setMatrixAt(k, o.matrix); c.setHSL(0.24 + Math.random() * 0.05, 0.45, 0.28 + Math.random() * 0.1); crowns.setColorAt(k, c); k++;
+    if (kt < 260 && Math.random() < 0.25) { const x2 = x + 4 + Math.random() * 3, z2 = z + Math.random() * 4; if (ok(x2, z2)) { o.position.set(x2, terrainH(x2, z2) + 2.4, z2); o.rotation.set(0, Math.random() * 3, 0); const s2 = 0.7 + Math.random() * 0.6; o.scale.set(s2, s2 * 0.9, s2); o.updateMatrix(); tall.setMatrixAt(kt, o.matrix); c.setHSL(0.27 + Math.random() * 0.04, 0.4, 0.25 + Math.random() * 0.08); tall.setColorAt(kt, c); kt++; } }
+  }
+  trunks.count = crowns.count = k; tall.count = kt;
+  for (const m of [trunks, crowns, tall]) { m.castShadow = true; m.raycast = () => {}; scene.add(m); }
+  // ต้นไม้ริมตลิ่งใกล้ฝาย
+  const bush = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1.6, 0), std('#ffffff', { flatShading: true }), 220); let kb = 0;
+  for (let t = 0; t < 3000 && kb < 220; t++) { const x = lerp(-300, 330, Math.random()), z = lerp(-280, 280, Math.random()); const [, d, w] = natural(x, z);
+    if (d < w + 4 || d > w + 16 || (x > -55 && x < 100 && Math.abs(z) < 55)) continue; o.position.set(x, terrainH(x, z) + 0.8, z); const s = 0.6 + Math.random(); o.scale.set(s, s * 0.8, s); o.updateMatrix(); bush.setMatrixAt(kb, o.matrix); c.setHSL(0.26, 0.38, 0.3 + Math.random() * 0.1); bush.setColorAt(kb, c); kb++; }
+  bush.count = kb; bush.castShadow = true; bush.raycast = () => {}; scene.add(bush);
+}
+
+/* ================= น้ำ ================= */
+const W = {};
+function waterMat(c, op = 0.8) { return new THREE.MeshStandardMaterial({ color: c, map: waterTex, transparent: true, opacity: op, roughness: 0.15, metalness: 0.05, depthWrite: false }); }
+function plane(x0, x1, z0, z1, mat, part) { const m = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, z1 - z0), mat); m.rotation.x = -Math.PI / 2; m.position.set((x0 + x1) / 2, 0, (z0 + z1) / 2); m.userData.water = part; m.renderOrder = 2; grp(part).add(m); return m; }
+function ribbon(id, prof, z0, z1, off, mat) {
+  const pts = prof, n = pts.length, v = [], uv = [], idx = []; let acc = 0;
+  for (let i = 0; i < n; i++) { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)]; let tx = b[0] - a[0], ty = b[1] - a[1]; const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
+    if (i) acc += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    const x = pts[i][0] - ty * off, y = pts[i][1] + tx * off; v.push(x, y, z0, x, y, z1); uv.push(0, acc / 3, (z1 - z0) / 3, acc / 3);
+    if (i) { const k = (i - 1) * 2; idx.push(k, k + 2, k + 1, k + 1, k + 2, k + 3); } }
+  const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); gg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); gg.setIndex(idx); gg.computeVertexNormals();
+  const m = new THREE.Mesh(gg, mat); m.renderOrder = 3; m.userData.water = id; grp(id).add(m); return m;
+}
+function makeJet(id, prof, z0, z1, mat) {
+  const n = prof.length, pos = new Float32Array((n + 1) * 2 * 3), uv = new Float32Array((n + 1) * 2 * 2), idx = [];
+  let acc = 0;
+  for (let i = 0; i <= n; i++) { const k = Math.max(0, i - 1); if (i > 1) acc += Math.hypot(prof[k][0] - prof[k - 1][0], prof[k][1] - prof[k - 1][1]);
+    uv.set([0, acc / 3, (z1 - z0) / 3, acc / 3], i * 4); if (i) { const a = i * 2; idx.push(a - 2, a, a - 1, a - 1, a, a + 1); } }
+  const g0 = new THREE.BufferGeometry(); g0.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g0.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g0.setIndex(idx);
+  const m = new THREE.Mesh(g0, mat); m.renderOrder = 3; m.userData.water = id; m.frustumCulled = false; m.userData.jet = { prof, z0, z1 }; grp(id).add(m); return m;
+}
+// d0: ความลึกน้ำที่จุดควบคุม (ใต้บาน/บนสัน), up: ระดับน้ำเหนือ (ให้ผิวน้ำลาดต่อเนื่อง), dEnd: ความลึกที่ตีนฝาย
+function updateJet(m, q, B, d0, ctrlX, up, freeSurf) {
+  m.visible = q > 0.01; if (!m.visible) return;
+  const { prof, z0, z1 } = m.userData.jet, P = m.geometry.attributes.position.array;
+  const v1 = Math.sqrt(2 * g * Math.max(S.h - BASIN, 0.3)), dEnd = clamp(q / B / v1, 0.06, 2.5);
+  const put = (i, x, y) => { P.set([x, y, z0, x, y, z1], i * 6); };
+  put(0, prof[0][0], prof[0][1] - 0.02);
+  for (let i = 0; i < prof.length; i++) {
+    const [x, y] = prof[i]; let d;
+    if (x <= ctrlX) d = freeSurf ? Math.max(up - y, d0) : d0;     // ก่อนจุดควบคุม: ผิวน้ำเท่าระดับเหนือ (น้ำล้น) หรือเท่าช่องเปิดใต้บาน
+    else d = lerp(d0, dEnd, smooth(ctrlX, TOE, x));
+    let top = y + Math.max(d, 0.05);
+    if (x > TOE) top = Math.max(top, Math.min(S.TWb, y + d + 0.6));
+    put(i + 1, x, top);
+  }
+  m.geometry.attributes.position.needsUpdate = true; m.geometry.computeVertexNormals();
+}
+function buildWater() {
+  W.pond = plane(TX[0], -0.12, TZ[0], TZ[1], waterMat('#5b9fb6', 0.82), 'pond');
+  W.pond2 = plane(-0.12, GX - 0.1, Z.nW[1], Z.p2[1], W.pond.material, 'pond');
+  W.pond3 = plane(-0.12, GX - 0.1, Z.p3[0], Z.sW[0], W.pond.material, 'pond');
+  W.basin = plane(1.0, 29.26, Z.nW[1], Z.sW[0], waterMat('#5fa9bd', 0.78), 'basin');
+  W.down = plane(29.26, TX[1], TZ[0], TZ[1], waterMat('#5b9fb6', 0.82), 'river');
+  const sm = () => new THREE.MeshStandardMaterial({ color: '#ffffff', map: (() => { const t = sheetTex.clone(); t.needsUpdate = true; return t; })(), transparent: true, opacity: 0.85, roughness: 0.2, depthWrite: false, side: THREE.DoubleSide });
+  // กระแสน้ำผ่านสันฝาย/ช่องบาน แบบมีความหนา (ผิวน้ำลาดต่อเนื่องจากระดับเหนือฝายลงแอ่ง)
+  const wsurf = weirSurf.filter(p => p[0] >= -0.6).concat([[10.5, BASIN], [13, BASIN]]);
+  const gsurf = [[GX - 0.6, GSILL], [GX, GSILL]].concat(gateSurf.slice(2), [[10.5, BASIN], [13, BASIN]]);
+  const ssurf = [[GX - 0.6, SSILL], [GX, SSILL]].concat(sandSurf.slice(1), [[10.5, BASIN], [13, BASIN]]);
+  W.jW = makeJet('weir', wsurf, Z.weir[0] + 0.02, Z.weir[1] - 0.02, sm());
+  W.jG1 = makeJet('gates', gsurf, Z.g1[0] + 0.02, Z.g1[1] - 0.02, sm());
+  W.jG2 = makeJet('gates', gsurf, Z.g2[0] + 0.02, Z.g2[1] - 0.02, sm());
+  W.jS = makeJet('sand', ssurf, Z.sand[0] + 0.02, Z.sand[1] - 0.02, sm());
+  W.jS.material.color.set('#e2c79f');
+  // ฟองน้ำกระโดด
+  W.foam = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.42, 0), new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.85, roughness: 0.6, depthWrite: false }), 520);
+  W.foam.raycast = () => {}; W.foam.renderOrder = 4; scene.add(W.foam);
+  W.foamSeed = Array.from({ length: 520 }, () => [Math.random(), Math.random(), Math.random(), Math.random()]);
+}
+
+/* ================= อนุภาคเส้นทางไหล ================= */
+const flowGroup = new THREE.Group(); scene.add(flowGroup);
+let showFlows = true;
+class Flow {
+  constructor({ pts, color, n = 200, r = 0.24, width = 0, yOff = null }) {
+    this.curve = new THREE.CatmullRomCurve3(pts.map(p => V3(...p)), false, 'centripetal'); this.len = this.curve.getLength();
+    this.mesh = new THREE.InstancedMesh(new THREE.SphereGeometry(r, 6, 4), new THREE.MeshBasicMaterial({ color }), n);
+    this.mesh.frustumCulled = false; this.mesh.raycast = () => {}; this.mesh.renderOrder = 5;
+    this.u = Float32Array.from({ length: n }, () => Math.random()); this.o = Float32Array.from({ length: n }, () => (Math.random() * 2 - 1) * width); this.j = Float32Array.from({ length: n }, () => Math.random() * 0.35);
+    this.width = width; this.yOff = yOff; this.p = V3(); this.t = V3(); this.m = new THREE.Matrix4(); flowGroup.add(this.mesh);
+  }
+  update(dt, q, qRef) {
+    const vis = showFlows && q > 0.004; this.mesh.visible = vis; if (!vis) return;
+    const k = Math.min(1, q / qRef), sp = (2.5 + 13 * Math.sqrt(k)) * (S.speed ? Math.min(1.6, 0.7 + S.speed * 0.15) : 0);
+    const n = Math.max(10, Math.round(this.u.length * (0.22 + 0.78 * Math.sqrt(k)))); this.mesh.count = n;
+    const dy = this.yOff ? this.yOff() : 0;
+    for (let i = 0; i < n; i++) {
+      this.u[i] = (this.u[i] + sp * dt / this.len * (0.8 + this.j[i])) % 1;
+      this.curve.getPointAt(this.u[i], this.p);
+      if (this.width) { this.curve.getTangentAt(this.u[i], this.t); let nx = -this.t.z, nz = this.t.x; const L = Math.hypot(nx, nz); if (L > 0.05) { this.p.x += nx / L * this.o[i]; this.p.z += nz / L * this.o[i]; } }
+      this.m.makeTranslation(this.p.x, this.p.y + dy, this.p.z); this.mesh.setMatrixAt(i, this.m);
+    }
+    this.mesh.instanceMatrix.needsUpdate = true;
+  }
+}
+const F = {};
+function buildFlows() {
+  F.up = new Flow({ pts: [[-330, 0, -205], [-250, 0, -120], [-180, 0, -55], [-110, 0, -12], [-60, 0, 2], [-4, 0, 4]], color: '#3b82f6', n: 320, width: 13, yOff: () => S.h + 0.08 });
+  const wz = zc(Z.weir), down = [[12, 8.75], [20, 8.9], [29.3, 9.4], [42, 9.3]];
+  F.weir = new Flow({ pts: [[-5, 13.8], ...weirSurf.map(([x, y]) => [x, y + 0.3]), ...down].map(([x, y]) => [x, y, wz]), color: '#22d3ee', n: 380, width: 19.4 });
+  const gp = (zz, sill) => [[-6, sill + 0.6], [GX - 0.3, sill + 0.45], [GX + 0.4, sill + 0.3], [1.6, sill + 0.35], ...gateSurf.slice(3).map(([x, y]) => [x, y + 0.3]), ...down].map(([x, y]) => [x, y, zc(zz)]);
+  F.g1 = new Flow({ pts: gp(Z.g1, GSILL), color: '#6366f1', n: 170, width: 2.6 });
+  F.g2 = new Flow({ pts: gp(Z.g2, GSILL), color: '#6366f1', n: 170, width: 2.6 });
+  F.s = new Flow({ pts: [[-6, 10.0], [1.6, 9.8], [4.4, 8.45], [9, 8.4], ...down].map(([x, y]) => [x, y, zc(Z.sand)]), color: '#c2410c', n: 80, width: 0.8 });
+  F.down = new Flow({ pts: [[30, 0, 0], [70, 0, 0], [100, 0, 0.5], [170, 0, 6], [250, 0, 22], [345, 0, 43]], color: '#0ea5e9', n: 380, width: 15, yOff: () => S.TW + 0.08 });
+}
+
+/* ================= รูปตัด (clipping) ================= */
+const cutPlane = new THREE.Plane(V3(0, 0, -1), 5);
+const capGroup = new THREE.Group(); capGroup.visible = false; scene.add(capGroup);
+const capMat = new THREE.MeshBasicMaterial({ map: hatchTex, side: THREE.DoubleSide });
+const CAPS = {};
+function shapeMesh(pts, mat) { const s = new THREE.Shape(pts.map(p => new THREE.Vector2(p[0], p[1]))); return new THREE.Mesh(new THREE.ShapeGeometry(s), mat); }
+function buildCaps() {
+  for (const [k, body] of [['weir', weirBody], ['gate', gateBody], ['sand', sandBody]]) { CAPS[k] = shapeMesh(body, capMat); capGroup.add(CAPS[k]); }
+  for (const b of [basinBody, apronBody, [[-29.3, 7.4], [-28.8, 7.4], [-28.8, 9.2], [-29.3, 9.2]], [[-20.3, 7.4], [-19.8, 7.4], [-19.8, 9.2], [-20.3, 9.2]], [[-11.3, 7.4], [-10.8, 7.4], [-10.8, 9.2], [-11.3, 9.2]]]) capGroup.add(shapeMesh(b, capMat));
+  const rockMat = new THREE.MeshBasicMaterial({ color: '#a39d91', side: THREE.DoubleSide });
+  capGroup.add(shapeMesh([[-44.3, 9.0], [-29.3, 9.0], [-29.3, 9.5], [-44.3, 9.5]], rockMat), shapeMesh([[29.26, 8.4], [89.26, 8.4], [89.26, 9.0], [29.26, 9.0]], rockMat));
+  const wm = new THREE.MeshBasicMaterial({ color: '#4f9fd8', transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false });
+  const unit = () => { const gq = new THREE.PlaneGeometry(1, 1); gq.translate(0.5, 0.5, 0); return new THREE.Mesh(gq, wm); };
+  CAPS.wUp = unit(); CAPS.wBasin = unit(); CAPS.wDown = unit(); for (const m of [CAPS.wUp, CAPS.wBasin, CAPS.wDown]) { m.renderOrder = 6; capGroup.add(m); }
+  capGroup.traverse(o => { o.raycast = () => {}; });
+}
+function cutKind(z) { if ((z > Z.g1[0] && z < Z.g1[1]) || (z > Z.g2[0] && z < Z.g2[1])) return 'gate'; if (z > Z.sand[0] && z < Z.sand[1]) return 'sand'; if (z > Z.weir[0] && z < Z.weir[1]) return 'weir'; return 'pier'; }
+function updateCaps() {
+  const z = cutPlane.constant, k = cutKind(z);
+  for (const n of ['weir', 'gate', 'sand']) CAPS[n].visible = n === k;
+  capGroup.position.z = z - 0.01;
+  const crestTop = k === 'gate' ? GSILL : k === 'sand' ? SSILL : CREST;
+  CAPS.wUp.position.set(-44.3, UPFLOOR, 0.005); CAPS.wUp.scale.set(44.3 + (k === 'weir' ? -0.6 : GX), Math.max(0.01, S.h - UPFLOOR), 1);
+  CAPS.wBasin.position.set(TOE, BASIN, 0.005); CAPS.wBasin.scale.set(29.26 - TOE, Math.max(0.01, S.TWb - BASIN), 1);
+  CAPS.wDown.position.set(29.26, 8.4, 0.005); CAPS.wDown.scale.set(60, Math.max(0.01, S.TW - 8.4), 1);
+  $('cutName').textContent = { weir: 'ผ่านสันฝาย (รูปตัด ก-ก)', gate: 'ผ่านช่องประตูระบาย (ข-ข)', sand: 'ผ่านช่องระบายทราย', pier: 'ผ่านตอม่อ/กำแพง' }[k];
+  void crestTop;
+}
+
+/* ================= UI ================= */
+const KPI = {
+  h: ['ระดับน้ำเหนือฝาย', () => S.h.toFixed(2), 'ม.รทก.', () => S.h > BANK_UP ? 'd' : S.h > 16.5 ? 'w' : ''],
+  TW: ['ระดับน้ำท้ายฝาย', () => S.TW.toFixed(2), 'ม.รทก.'],
+  Qin: ['น้ำไหลเข้า', () => fq(S.Qin), 'ลบ.ม./วิ'],
+  Qw: ['ล้นสันฝาย', () => fq(S.Qw), 'ลบ.ม./วิ'],
+  Hw: ['ความลึกน้ำบนสัน', () => Math.max(0, S.h - CREST).toFixed(2), 'ม.'],
+  Qg: ['ผ่านบานระบาย', () => fq(S.Qg1 + S.Qg2), 'ลบ.ม./วิ'],
+  Qs: ['ระบายทราย', () => fq(S.Qs), 'ลบ.ม./วิ'],
+  Qp: ['สูบน้ำ', () => fq(S.Qp), 'ลบ.ม./วิ', () => S.nP && S.h < 11 ? 'w' : ''],
+  Qpipe: ['ท่อส่งน้ำ', () => fq(S.Qpipe), 'ลบ.ม./วิ'],
+  use: ['สูบน้ำ', () => fq(S.Qp), 'ลบ.ม./วิ', () => S.nP && S.h < 11 ? 'w' : ''],
+  Qout: ['ไหลลงท้ายน้ำ', () => fq(S.Qout), 'ลบ.ม./วิ'],
+  fb: ['ห่างจากตลิ่ง', () => (BANK_UP - S.h).toFixed(2), 'ม.', () => S.h > BANK_UP ? 'd' : S.h > 16.5 ? 'w' : ''],
+  a1: ['บาน 1 ยก', () => S.a1.toFixed(2), 'ม.'], a2: ['บาน 2 ยก', () => S.a2.toFixed(2), 'ม.'], aS: ['บานทรายยก', () => S.aS.toFixed(2), 'ม.'],
+  jump: ['น้ำกระโดด', () => !S.jump ? '—' : S.jump.ok ? 'ในแอ่ง' : 'หลุดแอ่ง', '', () => !S.jump ? '' : S.jump.ok ? 'g' : 'd'],
+  F1: ['Froude ก่อนกระโดด', () => S.jump ? S.jump.F.toFixed(1) : '—', ''],
+  y2: ['ระดับน้ำที่ต้องการ', () => S.jump ? S.jump.req.toFixed(2) : '—', 'ม.รทก.'],
+};
+const fq = q => q < 0.005 ? '0' : q < 10 ? q.toFixed(2) : q < 100 ? q.toFixed(1) : q.toFixed(0);
+const kpiHTML = keys => keys.map(k => { const d = KPI[k], cls = d[3] ? d[3]() : ''; return `<div class="${cls}"><small>${d[0]}</small><b>${d[1]()}</b><i>${d[2]}</i></div>`; }).join('');
+
+function buildUI() {
+  const el = $('plist');
+  SYSTEM.groups.forEach(gp => {
+    el.insertAdjacentHTML('beforeend', `<div class="gh">${gp.th} · <i>${gp.en}</i></div>`);
+    gp.parts.forEach(p => { const b = document.createElement('button'); b.className = 'pr'; b.dataset.id = p.id;
+      b.innerHTML = `<span class="dot" style="background:${p.color}"></span><b>${p.th}</b><small>${p.en}</small>`;
+      b.onclick = () => selectPart(p.id); b.onmouseenter = () => highlight(p.id, true); b.onmouseleave = () => highlight(p.id, false); el.appendChild(b); });
+  });
+  $('legend').innerHTML = SYSTEM.legend.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('');
+  // labels
+  for (const p of PARTS) { const d = document.createElement('div'); d.className = 'lb'; d.style.setProperty('--c', p.color); d.textContent = p.th; d.onclick = () => selectPart(p.id); $('labels').appendChild(d); LBL.push({ id: p.id, el: d }); }
+  for (const e of ELEVS) { const d = document.createElement('div'); d.className = 'el' + (e.w ? ' w' : ''); $('labels').appendChild(d); e.el = d; }
+}
+const LBL = [];
+const LPOS = { pond: () => [-72, S.h + 0.6, 2], riprapUp: [-37, 10.6, -16], apron: [-16, 10.1, 12], weir: [1, 14.6, 10], gates: [GX, 18.6, -18.65], sand: [GX, 12.6, 27.2], bridge: [BX, 18.8, 16],
+  hoist: [HX, 26, -25], walls: [18, 15.6, -29], basin: [19, 9.4, 4], blocks: [14.5, 9.6, -9], endsill: [28.4, 9.8, 16], riprapDown: [62, 10.2, -8], pump: () => [-46, terrainH(-46, -64) + 7, -64],
+  pipe: () => [104, terrainH(104, 46) + 3, 46], river: () => [150, S.TW + 1.2, 5] };
+const ELEVS = [
+  { p: () => [-36, UPFLOOR, 0], t: () => '+9.50 พื้นเหนือน้ำ' }, { p: () => [0.2, CREST + 0.6, 0], t: () => '+13.50 สันฝาย' }, { p: () => [18, BASIN - 0.6, 0], t: () => '+8.00 พื้นแอ่ง' },
+  { p: () => [29, ENDSILL + 0.5, 0], t: () => '+9.00' }, { p: () => [BX, DECK + 0.5, 0], t: () => '+17.40 สะพาน' }, { p: () => [HX, HOIST + 0.4, 0], t: () => '+21.50 ลานเครื่องกว้าน' },
+  { p: () => [-18, S.h + 0.6, 0], t: () => `▽ ระดับน้ำ +${S.h.toFixed(2)}`, w: 1 }, { p: () => [50, S.TW + 0.6, 0], t: () => `▽ ท้ายน้ำ +${S.TW.toFixed(2)}`, w: 1 },
+];
+const tmpV = V3();
+function project(x, y, z) { tmpV.set(x, y, z).project(camera); return tmpV.z < 1 && Math.abs(tmpV.x) < 1.2 && Math.abs(tmpV.y) < 1.2 ? [(tmpV.x * .5 + .5) * innerWidth, (-tmpV.y * .5 + .5) * innerHeight] : null; }
+let showLabels = true, frame = 0;
+function placeLabels() {
+  for (const l of LBL) {
+    const vis = showLabels && mode !== 'cut' && (mode !== 'tour' || l.id === selId);
+    if (!vis) { l.el.style.display = 'none'; continue; }
+    const p = LPOS[l.id], pos = typeof p === 'function' ? p() : p; const s = project(...pos);
+    if (!s) { l.el.style.display = 'none'; continue; }
+    l.el.style.display = 'block'; l.el.style.left = s[0] + 'px'; l.el.style.top = s[1] + 'px'; l.el.classList.toggle('sel', l.id === selId);
+  }
+  for (const e of ELEVS) { if (mode !== 'cut') { e.el.style.display = 'none'; continue; } const [x, y] = e.p(); const s = project(x, y, cutPlane.constant); if (!s) { e.el.style.display = 'none'; continue; }
+    e.el.style.display = 'block'; e.el.style.left = s[0] + 'px'; e.el.style.top = s[1] + 'px'; e.el.textContent = e.t(); }
+}
+
+/* ---- selection / highlight ---- */
+let selId = null;
+function highlight(id, on) {
+  const g0 = partObj[id]; if (!g0) return;
+  g0.traverse(o => { if (!o.isMesh || o.userData.water || !o.material || !o.material.emissive) return;
+    if (on) { o.userData.base ??= o.material; o.userData.hi ??= (() => { const m = o.userData.base.clone(); m.emissive = new THREE.Color('#3b82f6'); m.emissiveIntensity = 0.45; return m; })(); o.material = o.userData.hi; }
+    else if (o.userData.base) o.material = o.userData.base; });
+}
+let flyAnim = null;
+function flyTo(v, dur = 1.3) { flyAnim = { t: 0, dur, p0: camera.position.clone(), t0: controls.target.clone(), p1: V3(...v.pos), t1: V3(...v.tgt) }; }
+const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+function camFor(p) {
+  if (p.cam) return p.cam;
+  const b = new THREE.Box3(); partObj[p.id].traverse(o => { if (o.isMesh && !o.userData.water) b.expandByObject(o); });
+  const c = b.getCenter(V3()), r = Math.max(8, b.getSize(V3()).length());
+  return { pos: [c.x - r * 0.55, c.y + r * 0.42, c.z + r * 0.75], tgt: [c.x, c.y, c.z] };
+}
+function selectPart(id, fly = true) {
+  if (selId && selId !== id) highlight(selId, false);
+  selId = id; const p = findPart(id); highlight(id, true);
+  document.querySelectorAll('.pr').forEach(b => b.classList.toggle('sel', b.dataset.id === id));
+  if (fly) flyTo(camFor(p));
+  if (mode !== 'tour') showInfo(p);
+}
+function showInfo(p) {
+  const el = $('info'); el.hidden = false;
+  el.innerHTML = `<button class="x" id="infoX">✕</button><div class="k">${p.group.th} · ${p.group.en}</div><h3>${p.th}</h3><div class="en">${p.en}</div>
+    <p>${p.desc}</p><table class="spec">${p.spec.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>
+    ${p.kpis.length ? `<div class="k" style="margin-top:8px">ค่าจากการจำลองขณะนี้</div><div class="live" id="infoLive">${kpiHTML(p.kpis)}</div>` : ''}
+    <div class="btnrow">${['weir', 'gates', 'sand', 'basin', 'endsill', 'apron', 'blocks'].includes(p.id) ? '<button class="btn pri" id="infoCut">✂ ดูในรูปตัด</button>' : ''}<button class="btn" id="infoNext">ส่วนถัดไป →</button></div>`;
+  $('infoX').onclick = () => { el.hidden = true; highlight(selId, false); selId = null; document.querySelectorAll('.pr').forEach(b => b.classList.remove('sel')); };
+  $('infoNext').onclick = () => { const i = PARTS.indexOf(p); selectPart(PARTS[(i + 1) % PARTS.length].id); };
+  const ic = $('infoCut'); if (ic) ic.onclick = () => { setMode('cut'); const z = p.id === 'gates' ? zc(Z.g2) : p.id === 'sand' ? zc(Z.sand) : 10.3; $('cutZ').value = z; cutPlane.constant = z; updateCaps(); flyCut(); };
+}
+// คลิกบนโมเดล
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let downXY = null;
+canvas.addEventListener('pointerdown', e => { downXY = [e.clientX, e.clientY]; });
+canvas.addEventListener('pointerup', e => {
+  if (!downXY || Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]) > 5) return;
+  ndc.set(e.clientX / innerWidth * 2 - 1, -e.clientY / innerHeight * 2 + 1); ray.setFromCamera(ndc, camera);
+  const hits = ray.intersectObjects(Object.values(partObj), true); let water = null;
+  for (const h of hits) { if (mode === 'cut' && h.point.z > cutPlane.constant + 0.01) continue; let o = h.object; while (o && !o.userData.part) o = o.parent; if (!o) continue;
+    if (h.object.userData.water) { water ??= h.object.userData.water; continue; } selectPart(o.userData.part, false); return; }
+  if (water) selectPart(water, false);
+});
+
+/* ---- modes ---- */
+let mode = 'explore';
+function setMode(m) {
+  mode = m; document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  $('cutbar').hidden = m !== 'cut'; capGroup.visible = m === 'cut'; renderer.clippingPlanes = m === 'cut' ? [cutPlane] : [];
+  $('tour').hidden = m !== 'tour'; if (m === 'tour') { $('info').hidden = true; tourGo(0); } else stopAuto();
+  if (m === 'cut') { updateCaps(); flyCut(); }
+}
+function flyCut() { const z = cutPlane.constant; flyTo({ pos: [6, 15, z + 62], tgt: [6, 11.5, z] }); }
+document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+$('cutZ').oninput = () => { cutPlane.constant = +$('cutZ').value; updateCaps(); };
+
+/* ---- ทัวร์ + แบบทดสอบ ---- */
+const TOUR = [{ intro: true, title: 'รู้จักฝายทดน้ำคลองบางสะพาน', text: 'ฝายวังยาว กม.20+127 สร้างขวางคลองบางสะพาน ต.พงศ์ประศาสน์ อ.บางสะพาน จ.ประจวบคีรีขันธ์ ทำหน้าที่ <b>ทดน้ำ</b> คือยกระดับน้ำในคลองให้สูงพอสำหรับใช้น้ำในฤดูแล้ง และ<b>ระบายน้ำหลาก</b>สูงสุด 670 ลบ.ม./วินาทีให้ผ่านไปอย่างปลอดภัย ทัวร์นี้จะพาไล่ดูทีละส่วนตามทางที่น้ำไหลจากต้นน้ำไปท้ายน้ำ', cam: HOME },
+  ...PARTS.map(p => ({ id: p.id, title: p.th, text: p.desc })), { quiz: true, title: 'ทดสอบความเข้าใจ' }];
+const QUIZ = [
+  { q: 'ถ้าเปิดบานระบายทั้ง 2 บานเต็มที่ในหน้าแล้ง จะเกิดอะไรขึ้น?', a: ['ระดับน้ำเหนือฝายลดต่ำกว่าสันฝาย เก็บน้ำไว้ใช้ไม่ได้', 'ระดับน้ำเหนือฝายสูงขึ้น', 'ไม่มีผลใด ๆ'], c: 0 },
+  { q: 'หน้าที่หลักของแอ่งน้ำนิ่งคืออะไร?', a: ['เก็บน้ำไว้ใช้ในหน้าแล้ง', 'สลายพลังงานน้ำด้วยการเกิดน้ำกระโดด', 'ดักขยะไม่ให้ไหลลงคลอง'], c: 1 },
+  { q: 'ปริมาณน้ำสูงสุดที่ออกแบบให้ผ่านฝายนี้คือเท่าไร?', a: ['39.4 ลบ.ม./วินาที', '351 ลบ.ม./วินาที', '670 ลบ.ม./วินาที'], c: 2 },
+];
+let tIdx = 0, tAuto = null;
+function tourGo(i) {
+  tIdx = clamp(i, 0, TOUR.length - 1); const s = TOUR[tIdx], el = $('tour');
+  const head = `<div class="k">${s.intro ? 'เริ่มต้น' : s.quiz ? 'ท้ายทัวร์' : `ขั้นที่ ${tIdx}/${TOUR.length - 2} · ${findPart(s.id).group.th}`}</div><h3>${s.title}</h3>`;
+  let body = '';
+  if (s.quiz) body = QUIZ.map((q, qi) => `<div class="quiz"><p><b>${qi + 1}. ${q.q}</b></p>${q.a.map((a, ai) => `<label data-q="${qi}" data-a="${ai}">${a}</label>`).join('')}</div>`).join('') + '<p style="color:#64748b">ลองต่อ: กด “🌧 น้ำหลากตามแบบ 670” ที่แผงด้านล่าง แล้วดูว่าระดับน้ำขึ้นสูงสุดเท่าไร และน้ำกระโดดยังอยู่ในแอ่งหรือไม่</p>';
+  else body = `<p>${s.text}</p>` + (s.id ? `<div class="live">${kpiHTML(findPart(s.id).kpis.slice(0, 4))}</div>` : '');
+  el.innerHTML = `<button class="x" id="tourX">✕</button>${head}${body}<div class="prog"><i style="width:${tIdx / (TOUR.length - 1) * 100}%"></i></div>
+    <div class="btnrow"><button class="btn" id="tPrev" ${tIdx ? '' : 'disabled'}>← ย้อนกลับ</button><button class="btn ${tAuto ? 'on' : ''}" id="tPlay">${tAuto ? '❚❚ หยุด' : '▶ เล่นอัตโนมัติ'}</button><button class="btn pri" id="tNext">${tIdx < TOUR.length - 1 ? 'ถัดไป →' : 'จบทัวร์'}</button></div>`;
+  $('tourX').onclick = () => setMode('explore'); $('tPrev').onclick = () => tourGo(tIdx - 1);
+  $('tNext').onclick = () => tIdx < TOUR.length - 1 ? tourGo(tIdx + 1) : setMode('explore');
+  $('tPlay').onclick = () => { if (tAuto) stopAuto(); else { tAuto = setInterval(() => { if (tIdx >= TOUR.length - 2) stopAuto(); tourGo(tIdx + 1); }, 7500); } tourGo(tIdx); };
+  el.querySelectorAll('.quiz label').forEach(l => l.onclick = () => { const q = QUIZ[+l.dataset.q]; l.classList.add(+l.dataset.a === q.c ? 'ok' : 'no'); if (+l.dataset.a !== q.c) l.parentElement.querySelectorAll('label')[q.c].classList.add('ok'); });
+  if (s.id) { if (selId && selId !== s.id) highlight(selId, false); selId = s.id; highlight(s.id, true); flyTo(camFor(findPart(s.id)), 1.6); }
+  else { if (selId) highlight(selId, false); selId = null; flyTo(s.cam || HOME, 1.6); }
+}
+function stopAuto() { if (tAuto) { clearInterval(tAuto); tAuto = null; } }
+
+/* ---- ปุ่มเครื่องมือ ---- */
+const tg = (id, fn) => { const b = $(id); b.onclick = () => { b.classList.toggle('on'); fn(b.classList.contains('on')); }; };
+tg('tLabels', v => showLabels = v); tg('tFlow', v => showFlows = v);
+tg('tXray', v => { for (const m of CONCRETE_MATS) { m.transparent = v; m.opacity = v ? 0.28 : 1; m.depthWrite = !v; m.needsUpdate = true; } });
+tg('tRot', v => controls.autoRotate = v);
+$('tReset').onclick = () => flyTo(HOME);
+$('tFull').onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
+$('tAbout').onclick = () => $('about').hidden = false; $('aboutX').onclick = () => $('about').hidden = true;
+$('about').onclick = e => { if (e.target.id === 'about') $('about').hidden = true; };
+$('tParts').onclick = () => $('parts').classList.toggle('open');
+if (window.top !== window) $('tShot').style.display = 'none';
+$('tShot').onclick = () => {
+  const w = 3840, h = Math.round(3840 * innerHeight / innerWidth);
+  renderer.setPixelRatio(1); renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.render(scene, camera);
+  canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'ฝายทดน้ำคลองบางสะพาน-4K.png'; a.click(); });
+  resize();
+};
+$('fold').onclick = () => { $('sim').classList.toggle('folded'); $('fold').textContent = $('sim').classList.contains('folded') ? '▴' : '▾'; };
+$('spark').onclick = () => { $('chartBig').hidden = false; drawChart($('sparkBig'), true); };
+$('chartX').onclick = () => $('chartBig').hidden = true;
+$('chartBig').onclick = e => { if (e.target.id === 'chartBig') $('chartBig').hidden = true; };
+$('log').onclick = () => { const f = $('logFull'); f.hidden = !f.hidden; f.innerHTML = LOG.join('<br>'); };
+
+/* ---- แผงควบคุม ---- */
+function setScenOn(k) { document.querySelectorAll('#scen button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); }
+$('qin').oninput = () => { S.Qin = +$('qin').value; S.hyd = null; setScenOn(null); };
+$('qin').onchange = () => log(`ปรับน้ำไหลเข้าเป็น ${fq(S.Qin)} ลบ.ม./วินาที`);
+for (const [id, key, name] of [['a1', 'c1', 'บาน 1'], ['a2', 'c2', 'บาน 2'], ['aS', 'cS', 'บานระบายทราย']]) {
+  $(id).oninput = () => { S[key] = +$(id).value; if (S.auto && id !== 'aS') { S.auto = false; $('auto').checked = false; } };
+  $(id).onchange = () => log(`สั่งยก${name} ${S[key].toFixed(2)} ม. (เครื่องกว้านยก 0.30 ม./นาที)`);
+}
+$('auto').onchange = () => { S.auto = $('auto').checked; log(S.auto ? 'เปิดโหมดควบคุมบานอัตโนมัติ (รักษาระดับไม่เกิน +14.50)' : 'ปิดโหมดอัตโนมัติ'); };
+$('emerg').onclick = () => { S.c1 = S.c2 = 7; S.cS = 3.5; S.auto = false; $('auto').checked = false; log('⚠ สั่งเปิดบานระบายและบานระบายทรายเต็มที่'); };
+$('closeAll').onclick = () => { S.c1 = S.c2 = S.cS = 0; S.auto = false; $('auto').checked = false; log('สั่งปิดบานทั้งหมด'); };
+document.querySelectorAll('.spd button').forEach(b => b.onclick = () => { S.speed = +b.dataset.s; document.querySelectorAll('.spd button').forEach(x => x.classList.toggle('on', x === b)); });
+document.querySelectorAll('#scen button').forEach(b => b.onclick = () => {
+  const k = b.dataset.k; setScenOn(k);
+  if (k === 'flush') { S.cS = 1.75; log('เปิดบานระบายทรายเพื่อล้างตะกอนหน้าฝาย'); setScenOn(null); return; }
+  const sc = SCEN[k];
+  if (sc.peak) { S.hyd = { t0: S.t, peak: sc.peak, base: Math.max(S.Qin, 8), label: sc.label }; S.peakH = S.h; log(`เริ่ม${sc.label}: น้ำสูงสุด ${sc.peak} ลบ.ม./วินาที ในอีก 5 ชม. (กด 20× หรือ 60× เพื่อเร่งเวลา)`); }
+  else { S.hyd = null; S.Qin = sc.Qin; log(`สถานการณ์${sc.label}: น้ำไหลเข้า ${fq(sc.Qin)} ลบ.ม./วินาที`); }
+});
+function syncUI() {
+  $('vQin').textContent = fq(S.Qin); if (document.activeElement !== $('qin')) $('qin').value = Math.min(900, S.Qin);
+  const gl = (v, c, ok) => { $('v' + v).textContent = (v === 'AS' ? S.aS : S['a' + v.slice(1)]).toFixed(2) + ' ม.'; };
+  gl('A1'); gl('A2'); gl('AS');
+  $('eA1').textContent = Math.abs(S.c1 - S.a1) > 0.01 ? `→ สั่ง ${S.c1.toFixed(2)}` : ''; $('eA2').textContent = Math.abs(S.c2 - S.a2) > 0.01 ? `→ สั่ง ${S.c2.toFixed(2)}` : ''; $('eAS').textContent = Math.abs(S.cS - S.aS) > 0.01 ? `→ สั่ง ${S.cS.toFixed(2)}` : '';
+  for (const [id, key] of [['a1', 'c1'], ['a2', 'c2'], ['aS', 'cS']]) if (document.activeElement !== $(id)) $(id).value = S[key];
+  $('kpis').innerHTML = kpiHTML(['h', 'TW', 'Qin', 'Qw', 'Qg', 'Qs', 'Qout', 'fb', 'jump', 'F1']);
+  const pct = S.Qout / QDES; $('gPct').textContent = Math.round(pct * 100) + '%'; $('gArc').style.strokeDasharray = `${Math.min(pct, 1.3) / 1.3 * 264} 264`;
+  $('gArc').style.stroke = pct > 1 ? '#dc2626' : pct > 0.6 ? '#f59e0b' : '#0ea5e9';
+  $('clock').textContent = clockStr(S.t);
+  const il = $('infoLive'); if (il && selId) il.innerHTML = kpiHTML(findPart(selId).kpis);
+  drawSpark();
+}
+function drawSpark() { drawChart($('spark'), false); if (!$('chartBig').hidden) drawChart($('sparkBig'), true); }
+function drawChart(c, big) {
+  const x = c.getContext('2d'), w = c.width, h = c.height, f = big ? 2.2 : 1.6; x.clearRect(0, 0, w, h);
+  const L = big ? 110 : 64, Rm = big ? 120 : 14, T = big ? 70 : 40, B = big ? 70 : 40, pw = w - L - Rm, ph = h - T - B;
+  const H = S.hist.concat([{ t: S.t, h: S.h, tw: S.TW, q: S.Qin }]);
+  let y0 = 8, y1 = 18; for (const p of H) { y0 = Math.min(y0, Math.floor(p.tw - 0.5)); y1 = Math.max(y1, Math.ceil(p.h + 0.5)); }
+  const Y = v => T + ph - (v - y0) / (y1 - y0) * ph;
+  x.font = `${Math.round(11 * f)}px IBM Plex Sans Thai`; x.textBaseline = 'middle';
+  // เส้นกริดระดับ (ทุก 1 ม.)
+  for (let v = y0; v <= y1; v++) { x.strokeStyle = '#e2e8f0'; x.lineWidth = 1; x.beginPath(); x.moveTo(L, Y(v)); x.lineTo(L + pw, Y(v)); x.stroke(); x.fillStyle = '#64748b'; x.textAlign = 'right'; x.fillText(`+${v}`, L - 8, Y(v)); }
+  x.textAlign = 'left';
+  for (const [v, col, t] of [[CREST, '#06b6d4', 'สันฝาย +13.50'], [BANK_UP, '#dc2626', 'ตลิ่ง +17.00']]) { x.strokeStyle = col; x.setLineDash([8, 6]); x.lineWidth = 2; x.beginPath(); x.moveTo(L, Y(v)); x.lineTo(L + pw, Y(v)); x.stroke(); x.fillStyle = col; x.fillText(t, L + pw - x.measureText(t).width - 6, Y(v) - 11 * f * 0.9); }
+  x.setLineDash([]);
+  if (H.length < 2) return;
+  const t0 = H[0].t, t1 = Math.max(H.at(-1).t, t0 + 1), X = t => L + (t - t0) / (t1 - t0) * pw;
+  // แกนเวลา
+  const step = (t1 - t0) > 12 * 3600 ? 3 * 3600 : (t1 - t0) > 4 * 3600 ? 3600 : 1800;
+  x.fillStyle = '#94a3b8'; x.textAlign = 'center';
+  for (let t = Math.ceil(t0 / step) * step; t <= t1; t += step) { const hh = Math.floor(t / 3600) % 24, mm = Math.floor(t / 60) % 60; x.fillText(`${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`, X(t), T + ph + 14 * f * 0.9); x.strokeStyle = '#eef2f7'; x.beginPath(); x.moveTo(X(t), T); x.lineTo(X(t), T + ph); x.stroke(); }
+  // น้ำไหลเข้า (แกนขวา) เฉพาะกราฟใหญ่
+  if (big) { const qm = Math.max(50, ...H.map(p => p.q || 0)) * 1.1, Q = q => T + ph - q / qm * ph;
+    x.fillStyle = 'rgba(245,158,11,.12)'; x.beginPath(); x.moveTo(X(H[0].t), T + ph); H.forEach(p => x.lineTo(X(p.t), Q(p.q || 0))); x.lineTo(X(H.at(-1).t), T + ph); x.fill();
+    x.strokeStyle = '#f59e0b'; x.lineWidth = 2.5; x.beginPath(); H.forEach((p, i) => i ? x.lineTo(X(p.t), Q(p.q || 0)) : x.moveTo(X(p.t), Q(p.q || 0))); x.stroke();
+    x.fillStyle = '#b45309'; x.textAlign = 'left'; for (let k = 0; k <= 4; k++) { const q = qm * k / 4; x.fillText(q.toFixed(0), L + pw + 10, Q(q)); }
+    x.save(); x.translate(w - 22, T + ph / 2); x.rotate(-Math.PI / 2); x.textAlign = 'center'; x.fillText('น้ำไหลเข้า (ลบ.ม./วินาที)', 0, 0); x.restore();
+    x.save(); x.translate(24, T + ph / 2); x.rotate(-Math.PI / 2); x.textAlign = 'center'; x.fillStyle = '#475569'; x.fillText('ระดับน้ำ (ม.รทก.)', 0, 0); x.restore(); }
+  for (const [k, col] of [['h', '#2563eb'], ['tw', '#0d9488']]) { x.strokeStyle = col; x.lineWidth = big ? 4 : 3.5; x.lineJoin = 'round'; x.beginPath(); H.forEach((p, i) => i ? x.lineTo(X(p.t), Y(p[k])) : x.moveTo(X(p.t), Y(p[k]))); x.stroke(); }
+  // จุดค่าปัจจุบัน + ป้าย
+  for (const [v, col] of [[S.h, '#2563eb'], [S.TW, '#0d9488']]) { x.fillStyle = col; x.beginPath(); x.arc(X(t1), Y(v), 5 * f / 1.6, 0, 7); x.fill(); }
+  x.textAlign = 'left'; x.font = `600 ${Math.round(12 * f)}px IBM Plex Sans Thai`;
+  x.fillStyle = '#2563eb'; x.fillText(`● เหนือฝาย +${S.h.toFixed(2)}`, L, T - 16 * f * 0.7);
+  x.fillStyle = '#0d9488'; x.fillText(`● ท้ายฝาย +${S.TW.toFixed(2)}`, L + x.measureText(`● เหนือฝาย +${S.h.toFixed(2)}`).width + 20, T - 16 * f * 0.7);
+  if (big) { x.fillStyle = '#b45309'; x.fillText(`▬ น้ำไหลเข้า ${fq(S.Qin)} ลบ.ม./วินาที`, L + pw * 0.55, T - 16 * f * 0.7); }
+  x.font = `${Math.round(10 * f)}px IBM Plex Sans Thai`; x.fillStyle = '#94a3b8'; x.textAlign = 'right'; x.fillText(`ย้อนหลัง ${((t1 - t0) / 3600).toFixed(1)} ชม.${big ? '' : ' · คลิกเพื่อขยาย'}`, L + pw, h - 12);
+}
+
+/* ================= อัปเดตฉากตามการจำลอง ================= */
+function updateScene(dt, time) {
+  W.pond.position.y = W.pond2.position.y = W.pond3.position.y = S.h; W.basin.position.y = S.TWb; W.down.position.y = S.TW;
+  waterTex.offset.x = (waterTex.offset.x + dt * 0.004 * (1 + S.Qout / 100)) % 1;
+  const anim = (m, q, ref) => { m.visible = q > 0.01; m.material.opacity = clamp(0.35 + q / ref, 0.35, 0.92); m.material.map.offset.y = (m.material.map.offset.y - dt * (0.6 + Math.sqrt(q) * 0.25)) % 1; };
+  const Hw = Math.max(0, S.h - CREST);
+  updateJet(W.jW, S.Qw, LW, 0.68 * Hw, 0.0, S.h, true);
+  const gj = (m, q, a, sill, B) => { const H = Math.max(0, S.h - sill), free = a >= H * 0.95; updateJet(m, q, B, free ? 0.67 * H : Math.min(0.61 * a, H), GX, S.h, free); };
+  gj(W.jG1, S.Qg1, S.a1, GSILL, GW); gj(W.jG2, S.Qg2, S.a2, GSILL, GW); gj(W.jS, S.Qs, S.aS, SSILL, SW);
+  anim(W.jW, S.Qw, 60); anim(W.jG1, S.Qg1, 30); anim(W.jG2, S.Qg2, 30); anim(W.jS, S.Qs, 6);
+  // บาน
+  for (const [G, a] of [[GATES.g1, S.a1], [GATES.g2, S.a2], [GATES.s, S.aS]]) {
+    const bot = G.sill + a, top = bot + G.h; G.g.position.y = bot + G.h / 2;
+    const L = HOIST - top; G.stem.scale.y = Math.max(0.01, L); G.stem.position.y = top + L / 2; G.stem.visible = L > 0.05;
+  }
+  // ฟองน้ำกระโดด
+  const qb = S.Qw + S.Qg1 + S.Qg2 + S.Qs, j = S.jump;
+  const n = qb > 0.2 ? Math.min(520, Math.round(40 + Math.sqrt(qb) * 22)) : 0; W.foam.count = n;
+  if (n) {
+    const Lj = j ? clamp(6 * (j.y2 - j.y1), 3, 26) : 4, shift = j && !j.ok ? clamp((j.req - S.TWb) * 9, 6, 40) : 0, m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), sc = V3();
+    const zs = [[Z.weir, S.Qw], [Z.g1, S.Qg1], [Z.g2, S.Qg2], [Z.sand, S.Qs]].filter(z => z[1] > 0.05);
+    for (let i = 0; i < n; i++) { const r = W.foamSeed[i], zz = zs[Math.floor(r[3] * zs.length)] || [Z.weir];
+      const x = TOE + 0.3 + shift + r[0] * Lj, z = lerp(zz[0][0], zz[0][1], r[1]), surf = shift > 0 && x > 29 ? S.TW : S.TWb;
+      const bob = Math.sin(time * 6 + r[2] * 20) * 0.18; const s = 0.5 + r[2] * 0.9 * (1 - (x - TOE - shift) / (Lj + 1));
+      m4.compose(V3(x, surf + 0.05 + bob, z), q4, sc.set(s, s * 0.6, s)); W.foam.setMatrixAt(i, m4); }
+    W.foam.instanceMatrix.needsUpdate = true;
+  }
+  // อนุภาค
+  F.up.update(dt, S.Qin, 300); F.weir.update(dt, S.Qw, 400); F.g1.update(dt, S.Qg1, 120); F.g2.update(dt, S.Qg2, 120); F.s.update(dt, S.Qs, 15);
+  F.down.update(dt, S.Qout, 400);
+  if (mode === 'cut' && frame % 6 === 0) updateCaps();
+}
+
+/* ================= loop ================= */
+function resize() { renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize);
+const clock = new THREE.Clock();
+function loop() {
+  const dt = Math.min(clock.getDelta(), 0.1), time = clock.elapsedTime;
+  if (S.speed > 0) step(dt);
+  if (flyAnim) { flyAnim.t = Math.min(1, flyAnim.t + dt / flyAnim.dur); const k = ease(flyAnim.t); camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, k); controls.target.lerpVectors(flyAnim.t0, flyAnim.t1, k); if (flyAnim.t >= 1) flyAnim = null; }
+  smoothZoom(dt); controls.update(); updateScene(dt, time);
+  renderer.render(scene, camera); placeLabels();
+  if (++frame % 8 === 0) syncUI();
+  document.querySelector('#compass .n').style.transform = `rotate(${controls.getAzimuthalAngle()}rad)`;
+}
+
+/* ================= โหลดเป็นขั้น ================= */
+async function init() {
+  resize();
+  const steps = [['ภูมิประเทศและคลอง', buildTerrain], ['ตัวฝายและแอ่งน้ำนิ่ง', buildWeir], ['สะพานและราว', buildBridge], ['บานระบายและห้องเครื่องกว้าน', buildGates],
+    ['ถนน', buildUse], ['สวนมะพร้าว', buildTrees], ['ผิวน้ำ', buildWater], ['เส้นทางไหล', buildFlows], ['รูปตัด', buildCaps], ['แผงควบคุม', buildUI]];
+  for (const [i, [name, fn]] of steps.entries()) {
+    $('ldTh').textContent = `กำลังสร้าง${name}…`; fn();
+    const p = Math.round((i + 1) / steps.length * 100); $('ldBar').style.width = p + '%'; $('ldPct').textContent = p + '%';
+    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+  }
+  for (let i = 0; i < 400; i++) step(0.5 / 60 * 0 + 0.05); // ให้ระบบเข้าสู่สมดุล
+  S.hist = []; LOG.length = 0;
+  log('เริ่มจำลอง: น้ำไหลเข้า 8 ลบ.ม./วินาที บานปิด น้ำล้นสันฝายตามธรรมชาติ');
+  $('loader').hidden = true; syncUI();
+  renderer.setAnimationLoop(loop);
+}
+init().catch(e => { $('ldTh').textContent = 'เกิดข้อผิดพลาด: ' + e.message; console.error(e); });
+</script>
+</body>
+</html>
