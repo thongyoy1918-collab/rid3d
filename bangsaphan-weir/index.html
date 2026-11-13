@@ -692,7 +692,7 @@ const S0 = RSEG[6].s0 + 50;
 function riverInfo(x, z) { let best = 1e9, bs = 0; for (const s of RSEG) { const t = clamp(((x - s.ax) * s.dx + (z - s.az) * s.dz) / (s.L * s.L), 0, 1); const d = Math.hypot(x - s.ax - s.dx * t, z - s.az - s.dz * t); if (d < best) { best = d; bs = s.s0 + t * s.L; } } return [best, bs - S0]; }
 const bump = (x, z, cx, cz, r, a) => a * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (r * r));
 function groundH(x, z) {
-  return 16.3 - 1.2 * smooth(-20, 140, x) + 0.55 * Math.sin(x * 0.021 + 1) * Math.cos(z * 0.017) + 0.35 * Math.sin(x * 0.053 + z * 0.041) + 0.22 * Math.sin(z * 0.07 - x * 0.03)
+  return 18.3 - 1.2 * smooth(-20, 140, x) + 0.55 * Math.sin(x * 0.021 + 1) * Math.cos(z * 0.017) + 0.35 * Math.sin(x * 0.053 + z * 0.041) + 0.22 * Math.sin(z * 0.07 - x * 0.03)
     + bump(x, z, 250, -220, 70, 2.6) + bump(x, z, -260, 160, 80, 1.8) + bump(x, z, 190, 190, 55, -0.8);
 }
 function natural(x, z) { const [d, s] = riverInfo(x, z); const bed = s < 0 ? 9.7 + (-s) * 0.0012 : 8.7 - s * 0.0008; const w = 22 + 2 * Math.sin(s * 0.02); const G = groundH(x, z); return [d < w ? bed : Math.min(G, bed + (d - w) * 0.5), d, w]; }
