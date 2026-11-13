@@ -155,6 +155,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 #musicBox .now{font-size:11px;color:#64748b;margin-top:6px;min-height:15px}
 #tMusic.on{background:#dbeafe;color:#1d4ed8}
 #tSound.on{background:#dcfce7;color:#15803d}
+#pip{position:fixed;left:50%;transform:translateX(-50%);bottom:240px;width:min(520px,92vw);padding:8px 10px 10px;z-index:20;animation:pipIn .35s ease-out}
+@keyframes pipIn{from{opacity:0;transform:translateX(-50%) scale(.85)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+#pip .ph{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px}
+#pip .ph b{margin-right:auto}
+#pip .ph button{border:0;background:#f1f5f9;border-radius:7px;width:26px;height:24px}
+#pipTag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:#dbeafe;color:#1d4ed8}
+.dotlive{width:9px;height:9px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 0 #ef444480;animation:live 1.2s infinite}
+@keyframes live{70%{box-shadow:0 0 0 8px #ef444400}100%{box-shadow:0 0 0 0 #ef444400}}
+#pipView{height:270px;border-radius:9px;outline:2px solid #1f2937;outline-offset:-2px;background:transparent}
+#pipInfo{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}
+#pipInfo div{background:#f3f6fa;border-radius:7px;padding:4px 8px}#pipInfo small{display:block;color:#64748b;font-size:10px}#pipInfo b{font-size:15px;font-variant-numeric:tabular-nums}
+#pip .pbar{height:5px;background:#e5e7eb;border-radius:3px;margin-top:7px;overflow:hidden}#pip .pbar i{display:block;height:100%;width:0;background:#2563eb;transition:width .2s}
+@media (max-width:760px){#pipView{height:200px}}
 [hidden]{display:none!important}
 @media (max-width:1100px){#simBody{grid-template-columns:96px 1fr 1fr}.kpis{grid-column:1/-1}#chartCard{width:330px}#parts,#info{max-height:calc(100vh - 420px)}#hint,#compass{display:none}}
 @media (max-width:760px){#chartCard{left:10px;right:10px;width:auto}#chartCard #spark,#chartCard .ch:first-child{display:none}#parts{display:none}#parts.open{display:block;max-height:50vh;z-index:5}#brand small{display:none}#modes{position:fixed;top:62px;left:50%;transform:translateX(-50%)}#tools button.hm{display:none}#info,#tour{left:10px;right:10px;width:auto;top:112px;max-height:35vh}#simBody{grid-template-columns:1fr 1fr}.gauge{display:none}.kpis{grid-template-columns:repeat(3,1fr)}#sim{max-height:48vh;overflow:auto}}
@@ -231,6 +244,12 @@ button{font:inherit;color:inherit;cursor:pointer}
     </div>
 </aside>
 <div id="logFull" class="card" hidden></div>
+<div id="pip" class="card" hidden>
+  <div class="ph"><span class="dotlive"></span><b id="pipT">มุมใกล้ประตูระบาย</b><span id="pipTag"></span><button id="pipX" title="ปิด">✕</button></div>
+  <div id="pipView"></div>
+  <div id="pipInfo"></div>
+  <div class="pbar"><i id="pipBar"></i></div>
+</div>
 <div id="musicBox" class="card" hidden>
   <button class="x" id="musicX">✕</button>
   <h4>♫ เพลงประกอบ</h4>
@@ -1179,21 +1198,56 @@ const firstTouch = e => { removeEventListener('pointerdown', firstTouch, true); 
   if (musPref === 'calm') { const r = document.querySelector('input[name=mus][value=calm]'); r.checked = true; setMusic('calm'); } };
 addEventListener('pointerdown', firstTouch, true); addEventListener('keydown', firstTouch, true);
 
+/* ---- ป๊อปอัพมุมกล้องซูมที่บานขณะเปิด/ปิด ---- */
+const pipCam = new THREE.PerspectiveCamera(34, 1.9, 0.3, 900);
+const PIP = { on: false, which: 'g1', idle: 0, t: 0 };
+const PIP_GATES = { g1: { name: 'บานระบาย 1 (ฝั่งเหนือ)', z: zc(Z.g1), a: 'a1', c: 'c1', q: 'Qg1', H: GH, max: 7 }, g2: { name: 'บานระบาย 2', z: zc(Z.g2), a: 'a2', c: 'c2', q: 'Qg2', H: GH, max: 7 },
+  s: { name: 'บานระบายทราย', z: zc(Z.sand), a: 'aS', c: 'cS', q: 'Qs', H: SH, max: 3.5 }, all: { name: 'บานระบายทั้งหมด', z: -15, all: true } };
+function openPip(which) { PIP.which = which; PIP.idle = 0; if (!PIP.on) { PIP.on = true; PIP.t = 0; $('pip').hidden = false; } }
+$('pipX').onclick = () => { PIP.on = false; $('pip').hidden = true; };
+function pipUpdate(dt) {
+  if (!PIP.on) return;
+  PIP.t += dt; const G = PIP_GATES[PIP.which];
+  const moving = G.all ? ['1', '2', 'S'].some(k => Math.abs(S['c' + k] - S['a' + k]) > 0.01) : Math.abs(S[G.c] - S[G.a]) > 0.01;
+  PIP.idle = moving ? 0 : PIP.idle + dt;
+  if (PIP.idle > 4 && S.speed) { PIP.on = false; $('pip').hidden = true; return; }
+  // กล้องมองจากท้ายน้ำเฉียงขึ้นไปที่บาน หมุนช้า ๆ
+  const sw = Math.sin(PIP.t * 0.35) * 0.18, z = G.z, dist = G.all ? 34 : 15;
+  pipCam.position.set(GX + dist * Math.cos(sw) + 2, (G.all ? 19 : 14.2), z + dist * 0.55 + Math.sin(sw) * 5);
+  pipCam.lookAt(GX + 1.5, G.all ? 11.5 : 11.2, z);
+  const a = G.all ? Math.max(S.a1, S.a2, S.aS) : S[G.a], c = G.all ? Math.max(S.c1, S.c2, S.cS) : S[G.c];
+  const q = G.all ? S.Qg1 + S.Qg2 + S.Qs : S[G.q];
+  $('pipT').textContent = G.all ? 'มุมใกล้ประตูระบาย — สั่งการทุกบาน' : 'มุมใกล้ ' + G.name;
+  const tag = $('pipTag'); tag.textContent = moving ? (c > a ? '▲ กำลังยกบาน' : '▼ กำลังลดบาน') : '■ บานหยุดแล้ว'; tag.style.background = moving ? '#dbeafe' : '#dcfce7'; tag.style.color = moving ? '#1d4ed8' : '#15803d';
+  $('pipInfo').innerHTML = `<div><small>ยกบานจริง</small><b>${a.toFixed(2)}</b> ม.</div><div><small>สั่งยก</small><b>${c.toFixed(2)}</b> ม.</div><div><small>น้ำผ่านบาน</small><b>${fq(q)}</b> ลบ.ม./วิ</div>`;
+  $('pipBar').style.width = (c > 0 || a > 0 ? Math.min(100, a / Math.max(c, a, 0.01) * 100) : 100) + '%';
+}
+function pipRender() {
+  if (!PIP.on) return;
+  const r = $('pipView').getBoundingClientRect(); if (r.width < 10) return;
+  pipCam.aspect = r.width / r.height; pipCam.updateProjectionMatrix();
+  const y = innerHeight - r.bottom;
+  renderer.setScissorTest(true); renderer.setScissor(r.left, y, r.width, r.height); renderer.setViewport(r.left, y, r.width, r.height);
+  const cp = renderer.clippingPlanes; renderer.clippingPlanes = []; flowGroup.visible = true;
+  renderer.render(scene, pipCam); renderer.clippingPlanes = cp;
+  renderer.setScissorTest(false); renderer.setViewport(0, 0, innerWidth, innerHeight);
+}
+
 /* ---- แผงควบคุม ---- */
 function setScenOn(k) { document.querySelectorAll('#scen button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); }
 $('qin').oninput = () => { S.Qin = +$('qin').value; S.hyd = null; setScenOn(null); };
 $('qin').onchange = () => log(`ปรับน้ำไหลเข้าเป็น ${fq(S.Qin)} ลบ.ม./วินาที`);
 for (const [id, key, name] of [['a1', 'c1', 'บาน 1'], ['a2', 'c2', 'บาน 2'], ['aS', 'cS', 'บานระบายทราย']]) {
-  $(id).oninput = () => { S[key] = +$(id).value; if (S.auto && id !== 'aS') { S.auto = false; $('auto').checked = false; } };
+  $(id).oninput = () => { S[key] = +$(id).value; if (S.auto && id !== 'aS') { S.auto = false; $('auto').checked = false; } openPip(id === 'a1' ? 'g1' : id === 'a2' ? 'g2' : 's'); };
   $(id).onchange = () => log(`สั่งยก${name} ${S[key].toFixed(2)} ม. (เครื่องกว้านยก 0.30 ม./นาที)`);
 }
 $('auto').onchange = () => { S.auto = $('auto').checked; log(S.auto ? 'เปิดโหมดควบคุมบานอัตโนมัติ (รักษาระดับไม่เกิน +14.50)' : 'ปิดโหมดอัตโนมัติ'); };
-$('emerg').onclick = () => { S.c1 = S.c2 = 7; S.cS = 3.5; S.auto = false; $('auto').checked = false; log('⚠ สั่งเปิดบานระบายและบานระบายทรายเต็มที่'); };
-$('closeAll').onclick = () => { S.c1 = S.c2 = S.cS = 0; S.auto = false; $('auto').checked = false; log('สั่งปิดบานทั้งหมด'); };
+$('emerg').onclick = () => { openPip('all'); S.c1 = S.c2 = 7; S.cS = 3.5; S.auto = false; $('auto').checked = false; log('⚠ สั่งเปิดบานระบายและบานระบายทรายเต็มที่'); };
+$('closeAll').onclick = () => { openPip('all'); S.c1 = S.c2 = S.cS = 0; S.auto = false; $('auto').checked = false; log('สั่งปิดบานทั้งหมด'); };
 document.querySelectorAll('.spd button').forEach(b => b.onclick = () => { S.speed = +b.dataset.s; document.querySelectorAll('.spd button').forEach(x => x.classList.toggle('on', x === b)); });
 document.querySelectorAll('#scen button').forEach(b => b.onclick = () => {
   const k = b.dataset.k; setScenOn(k);
-  if (k === 'flush') { S.cS = 1.75; log('เปิดบานระบายทรายเพื่อล้างตะกอนหน้าฝาย'); setScenOn(null); return; }
+  if (k === 'flush') { openPip('s'); S.cS = 1.75; log('เปิดบานระบายทรายเพื่อล้างตะกอนหน้าฝาย'); setScenOn(null); return; }
   const sc = SCEN[k];
   if (sc.peak) { S.hyd = { t0: S.t, peak: sc.peak, base: Math.max(S.Qin, 8), label: sc.label }; S.peakH = S.h; log(`เริ่ม${sc.label}: น้ำสูงสุด ${sc.peak} ลบ.ม./วินาที ในอีก 5 ชม. (กด 20× หรือ 60× เพื่อเร่งเวลา)`); }
   else { S.hyd = null; S.Qin = sc.Qin; log(`สถานการณ์${sc.label}: น้ำไหลเข้า ${fq(sc.Qin)} ลบ.ม./วินาที`); }
@@ -1283,7 +1337,7 @@ function updateScene(dt, time) {
 /* ================= loop ================= */
 function layoutPanels() {
   const sh = $('sim').offsetHeight + 20, cc = $('chartCard');
-  cc.style.bottom = sh + 'px'; cc.style.maxHeight = Math.max(200, innerHeight - sh - 80) + 'px'; $('hint').style.bottom = sh + 'px'; $('compass').style.bottom = (sh + 30) + 'px'; $('logFull').style.bottom = sh + 'px';
+  cc.style.bottom = sh + 'px'; cc.style.maxHeight = Math.max(200, innerHeight - sh - 80) + 'px'; $('hint').style.bottom = sh + 'px'; $('compass').style.bottom = (sh + 30) + 'px'; $('logFull').style.bottom = sh + 'px'; $('pip').style.bottom = sh + 'px';
   const ch = cc.offsetParent ? cc.offsetHeight + 10 : 0, avail = innerHeight - sh - ch - 82;
   for (const id of ['info', 'tour']) $(id).style.maxHeight = Math.max(160, avail) + 'px';
   $('tour').style.overflow = 'auto'; $('parts').style.maxHeight = Math.max(160, innerHeight - sh - 82) + 'px';
@@ -1297,7 +1351,7 @@ function loop() {
   if (S.speed > 0) step(dt);
   if (flyAnim) { flyAnim.t = Math.min(1, flyAnim.t + dt / flyAnim.dur); const k = ease(flyAnim.t); camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, k); controls.target.lerpVectors(flyAnim.t0, flyAnim.t1, k); if (flyAnim.t >= 1) flyAnim = null; }
   smoothZoom(dt); controls.update(); updateScene(dt, time);
-  renderer.render(scene, camera); placeLabels();
+  renderer.render(scene, camera); pipUpdate(dt); pipRender(); placeLabels();
   if (++frame % 8 === 0) syncUI();
   document.querySelector('#compass .n').style.transform = `rotate(${controls.getAzimuthalAngle()}rad)`;
 }
