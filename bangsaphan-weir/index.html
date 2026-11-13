@@ -1214,7 +1214,7 @@ function tourGo(i) {
   el.innerHTML = `<button class="x" id="tourX">✕</button>${head}${body}<div class="prog"><i style="width:${tIdx / (TOUR.length - 1) * 100}%"></i></div>
     <div class="btnrow"><button class="btn" id="tPrev" ${tIdx ? '' : 'disabled'}>← ย้อนกลับ</button><button class="btn ${tAuto ? 'on' : ''}" id="tPlay">${tAuto ? '❚❚ หยุด' : '▶ เล่นอัตโนมัติ'}</button><button class="btn pri" id="tNext">${tIdx < TOUR.length - 1 ? 'ถัดไป →' : 'จบทัวร์'}</button></div>`;
   $('tourX').onclick = () => setMode('explore'); $('tPrev').onclick = () => tourGo(tIdx - 1);
-  $('tNext').onclick = () => { if (tIdx < TOUR.length - 1) tourGo(tIdx + 1); else { setMode('explore'); setAtm('evening'); } };   // จบทัวร์ → ยามเย็น
+  $('tNext').onclick = () => tIdx < TOUR.length - 1 ? tourGo(tIdx + 1) : setMode('explore');
   $('tPlay').onclick = () => { if (tAuto) stopAuto(); else { tAuto = setInterval(() => { if (tIdx >= TOUR.length - 1) stopAuto(); tourGo(tIdx + 1); }, 7500); } tourGo(tIdx); };
   el.querySelectorAll('.quiz label').forEach(l => l.onclick = () => { const q = QUIZ[+l.dataset.q]; l.classList.add(+l.dataset.a === q.c ? 'ok' : 'no'); if (+l.dataset.a !== q.c) l.parentElement.querySelectorAll('label')[q.c].classList.add('ok'); });
   if (s.id) { if (selId && selId !== s.id) highlight(selId, false); selId = s.id; highlight(s.id, true); flyTo(camFor(findPart(s.id)), 1.6); }
@@ -1587,7 +1587,7 @@ async function init() {
   for (let i = 0; i < 400; i++) step(0.5 / 60 * 0 + 0.05); // ให้ระบบเข้าสู่สมดุล
   S.hist = []; LOG.length = 0;
   log('เริ่มจำลอง: น้ำไหลเข้า 8 ลบ.ม./วินาที บานปิด น้ำล้นสันฝายตามธรรมชาติ');
-  setAtm('morning', true);   // เปิดมาเป็นเช้าตรู่เสมอ
+  { let a0 = 'day'; try { a0 = localStorage.getItem('weirAtm') || 'day'; } catch (e) {} setAtm(a0, true); }
   $('loader').hidden = true; syncUI(); layoutPanels(); ZOOM.target = null; INTRO = { t: 0 };
   renderer.setAnimationLoop(loop);
 }
