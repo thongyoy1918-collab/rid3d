@@ -556,9 +556,12 @@ scene.background = new THREE.Color('#eef1f4');
 scene.fog = new THREE.Fog('#eef1f4', 420, 980);
 const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 3000);
 const HOME = { pos: [-150, 98, 168], tgt: [10, 9, 6] };
-camera.position.set(...HOME.pos);
+// ฉากเปิด: ไกลด้านเหนือน้ำ → ซูมเข้า → หมุนขวาไปท้ายน้ำ → เข้าทัวร์
+const INTRO_A = { pos: [-430, 95, 35], tgt: [0, 10, 0] }, INTRO_B = { pos: [-95, 55, 0], tgt: [5, 8, -2] }, INTRO_END = { pos: [72, 48, 72], tgt: [0, 8, -6] };
+let INTRO = null;
+camera.position.set(...INTRO_A.pos);
 const controls = new OrbitControls(camera, canvas);
-controls.target.set(...HOME.tgt); controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.target.set(...INTRO_A.tgt); controls.enableDamping = true; controls.dampingFactor = 0.08;
 controls.maxPolarAngle = 1.48; controls.minDistance = 6; controls.maxDistance = 750; controls.autoRotateSpeed = 0.5;
 controls.rotateSpeed = 0.7; controls.panSpeed = 0.8; controls.dampingFactor = 0.06;
 /* ซูมล้อเมาส์แบบนุ่มนวล: สะสมระยะเป้าหมายแล้วไล่เข้าหาทีละเฟรม + ซูมเข้าหาตำแหน่งเมาส์ */
@@ -1194,7 +1197,7 @@ document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMod
 $('cutZ').oninput = () => { cutPlane.constant = +$('cutZ').value; updateCaps(); };
 
 /* ---- ทัวร์ + แบบทดสอบ ---- */
-const TOUR = [{ intro: true, title: 'รู้จักฝายทดน้ำคลองบางสะพาน', text: 'ฝายวังยาว สร้างขวางคลองบางสะพาน ต.พงศ์ประศาสน์ อ.บางสะพาน จ.ประจวบคีรีขันธ์ ทำหน้าที่ <b>ทดน้ำ</b> คือยกระดับน้ำในคลองให้สูงพอสำหรับใช้น้ำในฤดูแล้ง และ<b>ระบายน้ำหลาก</b>สูงสุด 670 ลบ.ม./วินาทีให้ผ่านไปอย่างปลอดภัย ทัวร์นี้จะพาไล่ดูทีละส่วนตามทางที่น้ำไหลจากต้นน้ำไปท้ายน้ำ', cam: HOME },
+const TOUR = [{ intro: true, cam: INTRO_END, title: 'รู้จักฝายทดน้ำคลองบางสะพาน', text: 'ฝายวังยาว สร้างขวางคลองบางสะพาน ต.พงศ์ประศาสน์ อ.บางสะพาน จ.ประจวบคีรีขันธ์ ทำหน้าที่ <b>ทดน้ำ</b> คือยกระดับน้ำในคลองให้สูงพอสำหรับใช้น้ำในฤดูแล้ง และ<b>ระบายน้ำหลาก</b>สูงสุด 670 ลบ.ม./วินาทีให้ผ่านไปอย่างปลอดภัย ทัวร์นี้จะพาไล่ดูทีละส่วนตามทางที่น้ำไหลจากต้นน้ำไปท้ายน้ำ', cam: HOME },
   ...PARTS.map(p => ({ id: p.id, title: p.th, text: p.desc }))];
 const QUIZ = [
   { q: 'ถ้าเปิดบานระบายทั้ง 2 บานเต็มที่ในหน้าแล้ง จะเกิดอะไรขึ้น?', a: ['ระดับน้ำเหนือฝายลดต่ำกว่าสันฝาย เก็บน้ำไว้ใช้ไม่ได้', 'ระดับน้ำเหนือฝายสูงขึ้น', 'ไม่มีผลใด ๆ'], c: 0 },
@@ -1545,13 +1548,26 @@ function updateScene(dt, time) {
 
 /* ================= loop ================= */
 function layoutPanels() {}
+function runIntro(dt) {
+  const I = INTRO; I.t += dt; const e = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2, T1 = 4.5, T2 = 7.5;
+  if (I.t < T1) { const k = e(I.t / T1); camera.position.lerpVectors(V3(...INTRO_A.pos), V3(...INTRO_B.pos), k); controls.target.lerpVectors(V3(...INTRO_A.tgt), V3(...INTRO_B.tgt), k); return; }
+  const k = e(Math.min(1, (I.t - T1) / T2)), tg = V3().lerpVectors(V3(...INTRO_B.tgt), V3(...INTRO_END.tgt), k);
+  const pol = (v, t) => [Math.atan2(v[2] - t[2], v[0] - t[0]), Math.hypot(v[0] - t[0], v[2] - t[2]), v[1] - t[1]];
+  const [a0, r0, h0] = pol(INTRO_B.pos, INTRO_B.tgt), [a1, r1, h1] = pol(INTRO_END.pos, INTRO_END.tgt);
+  const a = a0 + (a1 - a0) * k, r = r0 + (r1 - r0) * k, h = h0 + (h1 - h0) * k;
+  controls.target.copy(tg); camera.position.set(tg.x + Math.cos(a) * r, tg.y + h, tg.z + Math.sin(a) * r);
+  if (I.t >= T1 + T2 + 0.6) { INTRO = null; setMode('tour'); }
+}
+function stopIntro(e) { if (e && e.target && e.target.closest && e.target.closest('#tSound,#atmList')) return; if (INTRO) { INTRO = null; flyAnim = null; } }
+['pointerdown', 'wheel', 'keydown', 'touchstart'].forEach(ev => addEventListener(ev, stopIntro, { capture: true, passive: true }));
 function resize() { renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
 addEventListener('resize', () => { resize(); layoutPanels(); });
 const clock = new THREE.Clock();
 function loop() {
   const dt = Math.min(clock.getDelta(), 0.1), time = clock.elapsedTime;
   if (S.speed > 0) step(dt);
-  if (flyAnim) { flyAnim.t = Math.min(1, flyAnim.t + dt / flyAnim.dur); const k = ease(flyAnim.t); camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, k); controls.target.lerpVectors(flyAnim.t0, flyAnim.t1, k); if (flyAnim.t >= 1) flyAnim = null; }
+  if (INTRO) runIntro(dt);
+  else if (flyAnim) { flyAnim.t = Math.min(1, flyAnim.t + dt / flyAnim.dur); const k = ease(flyAnim.t); camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, k); controls.target.lerpVectors(flyAnim.t0, flyAnim.t1, k); if (flyAnim.t >= 1) flyAnim = null; }
   smoothZoom(dt); applyShift(dt); controls.update(); updateScene(dt, time);
   renderer.render(scene, camera); placeLabels();
   if (++frame % 8 === 0) syncUI();
@@ -1572,7 +1588,7 @@ async function init() {
   S.hist = []; LOG.length = 0;
   log('เริ่มจำลอง: น้ำไหลเข้า 8 ลบ.ม./วินาที บานปิด น้ำล้นสันฝายตามธรรมชาติ');
   { let a0 = 'day'; try { a0 = localStorage.getItem('weirAtm') || 'day'; } catch (e) {} setAtm(a0, true); }
-  $('loader').hidden = true; syncUI(); layoutPanels();
+  $('loader').hidden = true; syncUI(); layoutPanels(); ZOOM.target = null; INTRO = { t: 0 };
   renderer.setAnimationLoop(loop);
 }
 init().catch(e => { $('ldTh').textContent = 'เกิดข้อผิดพลาด: ' + e.message; console.error(e); });
