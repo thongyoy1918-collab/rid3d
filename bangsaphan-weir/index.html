@@ -1195,7 +1195,7 @@ $('cutZ').oninput = () => { cutPlane.constant = +$('cutZ').value; updateCaps(); 
 
 /* ---- ทัวร์ + แบบทดสอบ ---- */
 const TOUR = [{ intro: true, title: 'รู้จักฝายทดน้ำคลองบางสะพาน', text: 'ฝายวังยาว สร้างขวางคลองบางสะพาน ต.พงศ์ประศาสน์ อ.บางสะพาน จ.ประจวบคีรีขันธ์ ทำหน้าที่ <b>ทดน้ำ</b> คือยกระดับน้ำในคลองให้สูงพอสำหรับใช้น้ำในฤดูแล้ง และ<b>ระบายน้ำหลาก</b>สูงสุด 670 ลบ.ม./วินาทีให้ผ่านไปอย่างปลอดภัย ทัวร์นี้จะพาไล่ดูทีละส่วนตามทางที่น้ำไหลจากต้นน้ำไปท้ายน้ำ', cam: HOME },
-  ...PARTS.map(p => ({ id: p.id, title: p.th, text: p.desc })), { quiz: true, title: 'ทดสอบความเข้าใจ' }];
+  ...PARTS.map(p => ({ id: p.id, title: p.th, text: p.desc }))];
 const QUIZ = [
   { q: 'ถ้าเปิดบานระบายทั้ง 2 บานเต็มที่ในหน้าแล้ง จะเกิดอะไรขึ้น?', a: ['ระดับน้ำเหนือฝายลดต่ำกว่าสันฝาย เก็บน้ำไว้ใช้ไม่ได้', 'ระดับน้ำเหนือฝายสูงขึ้น', 'ไม่มีผลใด ๆ'], c: 0 },
   { q: 'หน้าที่หลักของแอ่งน้ำนิ่งคืออะไร?', a: ['เก็บน้ำไว้ใช้ในหน้าแล้ง', 'สลายพลังงานน้ำด้วยการเกิดน้ำกระโดด', 'ดักขยะไม่ให้ไหลลงคลอง'], c: 1 },
@@ -1204,7 +1204,7 @@ const QUIZ = [
 let tIdx = 0, tAuto = null;
 function tourGo(i) {
   tIdx = clamp(i, 0, TOUR.length - 1); const s = TOUR[tIdx], el = $('tour');
-  const head = `<div class="k">${s.intro ? 'เริ่มต้น' : s.quiz ? 'ท้ายทัวร์' : `ขั้นที่ ${tIdx}/${TOUR.length - 2} · ${findPart(s.id).group.th}`}</div><h3>${s.title}</h3>`;
+  const head = `<div class="k">${s.intro ? 'เริ่มต้น' : s.quiz ? 'ท้ายทัวร์' : `ขั้นที่ ${tIdx}/${TOUR.length - 1} · ${findPart(s.id).group.th}`}</div><h3>${s.title}</h3>`;
   let body = '';
   if (s.quiz) body = QUIZ.map((q, qi) => `<div class="quiz"><p><b>${qi + 1}. ${q.q}</b></p>${q.a.map((a, ai) => `<label data-q="${qi}" data-a="${ai}">${a}</label>`).join('')}</div>`).join('') + '<p style="color:#64748b">ลองต่อ: กด “🌧 น้ำหลากตามแบบ 670” ที่แผงด้านล่าง แล้วดูว่าระดับน้ำขึ้นสูงสุดเท่าไร และน้ำกระโดดยังอยู่ในแอ่งหรือไม่</p>';
   else body = (s.id ? pimgHTML(s.id) : '') + `<p>${s.text}</p>`;
@@ -1212,7 +1212,7 @@ function tourGo(i) {
     <div class="btnrow"><button class="btn" id="tPrev" ${tIdx ? '' : 'disabled'}>← ย้อนกลับ</button><button class="btn ${tAuto ? 'on' : ''}" id="tPlay">${tAuto ? '❚❚ หยุด' : '▶ เล่นอัตโนมัติ'}</button><button class="btn pri" id="tNext">${tIdx < TOUR.length - 1 ? 'ถัดไป →' : 'จบทัวร์'}</button></div>`;
   $('tourX').onclick = () => setMode('explore'); $('tPrev').onclick = () => tourGo(tIdx - 1);
   $('tNext').onclick = () => tIdx < TOUR.length - 1 ? tourGo(tIdx + 1) : setMode('explore');
-  $('tPlay').onclick = () => { if (tAuto) stopAuto(); else { tAuto = setInterval(() => { if (tIdx >= TOUR.length - 2) stopAuto(); tourGo(tIdx + 1); }, 7500); } tourGo(tIdx); };
+  $('tPlay').onclick = () => { if (tAuto) stopAuto(); else { tAuto = setInterval(() => { if (tIdx >= TOUR.length - 1) stopAuto(); tourGo(tIdx + 1); }, 7500); } tourGo(tIdx); };
   el.querySelectorAll('.quiz label').forEach(l => l.onclick = () => { const q = QUIZ[+l.dataset.q]; l.classList.add(+l.dataset.a === q.c ? 'ok' : 'no'); if (+l.dataset.a !== q.c) l.parentElement.querySelectorAll('label')[q.c].classList.add('ok'); });
   if (s.id) { if (selId && selId !== s.id) highlight(selId, false); selId = s.id; highlight(s.id, true); flyTo(camFor(findPart(s.id)), 1.6); }
   else { if (selId) highlight(selId, false); selId = null; flyTo(s.cam || HOME, 1.6); }
