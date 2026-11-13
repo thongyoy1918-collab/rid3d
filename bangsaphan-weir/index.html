@@ -163,12 +163,18 @@ body.sideopen #compass{right:430px}
 #musicBox .row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px}
 #musicBox input[type=range]{flex:1}
 #musicBox .now{font-size:11px;color:var(--mut);margin-top:6px;min-height:15px}
-#tSound.on,#tMusic.on,#tAtm.on{background:var(--pill)}
-#atmBox{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;width:340px;padding:14px;z-index:30}
-#atmBox .segs button{text-align:left;padding:10px 12px}
+#tSound.on,#tMusic.on{background:var(--pill)}
+#tright{align-items:center}
+#atmList{display:flex;gap:2px;padding:4px;border:1px solid #d6d3c9;border-radius:30px;background:#f1efe9}
+#atmList button{border:0;background:none;width:38px;height:36px;border-radius:20px;font-size:17px;display:grid;place-items:center}
+#atmList button.on{background:var(--dark);box-shadow:inset 0 0 0 2px var(--dark)}
+#atmList button:not(.on):hover{background:#e4e2da}
+#atmLbl{font-size:12px;color:#5d6a62;margin-right:2px;white-space:nowrap}
+@media (max-width:1250px){#atmList button{width:32px;height:32px;font-size:15px}}
+@media (max-width:900px){#atmList{position:fixed;right:10px;top:72px;flex-direction:column;border-radius:22px}}
 body.night #hero h1,body.night #hero .k{color:#eef2f7}body.night #hero h2{color:#c9d6cf}body.night #hero p{color:#d5dde6}
 #dock::-webkit-scrollbar{display:none}
-body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,body.zen #compass,body.zen #labels,body.zen #tour,body.zen #cutbar,body.zen #musicBox,body.zen #atmBox{opacity:0;pointer-events:none;transition:opacity .8s}
+body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,body.zen #compass,body.zen #labels,body.zen #tour,body.zen #cutbar,body.zen #musicBox,body.zen #atmList{opacity:0;pointer-events:none;transition:opacity .8s}
 #zenHint{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);color:#e6edf5;font-size:12.5px;background:#0f172a66;padding:6px 14px;border-radius:20px;z-index:20;transition:opacity 1.2s}
 [hidden]{display:none!important}
 @media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
@@ -183,7 +189,7 @@ body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,bod
 <header id="topbar">
   <a id="logo" href="../" title="RID Prachuap 3D"><span class="s">R.</span><span class="d"></span><div><b>โลกจำลองอาคารชลประทาน</b><small>RID Prachuap 3D · คป.ประจวบคีรีขันธ์</small></div></a>
   <nav id="tabs"><button data-p="explore">01 · สำรวจ</button><button data-p="sim">02 · จำลองการทำงาน</button><button data-p="learn">03 · หลักการ</button></nav>
-  <div id="tright"><button class="sq" id="tAbout" title="ที่มาข้อมูล">ⓘ</button><button class="sq" id="tParts" title="เปิด/ปิดแผง">☰</button></div>
+  <div id="tright"><div id="atmList" title="เลือกบรรยากาศ"></div><button class="sq" id="tAbout" title="ที่มาข้อมูล">ⓘ</button><button class="sq" id="tParts" title="เปิด/ปิดแผง">☰</button></div>
 </header>
 
 <div id="hero">
@@ -263,7 +269,6 @@ body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,bod
   <button id="tReset" title="เริ่มใหม่">↺ เริ่มใหม่</button>
   <button id="tSound" title="เปิด/ปิดเพลง">🔇 เพลง</button>
   <button id="tZen" title="โหมดพักสายตา: กลางคืน + หมุนช้า + เพลงชิล">☾ พักสายตา</button>
-  <button id="tAtm" title="เลือกบรรยากาศ">🌤 บรรยากาศ</button>
   <button id="tMusic" title="ลิสต์เพลง">♫ ลิสต์เพลง</button>
   <button id="tShot" class="hm" title="บันทึกภาพ 4K">📷</button>
   <button id="tFull" class="hm" title="เต็มจอ">⛶</button>
@@ -279,11 +284,6 @@ body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,bod
 </div>
 <div id="logFull" class="card" hidden></div>
 <div id="zenHint" hidden>☾ โหมดพักสายตา · แตะหน้าจอหรือกดปุ่มใดก็ได้เพื่อออก</div>
-<div id="atmBox" class="card" hidden>
-  <button class="x" id="atmX">✕</button>
-  <h4 style="margin:0 0 10px;font-size:14px">🌤 เลือกบรรยากาศ</h4>
-  <div class="segs c2" id="atmList"></div>
-</div>
 <div id="musicBox" class="card" hidden>
   <button class="x" id="musicX">✕</button>
   <h4>♫ ลิสต์เพลง</h4>
@@ -1266,7 +1266,7 @@ function audioUpdate() {
   if (!AU.ctx) return;
   AU.music.gain.setTargetAtTime(+$('musVol').value / 100 * 0.9, AU.ctx.currentTime, 0.2);
 }
-$('tMusic').onclick = () => { $('atmBox').hidden = true; $('musicBox').hidden = !$('musicBox').hidden; auInit(); AU.ctx.resume?.(); if (AU.mode === 'off') setMusic('off'); };
+$('tMusic').onclick = () => { $('musicBox').hidden = !$('musicBox').hidden; auInit(); AU.ctx.resume?.(); if (AU.mode === 'off') setMusic('off'); };
 $('musicX').onclick = () => $('musicBox').hidden = true;
 $('tSound').onclick = toggleSound;
 $('trackList').innerHTML = TRACKS.map((t, i) => `<label><input type="radio" name="mus" value="t:${t.id}"> ${i + 1}. ${t.name} <small class="t">${t.tag}</small></label>`).join('');
@@ -1299,7 +1299,7 @@ function atmSnapshot() { return { sky: scene.background.clone(), sunC: sun.color
 function setAtm(key, instant) {
   const A = ATM[key] || ATM.day; ATMC.from = atmSnapshot(); ATMC.to = A; ATMC.t = instant ? 1 : 0; ATMC.cur = key; if (instant) atmApply(1);
   document.querySelectorAll('#atmList button').forEach(b => b.classList.toggle('on', b.dataset.a === key));
-  document.body.classList.toggle('night', key === 'night'); $('tAtm').textContent = A.name.split(' ')[0] + ' บรรยากาศ';
+  document.body.classList.toggle('night', key === 'night');
   try { localStorage.setItem('weirAtm', key); } catch (e) {}
 }
 function atmApply(k) {
@@ -1335,10 +1335,8 @@ function atmUpdate(dt) {
   if (RAIN.pts) { RAIN.pts.visible = RAIN.k > 0.02; RAIN.pts.material.opacity = 0.65 * RAIN.k;
     if (RAIN.pts.visible) { const a = RAIN.pts.geometry.attributes.position.array; for (let i = 1; i < a.length; i += 3) { a[i] -= RAIN.vel * dt; a[i - 1] += 3 * dt; if (a[i] < 8) { a[i] += 70; a[i - 1] = Math.random() * 300 - 140; } } RAIN.pts.geometry.attributes.position.needsUpdate = true; } }
 }
-$('atmList').innerHTML = Object.entries(ATM).map(([k, a]) => `<button data-a="${k}">${a.name}</button>`).join('');
+$('atmList').innerHTML = Object.entries(ATM).map(([k, a]) => `<button data-a="${k}" title="${a.name.split(' ').slice(1).join(' ')}">${a.name.split(' ')[0]}</button>`).join('');
 document.querySelectorAll('#atmList button').forEach(b => b.onclick = () => setAtm(b.dataset.a));
-$('tAtm').onclick = () => { $('atmBox').hidden = !$('atmBox').hidden; $('musicBox').hidden = true; };
-$('atmX').onclick = () => $('atmBox').hidden = true;
 
 /* ---- โหมดพักสายตา (กลางคืน + หมุนช้า + เพลงชิล + ซ่อนเมนู) ---- */
 const ZEN = { on: false, prev: null };
@@ -1346,7 +1344,7 @@ function zen(on) {
   if (on === ZEN.on) return; ZEN.on = on;
   if (on) {
     ZEN.prev = { atm: ATMC.cur, rot: controls.autoRotate, rs: controls.autoRotateSpeed, labels: showLabels, music: AU.mode };
-    closeSide(); $('atmBox').hidden = $('musicBox').hidden = true; document.body.classList.add('zen');
+    closeSide(); $('musicBox').hidden = true; document.body.classList.add('zen');
     setAtm('night'); controls.autoRotate = true; controls.autoRotateSpeed = 0.35; showLabels = false; flyTo({ pos: [-130, 70, 150], tgt: [10, 10, 4] }, 2.2);
     if (!AU.mode || AU.mode === 'off' || AU.muted) { auInit(); AU.ctx.resume?.(); setMusic('t:chill'); }
     const h = $('zenHint'); h.hidden = false; h.style.opacity = 1; setTimeout(() => { if (ZEN.on) h.style.opacity = 0; }, 3500);
