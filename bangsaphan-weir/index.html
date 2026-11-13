@@ -147,6 +147,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 #musicBox input[type=range]{flex:1;accent-color:#2563eb}
 #musicBox .now{font-size:11px;color:#64748b;margin-top:6px;min-height:15px}
 #tMusic.on{background:#dbeafe;color:#1d4ed8}
+#tSound.on{background:#dcfce7;color:#15803d}
 [hidden]{display:none!important}
 @media (max-width:1100px){#simBody{grid-template-columns:96px 1fr 1fr}.kpis{grid-column:1/-1}#spark{grid-column:1/-1;width:100%;height:130px}#parts,#info{max-height:calc(100vh - 420px)}#hint,#compass{display:none}}
 @media (max-width:760px){#parts{display:none}#parts.open{display:block;max-height:50vh;z-index:5}#brand small{display:none}#modes{position:fixed;top:62px;left:50%;transform:translateX(-50%)}#tools button.hm{display:none}#info,#tour{left:10px;right:10px;width:auto;top:112px;max-height:35vh}#simBody{grid-template-columns:1fr 1fr}.gauge{display:none}.kpis{grid-template-columns:repeat(3,1fr)}#sim{max-height:48vh;overflow:auto}}
@@ -169,7 +170,8 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button id="tReset" title="มุมเริ่มต้น">⌂</button>
     <button id="tShot" title="บันทึกภาพ 4K" class="hm">📷</button>
     <button id="tFull" title="เต็มจอ" class="hm">⛶</button>
-    <button id="tMusic" title="เพลง / เสียงน้ำ">♫</button>
+    <button id="tSound" title="เปิด/ปิดเพลงและเสียง" style="font-size:12.5px;font-weight:600;padding:7px 11px">🔇 เพลง ปิด</button>
+    <button id="tMusic" title="ตั้งค่าเพลง / เสียงน้ำ">♫</button>
     <button id="tAbout" title="ที่มาข้อมูล">ⓘ</button>
     <a href="../" title="กลับหน้ารวม RID Prachuap 3D" style="display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:600;color:#1f4fa8;text-decoration:none;white-space:nowrap" class="hm">← RID 3D</a>
   </div>
@@ -1135,8 +1137,16 @@ function setMusic(mode) {
   if (mode === 'calm') { AU.nextT = AU.ctx.currentTime + 0.1; calmTick(); AU.timer = setInterval(calmTick, 500); $('musNow').textContent = 'กำลังเล่น: เพลงบรรเลงผ่อนคลาย (สุ่มทำนองใหม่ตลอด)'; }
   else if (mode === 'file' && AU.el) { AU.el.play().catch(() => {}); $('musNow').textContent = 'กำลังเล่น: ' + AU.fname; }
   else if (mode === 'off') $('musNow').textContent = 'ปิดเพลง · เสียงน้ำ ' + ($('waterOn').checked ? 'เปิด' : 'ปิด');
-  $('tMusic').classList.toggle('on', mode !== 'off' || $('waterOn').checked);
+  $('tMusic').classList.toggle('on', mode !== 'off'); if (mode !== 'off') { AU.lastMode = mode; AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); } soundBtn();
   try { localStorage.setItem('weirMusic', JSON.stringify({ mode: mode === 'file' ? 'off' : mode, vol: +$('musVol').value, water: $('waterOn').checked, wvol: +$('waterVol').value })); } catch (e) {}
+}
+function soundBtn() { const on = AU.ctx && !AU.muted && (AU.mode !== 'off' || $('waterOn').checked); const b = $('tSound'); b.classList.toggle('on', !!on); b.textContent = on ? '🔊 เพลง เปิด' : '🔇 เพลง ปิด'; }
+function toggleSound() {
+  auInit(); AU.ctx.resume?.();
+  const playing = !AU.muted && AU.mode !== 'off';
+  if (playing || (!AU.muted && AU.mode === 'off' && $('waterOn').checked && AU.started)) { AU.muted = true; setMusic('off'); AU.master.gain.setTargetAtTime(0, AU.ctx.currentTime, 0.15); document.querySelector('input[name=mus][value=off]').checked = true; }
+  else { AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); const m = AU.el && AU.lastMode === 'file' ? 'file' : 'calm'; document.querySelector(`input[name=mus][value=${m}]`).checked = true; setMusic(m); }
+  soundBtn();
 }
 function audioUpdate() {
   if (!AU.ctx) return; const C = AU.ctx, on = $('waterOn').checked, q = S.Qout;
@@ -1147,6 +1157,7 @@ function audioUpdate() {
 }
 $('tMusic').onclick = () => { $('musicBox').hidden = !$('musicBox').hidden; auInit(); AU.ctx.resume?.(); if (AU.mode === 'off') setMusic('off'); };
 $('musicX').onclick = () => $('musicBox').hidden = true;
+$('tSound').onclick = toggleSound;
 document.querySelectorAll('input[name=mus]').forEach(r => r.onchange = () => {
   if (r.value === 'file') { if (AU.el) setMusic('file'); else $('musFile').click(); } else setMusic(r.value); });
 $('musFile').onchange = () => { const f = $('musFile').files[0]; if (!f) return; auInit();
@@ -1157,7 +1168,7 @@ let musPref = 'calm';
 try { const sv = JSON.parse(localStorage.getItem('weirMusic') || 'null'); if (sv) { musPref = sv.mode || 'calm'; $('musVol').value = sv.vol; $('waterOn').checked = sv.water; $('waterVol').value = sv.wvol; } } catch (e) {}
 // เริ่มเพลงบรรเลงอัตโนมัติเมื่อแตะ/คลิกหน้าเว็บครั้งแรก (ค่าเริ่มต้น) — ถ้าเคยปิดไว้จะไม่เปิดเอง
 const firstTouch = e => { removeEventListener('pointerdown', firstTouch, true); removeEventListener('keydown', firstTouch, true);
-  if (e.target && e.target.closest && e.target.closest('#musicBox,#tMusic')) return;
+  if (e.target && e.target.closest && e.target.closest('#musicBox,#tMusic,#tSound')) return;
   if (musPref === 'calm') { const r = document.querySelector('input[name=mus][value=calm]'); r.checked = true; setMusic('calm'); } };
 addEventListener('pointerdown', firstTouch, true); addEventListener('keydown', firstTouch, true);
 
