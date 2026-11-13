@@ -291,7 +291,7 @@ body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,bod
   <div id="trackList"></div>
   <label><input type="radio" name="mus" value="file"> 📁 ไฟล์เพลงของฉัน… <small style="color:#94a3b8">(mp3 / m4a / wav)</small></label>
   <input type="file" id="musFile" accept="audio/*" hidden>
-  <div class="row"><input type="checkbox" id="musAuto" checked> เล่นต่อเนื่องทั้งลิสต์ (เปลี่ยนเพลงทุก ~1.5 นาที) <button class="btn" id="musNext" style="margin-left:auto">⏭</button></div>
+  <div class="row"><input type="checkbox" id="musAuto" checked> เล่นต่อเนื่องทั้งลิสต์ (เพลงสังเคราะห์เปลี่ยนทุก ~1.5 นาที) <button class="btn" id="musNext" style="margin-left:auto">⏭</button></div>
   <div class="row">🎵 เพลง <input type="range" id="musVol" min="0" max="100" value="45"></div>
   <div class="now" id="musNow">ปิดเพลงอยู่</div>
 </div>
@@ -1203,6 +1203,7 @@ function keys(f, t, vol) { const C = AU.ctx, o = C.createOscillator(), o2 = C.cr
   const g3 = C.createGain(); g3.gain.value = 0.25; o2.connect(g3); g3.connect(g2);
   g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + 0.01); g2.gain.exponentialRampToValueAtTime(0.0008, t + 1.6); o.connect(g2); g2.connect(AU.music); o.start(t); o2.start(t); o.stop(t + 1.7); o2.stop(t + 1.7); }
 const TRACKS = [
+  { id: 'hanami', name: 'Hanami Dreams', tag: 'Japanese lofi · lofiroomcafe · 2:43', file: 'music/hanami-dreams.mp3' },
   { id: 'chill', name: 'ชิลยามค่ำ · พักสายตา', tag: '70 BPM · เปียโนนุ่ม', bpm: 70, chords: [[41, 52, 57, 60, 64, 67], [40, 50, 55, 59, 62], [38, 50, 53, 57, 60, 64], [36, 48, 52, 55, 59, 62]], scale: [72, 74, 76, 79, 81, 84, 86], bass: 'soft', hat: 'swing', lead: 'keys', dens: 0.32, hold: 1, kick: 'soft', crackle: true, padMul: 1.25 },
   { id: 'calm', name: 'ริมน้ำผ่อนคลาย', tag: '92 BPM', bpm: 92, chords: [[48, 55, 64, 71], [45, 52, 60, 67], [41, 48, 57, 64], [43, 50, 59, 62]], scale: [72, 74, 76, 79, 81, 84, 86, 88], bass: 'walk', hat: '8', lead: 'bell', dens: 0.75, hold: 2 },
   { id: 'morning', name: 'เช้าในสวนมะพร้าว', tag: '66 BPM · ช้า', bpm: 66, chords: [[41, 48, 57, 64, 67], [43, 50, 59, 62, 69], [45, 52, 60, 64, 67], [41, 48, 55, 64, 69]], scale: [77, 79, 81, 84, 86, 88, 91], bass: 'root', hat: 'none', lead: 'bell', dens: 0.45, hold: 1 },
@@ -1232,7 +1233,7 @@ function musicTick() {
       if (T.lead === 'ranat') ranat(f, tt, 0.045); else if (T.lead === 'keys') keys(f, tt, 0.05); else bell(f, tt, 0.04);
     }
     AU.lastNote = last; AU.nextT += BAR; AU.step++; AU.bars = (AU.bars || 0) + 1;
-    if ($('musAuto').checked && !document.body.classList.contains('zen') && AU.bars * BAR > 90) { const i = (TRACKS.indexOf(T) + 1) % TRACKS.length; AU.bars = 0; AU.track = TRACKS[i]; AU.step = 0; markTrack(); }
+    if ($('musAuto').checked && !document.body.classList.contains('zen') && AU.bars * BAR > 90) { const nx = TRACKS[(TRACKS.indexOf(T) + 1) % TRACKS.length]; AU.bars = 0; if (nx.file) { setTimeout(() => setMusic('t:' + nx.id), 0); break; } AU.track = nx; AU.step = 0; markTrack(); }
   }
 }
 function crackle(on) { const C = AU.ctx; if (!C) return;
@@ -1243,12 +1244,18 @@ function crackle(on) { const C = AU.ctx; if (!C) return;
   if (!on && AU.crk) { AU.crk.stop(); AU.crk = null; } }
 function markTrack() { crackle(!!(AU.track && AU.track.crackle && AU.mode.startsWith('t:'))); const id = AU.track && AU.mode.startsWith('t:') ? 't:' + AU.track.id : AU.mode;
   document.querySelectorAll('#musicBox label').forEach(l => { const inp = l.querySelector('input'); l.classList.toggle('playing', !!inp && inp.value === id && id !== 'off'); if (inp) inp.checked = inp.value === id; });
-  if (AU.mode.startsWith('t:')) $('musNow').textContent = `กำลังเล่น: ${AU.track.name} (${AU.track.tag}) · ทำนองสุ่มใหม่ตลอด`; }
+  if (AU.mode.startsWith('t:') && !AU.track.file) $('musNow').textContent = `กำลังเล่น: ${AU.track.name} (${AU.track.tag}) · ทำนองสุ่มใหม่ตลอด`; }
 function setMusic(mode) {
   auInit(); AU.ctx.resume?.(); AU.mode = mode;
   clearInterval(AU.timer); AU.timer = null; if (AU.el) AU.el.pause();
   if (mode === 'calm') mode = AU.mode = 't:calm';
-  if (mode.startsWith('t:')) { AU.track = TRACKS.find(t => 't:' + t.id === mode) || TRACKS[0]; AU.mode = mode = 't:' + AU.track.id; AU.bars = 0; AU.step = 0; AU.nextT = AU.ctx.currentTime + 0.1; musicTick(); AU.timer = setInterval(musicTick, 250); markTrack(); }
+  if (AU.tel) AU.tel.pause();
+  if (mode.startsWith('t:') && (TRACKS.find(t => 't:' + t.id === mode) || {}).file) { AU.track = TRACKS.find(t => 't:' + t.id === mode); AU.mode = mode;
+    if (!AU.tel) { AU.tel = new Audio(); AU.tel.preload = 'auto'; AU.tsrc = AU.ctx.createMediaElementSource(AU.tel); AU.tsrc.connect(AU.music);
+      AU.tel.onended = () => { if ($('musAuto').checked && !document.body.classList.contains('zen')) $('musNext').onclick(); else { AU.tel.currentTime = 0; AU.tel.play().catch(() => {}); } }; }
+    if (!AU.tel.src.endsWith(AU.track.file)) AU.tel.src = AU.track.file;
+    AU.tel.play().catch(() => {}); markTrack(); $('musNow').textContent = `กำลังเล่น: ${AU.track.name} (${AU.track.tag})`; }
+  else if (mode.startsWith('t:')) { AU.track = TRACKS.find(t => 't:' + t.id === mode) || TRACKS[1]; AU.mode = mode = 't:' + AU.track.id; AU.bars = 0; AU.step = 0; AU.nextT = AU.ctx.currentTime + 0.1; musicTick(); AU.timer = setInterval(musicTick, 250); markTrack(); }
   else if (mode === 'file' && AU.el) { AU.el.play().catch(() => {}); $('musNow').textContent = 'กำลังเล่น: ' + AU.fname; }
   else if (mode === 'off') { $('musNow').textContent = 'ปิดเพลงอยู่'; markTrack(); }
   $('tMusic').classList.toggle('on', mode !== 'off'); if (mode !== 'off') { AU.lastMode = mode; AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); } soundBtn();
@@ -1259,7 +1266,7 @@ function toggleSound() {
   auInit(); AU.ctx.resume?.();
   const playing = !AU.muted && AU.mode !== 'off';
   if (playing) { const lm = AU.mode; AU.muted = true; setMusic('off'); AU.lastMode = lm; AU.master.gain.setTargetAtTime(0, AU.ctx.currentTime, 0.15); }
-  else { AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); const m = AU.lastMode && AU.lastMode !== 'off' && (AU.lastMode !== 'file' || AU.el) ? AU.lastMode : 't:chill'; setMusic(m); }
+  else { AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); const m = AU.lastMode && AU.lastMode !== 'off' && (AU.lastMode !== 'file' || AU.el) ? AU.lastMode : 't:hanami'; setMusic(m); }
   soundBtn();
 }
 function audioUpdate() {
@@ -1276,7 +1283,7 @@ document.querySelectorAll('input[name=mus]').forEach(r => r.onchange = () => {
 $('musFile').onchange = () => { const f = $('musFile').files[0]; if (!f) return; auInit();
   if (!AU.el) { AU.el = new Audio(); AU.el.loop = true; AU.src = AU.ctx.createMediaElementSource(AU.el); AU.src.connect(AU.music); }
   AU.el.src = URL.createObjectURL(f); AU.fname = f.name; setMusic('file'); };
-let musPref = 't:chill';
+let musPref = 't:hanami';
 try { const sv = JSON.parse(localStorage.getItem('weirMusic') || 'null'); if (sv) { musPref = sv.mode || 'calm'; $('musVol').value = sv.vol; } } catch (e) {}
 // เริ่มเพลงบรรเลงอัตโนมัติเมื่อแตะ/คลิกหน้าเว็บครั้งแรก (ค่าเริ่มต้น) — ถ้าเคยปิดไว้จะไม่เปิดเอง
 const firstTouch = e => { removeEventListener('pointerdown', firstTouch, true); removeEventListener('keydown', firstTouch, true);
@@ -1346,7 +1353,7 @@ function zen(on) {
     ZEN.prev = { atm: ATMC.cur, rot: controls.autoRotate, rs: controls.autoRotateSpeed, labels: showLabels, music: AU.mode };
     closeSide(); $('musicBox').hidden = true; document.body.classList.add('zen');
     setAtm('night'); controls.autoRotate = true; controls.autoRotateSpeed = 0.35; showLabels = false; flyTo({ pos: [-130, 70, 150], tgt: [10, 10, 4] }, 2.2);
-    if (!AU.mode || AU.mode === 'off' || AU.muted) { auInit(); AU.ctx.resume?.(); setMusic('t:chill'); }
+    if (!AU.mode || AU.mode === 'off' || AU.muted) { auInit(); AU.ctx.resume?.(); setMusic('t:hanami'); }
     const h = $('zenHint'); h.hidden = false; h.style.opacity = 1; setTimeout(() => { if (ZEN.on) h.style.opacity = 0; }, 3500);
     setTimeout(() => { addEventListener('pointerdown', zenExit, true); addEventListener('keydown', zenExit, true); }, 400);
   } else {
