@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ฝายทดน้ำคลองบางสะพาน 3D · จำลองการทำงาน</title>
-<meta name="description" content="แบบจำลอง 3 มิติ ฝายทดน้ำคลองบางสะพาน (ฝายวังยาว กม.20+127) จำลองการไหลผ่านสันฝาย บานระบาย น้ำกระโดดในแอ่งน้ำนิ่ง พร้อมโหมดทัวร์เรียนรู้และรูปตัด">
+<meta name="description" content="แบบจำลอง 3 มิติ ฝายทดน้ำคลองบางสะพาน (ฝายวังยาว) จำลองการไหลผ่านสันฝาย บานระบาย น้ำกระโดดในแอ่งน้ำนิ่ง พร้อมโหมดทัวร์เรียนรู้และรูปตัด">
 <meta property="og:title" content="ฝายทดน้ำคลองบางสะพาน · 3D จำลองการทำงาน">
 <meta property="og:description" content="ลองเปิดบาน ปล่อยน้ำหลาก 670 ลบ.ม./วินาที แล้วดูน้ำไหลผ่านฝายแบบ 3 มิติ — ตามแบบกรมชลประทานเลขที่ 184979–184981">
 <meta property="og:image" content="https://thongyoy1918-collab.github.io/rid3d/thumb-bangsaphan-weir.jpg">
@@ -155,15 +155,16 @@ button{font:inherit;color:inherit;cursor:pointer}
 #musicBox .now{font-size:11px;color:#64748b;margin-top:6px;min-height:15px}
 #tMusic.on{background:#dbeafe;color:#1d4ed8}
 #tSound.on{background:#dcfce7;color:#15803d}
-#pip{position:fixed;left:50%;transform:translateX(-50%);bottom:240px;width:min(520px,92vw);padding:8px 10px 10px;z-index:20;animation:pipIn .35s ease-out}
+#pip{position:fixed;left:50%;transform:translateX(-50%);bottom:240px;width:min(520px,92vw);z-index:20;animation:pipIn .35s ease-out;filter:drop-shadow(0 6px 18px #0f172a33)}
 @keyframes pipIn{from{opacity:0;transform:translateX(-50%) scale(.85)}to{opacity:1;transform:translateX(-50%) scale(1)}}
-#pip .ph{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px}
+#pip .ph{display:flex;align-items:center;gap:8px;font-size:13px;background:#fff;border-radius:12px 12px 0 0;padding:8px 10px}
+#pip .pbot{background:#fff;border-radius:0 0 12px 12px;padding:2px 10px 10px}
 #pip .ph b{margin-right:auto}
 #pip .ph button{border:0;background:#f1f5f9;border-radius:7px;width:26px;height:24px}
 #pipTag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:#dbeafe;color:#1d4ed8}
 .dotlive{width:9px;height:9px;border-radius:50%;background:#ef4444;box-shadow:0 0 0 0 #ef444480;animation:live 1.2s infinite}
 @keyframes live{70%{box-shadow:0 0 0 8px #ef444400}100%{box-shadow:0 0 0 0 #ef444400}}
-#pipView{height:270px;border-radius:9px;outline:2px solid #1f2937;outline-offset:-2px;background:transparent}
+#pipView{height:280px;background:transparent;border-left:3px solid #fff;border-right:3px solid #fff;box-shadow:inset 0 0 0 2px #1f2937}
 #pipInfo{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}
 #pipInfo div{background:#f3f6fa;border-radius:7px;padding:4px 8px}#pipInfo small{display:block;color:#64748b;font-size:10px}#pipInfo b{font-size:15px;font-variant-numeric:tabular-nums}
 #pip .pbar{height:5px;background:#e5e7eb;border-radius:3px;margin-top:7px;overflow:hidden}#pip .pbar i{display:block;height:100%;width:0;background:#2563eb;transition:width .2s}
@@ -179,7 +180,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <div id="labels"></div>
 
 <div id="top">
-  <div id="brand" class="card"><a href="../" title="← RID Prachuap 3D" style="text-decoration:none"><div class="ic">≋</div></a><div><b>Bang Saphan Diversion Weir 3D</b><small>ฝายทดน้ำคลองบางสะพาน (ฝายวังยาว กม.20+127) · ต.พงศ์ประศาสน์ อ.บางสะพาน</small></div></div>
+  <div id="brand" class="card"><a href="../" title="← RID Prachuap 3D" style="text-decoration:none"><div class="ic">≋</div></a><div><b>Bang Saphan Diversion Weir 3D</b><small>ฝายทดน้ำคลองบางสะพาน (ฝายวังยาว) · ต.พงศ์ประศาสน์ อ.บางสะพาน</small></div></div>
   <div id="modes" class="card"><button data-m="explore" class="on">🧭 สำรวจ</button><button data-m="tour">▶ ทัวร์เรียนรู้</button><button data-m="cut">✂ รูปตัด</button></div>
   <div id="tools" class="card">
     <button id="tParts" title="ส่วนประกอบ" class="hm" style="display:none">☰</button>
@@ -244,11 +245,11 @@ button{font:inherit;color:inherit;cursor:pointer}
     </div>
 </aside>
 <div id="logFull" class="card" hidden></div>
-<div id="pip" class="card" hidden>
+<div id="pip" hidden>
   <div class="ph"><span class="dotlive"></span><b id="pipT">มุมใกล้ประตูระบาย</b><span id="pipTag"></span><button id="pipX" title="ปิด">✕</button></div>
   <div id="pipView"></div>
-  <div id="pipInfo"></div>
-  <div class="pbar"><i id="pipBar"></i></div>
+  <div class="pbot"><div id="pipInfo"></div>
+  <div class="pbar"><i id="pipBar"></i></div></div>
 </div>
 <div id="musicBox" class="card" hidden>
   <button class="x" id="musicX">✕</button>
@@ -266,7 +267,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <button class="x" id="aboutX">✕</button>
   <h3>ที่มาข้อมูลและข้อจำกัด</h3>
   <ul>
-    <li><b>ขนาดและระดับของอาคาร</b> มาจากแบบกรมชลประทาน เลขที่ 184979 (ผังบริเวณ), 184980 (แปลน), 184981 (รูปตัด) ของโครงการชลประทานประจวบคีรีขันธ์ ลงวันที่ 18 ก.ค. 2546 และตารางข้อมูลฝายวังยาว กม.20+127</li>
+    <li><b>ขนาดและระดับของอาคาร</b> มาจากแบบกรมชลประทาน เลขที่ 184979 (ผังบริเวณ), 184980 (แปลน), 184981 (รูปตัด) ของโครงการชลประทานประจวบคีรีขันธ์ ลงวันที่ 18 ก.ค. 2546 และตารางข้อมูลฝายวังยาว</li>
     <li>ระดับสันฝาย +13.500 · ความยาวสันฝาย 39.40 ม. · พื้นเหนือน้ำ +9.500 · พื้นท้ายน้ำ +8.000 · ธรณีบานระบาย +10.500 · บานระบาย 6.00 × 3.33 ม. จำนวน 2 บาน · Q สูงสุด 670 ลบ.ม./วินาที · พื้นที่รับน้ำฝน 351.092 ตร.กม.</li>
     <li>รูปทรงห้องเครื่องกว้าน บันได และราวสะพาน ทำตามภาพถ่ายฝายวังยาวปี 2569 · พิกัด <a href="https://www.google.com/maps?q=11.231037,99.3041257" target="_blank">11.231037, 99.304126</a></li>
     <li><b>สมการจำลอง:</b> น้ำล้นสันฝาย Q = C·L·H<sup>1.5</sup> (C = 2.1) · น้ำไหลใต้บาน q = C·W·√(2gy) (C = 0.61) เมื่อยกบานพ้นน้ำใช้สมการฝายสันกว้าง · ระดับน้ำท้ายฝายคำนวณจากสมการแมนนิง · ความลึกหลังน้ำกระโดด y₂ = y₁/2·(√(1+8F₁²) − 1)</li>
@@ -1072,7 +1073,7 @@ document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMod
 $('cutZ').oninput = () => { cutPlane.constant = +$('cutZ').value; updateCaps(); };
 
 /* ---- ทัวร์ + แบบทดสอบ ---- */
-const TOUR = [{ intro: true, title: 'รู้จักฝายทดน้ำคลองบางสะพาน', text: 'ฝายวังยาว กม.20+127 สร้างขวางคลองบางสะพาน ต.พงศ์ประศาสน์ อ.บางสะพาน จ.ประจวบคีรีขันธ์ ทำหน้าที่ <b>ทดน้ำ</b> คือยกระดับน้ำในคลองให้สูงพอสำหรับใช้น้ำในฤดูแล้ง และ<b>ระบายน้ำหลาก</b>สูงสุด 670 ลบ.ม./วินาทีให้ผ่านไปอย่างปลอดภัย ทัวร์นี้จะพาไล่ดูทีละส่วนตามทางที่น้ำไหลจากต้นน้ำไปท้ายน้ำ', cam: HOME },
+const TOUR = [{ intro: true, title: 'รู้จักฝายทดน้ำคลองบางสะพาน', text: 'ฝายวังยาว สร้างขวางคลองบางสะพาน ต.พงศ์ประศาสน์ อ.บางสะพาน จ.ประจวบคีรีขันธ์ ทำหน้าที่ <b>ทดน้ำ</b> คือยกระดับน้ำในคลองให้สูงพอสำหรับใช้น้ำในฤดูแล้ง และ<b>ระบายน้ำหลาก</b>สูงสุด 670 ลบ.ม./วินาทีให้ผ่านไปอย่างปลอดภัย ทัวร์นี้จะพาไล่ดูทีละส่วนตามทางที่น้ำไหลจากต้นน้ำไปท้ายน้ำ', cam: HOME },
   ...PARTS.map(p => ({ id: p.id, title: p.th, text: p.desc })), { quiz: true, title: 'ทดสอบความเข้าใจ' }];
 const QUIZ = [
   { q: 'ถ้าเปิดบานระบายทั้ง 2 บานเต็มที่ในหน้าแล้ง จะเกิดอะไรขึ้น?', a: ['ระดับน้ำเหนือฝายลดต่ำกว่าสันฝาย เก็บน้ำไว้ใช้ไม่ได้', 'ระดับน้ำเหนือฝายสูงขึ้น', 'ไม่มีผลใด ๆ'], c: 0 },
