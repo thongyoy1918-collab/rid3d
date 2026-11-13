@@ -178,7 +178,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <button id="tShot" title="บันทึกภาพ 4K" class="hm">📷</button>
     <button id="tFull" title="เต็มจอ" class="hm">⛶</button>
     <button id="tSound" title="เปิด/ปิดเพลงและเสียง" style="font-size:12.5px;font-weight:600;padding:7px 11px">🔇 เพลง ปิด</button>
-    <button id="tMusic" title="ตั้งค่าเพลง / เสียงน้ำ">♫</button>
+    <button id="tMusic" title="ตั้งค่าเพลง">♫</button>
     <button id="tAbout" title="ที่มาข้อมูล">ⓘ</button>
     <a href="../" title="กลับหน้ารวม RID Prachuap 3D" style="display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:600;color:#1f4fa8;text-decoration:none;white-space:nowrap" class="hm">← RID 3D</a>
   </div>
@@ -233,14 +233,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 <div id="logFull" class="card" hidden></div>
 <div id="musicBox" class="card" hidden>
   <button class="x" id="musicX">✕</button>
-  <h4>♫ เพลงและเสียงประกอบ</h4>
+  <h4>♫ เพลงประกอบ</h4>
   <label><input type="radio" name="mus" value="off" checked> ปิดเพลง</label>
   <label><input type="radio" name="mus" value="calm"> เพลงบรรเลงผ่อนคลาย <small style="color:#94a3b8">(สร้างในเครื่อง)</small></label>
   <label><input type="radio" name="mus" value="file"> ไฟล์เพลงของฉัน… <small style="color:#94a3b8">(mp3 / m4a / wav)</small></label>
   <input type="file" id="musFile" accept="audio/*" hidden>
   <div class="row">🎵 เพลง <input type="range" id="musVol" min="0" max="100" value="45"></div>
-  <div class="row"><input type="checkbox" id="waterOn" checked> 💧 เสียงน้ำไหล <input type="range" id="waterVol" min="0" max="100" value="55"></div>
-  <div class="now" id="musNow">เสียงน้ำดังขึ้นตามปริมาณน้ำที่ไหลผ่านฝาย</div>
+  <div class="now" id="musNow">ปิดเพลงอยู่</div>
 </div>
 <div id="chartBig" hidden><div class="card"><button class="x" id="chartX">✕</button><h3>ระดับน้ำเหนือฝาย / ท้ายฝาย และน้ำไหลเข้า</h3><canvas id="sparkBig" width="2000" height="900"></canvas></div></div>
 
@@ -1104,23 +1103,17 @@ $('chartX').onclick = () => $('chartBig').hidden = true;
 $('chartBig').onclick = e => { if (e.target.id === 'chartBig') $('chartBig').hidden = true; };
 $('log').onclick = () => { const f = $('logFull'); f.hidden = !f.hidden; f.innerHTML = LOG.join('<br>'); };
 
-/* ---- เพลงและเสียงน้ำ (Web Audio — สร้างเสียงในเครื่อง ไม่ใช้ไฟล์ลิขสิทธิ์) ---- */
+/* ---- เพลงประกอบ (Web Audio — สร้างเสียงในเครื่อง ไม่ใช้ไฟล์ลิขสิทธิ์) ---- */
 const AU = { ctx: null, mode: 'off', timer: null, el: null, src: null, nextT: 0, step: 0 };
 function auInit() {
   if (AU.ctx) return; const C = AU.ctx = new (window.AudioContext || window.webkitAudioContext)();
   AU.master = C.createGain(); AU.master.connect(C.destination);
-  AU.music = C.createGain(); AU.music.gain.value = 0.45; AU.water = C.createGain(); AU.water.gain.value = 0;
+  AU.music = C.createGain(); AU.music.gain.value = 0.45;
   // ห้องเสียงก้อง (impulse สังเคราะห์)
   const len = C.sampleRate * 3.2, ir = C.createBuffer(2, len, C.sampleRate);
   for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
   AU.rev = C.createConvolver(); AU.rev.buffer = ir; const wet = C.createGain(); wet.gain.value = 0.55;
   AU.music.connect(AU.master); AU.music.connect(AU.rev); AU.rev.connect(wet); wet.connect(AU.master);
-  // เสียงน้ำ: pink noise → lowpass
-  const nb = C.createBuffer(1, C.sampleRate * 4, C.sampleRate), nd = nb.getChannelData(0); let b0 = 0, b1 = 0, b2 = 0;
-  for (let i = 0; i < nd.length; i++) { const w = Math.random() * 2 - 1; b0 = 0.99765 * b0 + w * 0.099; b1 = 0.963 * b1 + w * 0.2965; b2 = 0.57 * b2 + w * 1.0526; nd[i] = (b0 + b1 + b2 + w * 0.1848) * 0.18; }
-  const ns = C.createBufferSource(); ns.buffer = nb; ns.loop = true; AU.lp = C.createBiquadFilter(); AU.lp.type = 'lowpass'; AU.lp.frequency.value = 600; AU.lp.Q.value = 0.4;
-  const lfo = C.createOscillator(), lg = C.createGain(); lfo.frequency.value = 0.13; lg.gain.value = 180; lfo.connect(lg); lg.connect(AU.lp.frequency); lfo.start();
-  ns.connect(AU.lp); AU.lp.connect(AU.water); AU.water.connect(AU.master); ns.start();
 }
 const NOTE = n => 440 * Math.pow(2, (n - 69) / 12);
 const CHORDS = [[48, 55, 64, 71], [45, 52, 60, 67], [41, 48, 57, 64], [43, 50, 59, 62]];   // Cmaj7 · Am7 · Fmaj7 · G6
@@ -1154,24 +1147,21 @@ function setMusic(mode) {
   clearInterval(AU.timer); AU.timer = null; if (AU.el) AU.el.pause();
   if (mode === 'calm') { AU.nextT = AU.ctx.currentTime + 0.1; calmTick(); AU.timer = setInterval(calmTick, 250); $('musNow').textContent = 'กำลังเล่น: เพลงบรรเลงผ่อนคลาย (สุ่มทำนองใหม่ตลอด)'; }
   else if (mode === 'file' && AU.el) { AU.el.play().catch(() => {}); $('musNow').textContent = 'กำลังเล่น: ' + AU.fname; }
-  else if (mode === 'off') $('musNow').textContent = 'ปิดเพลง · เสียงน้ำ ' + ($('waterOn').checked ? 'เปิด' : 'ปิด');
+  else if (mode === 'off') $('musNow').textContent = 'ปิดเพลงอยู่';
   $('tMusic').classList.toggle('on', mode !== 'off'); if (mode !== 'off') { AU.lastMode = mode; AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); } soundBtn();
-  try { localStorage.setItem('weirMusic', JSON.stringify({ mode: mode === 'file' ? 'off' : mode, vol: +$('musVol').value, water: $('waterOn').checked, wvol: +$('waterVol').value })); } catch (e) {}
+  try { localStorage.setItem('weirMusic', JSON.stringify({ mode: mode === 'file' ? 'off' : mode, vol: +$('musVol').value })); } catch (e) {}
 }
-function soundBtn() { const on = AU.ctx && !AU.muted && (AU.mode !== 'off' || $('waterOn').checked); const b = $('tSound'); b.classList.toggle('on', !!on); b.textContent = on ? '🔊 เพลง เปิด' : '🔇 เพลง ปิด'; }
+function soundBtn() { const on = AU.ctx && !AU.muted && AU.mode !== 'off'; const b = $('tSound'); b.classList.toggle('on', !!on); b.textContent = on ? '🔊 เพลง เปิด' : '🔇 เพลง ปิด'; }
 function toggleSound() {
   auInit(); AU.ctx.resume?.();
   const playing = !AU.muted && AU.mode !== 'off';
-  if (playing || (!AU.muted && AU.mode === 'off' && $('waterOn').checked && AU.started)) { AU.muted = true; setMusic('off'); AU.master.gain.setTargetAtTime(0, AU.ctx.currentTime, 0.15); document.querySelector('input[name=mus][value=off]').checked = true; }
+  if (playing) { AU.muted = true; setMusic('off'); AU.master.gain.setTargetAtTime(0, AU.ctx.currentTime, 0.15); document.querySelector('input[name=mus][value=off]').checked = true; }
   else { AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); const m = AU.el && AU.lastMode === 'file' ? 'file' : 'calm'; document.querySelector(`input[name=mus][value=${m}]`).checked = true; setMusic(m); }
   soundBtn();
 }
 function audioUpdate() {
-  if (!AU.ctx) return; const C = AU.ctx, on = $('waterOn').checked, q = S.Qout;
-  const lvl = on ? (+$('waterVol').value / 100) * clamp(0.05 + Math.sqrt(q) / 18, 0.05, 1) * (S.speed ? 1 : 0.3) : 0;
-  AU.water.gain.setTargetAtTime(lvl * 0.9, C.currentTime, 0.4);
-  AU.lp.frequency.setTargetAtTime(420 + Math.min(2600, Math.sqrt(q) * 120), C.currentTime, 0.6);
-  AU.music.gain.setTargetAtTime(+$('musVol').value / 100 * 0.9, C.currentTime, 0.2);
+  if (!AU.ctx) return;
+  AU.music.gain.setTargetAtTime(+$('musVol').value / 100 * 0.9, AU.ctx.currentTime, 0.2);
 }
 $('tMusic').onclick = () => { $('musicBox').hidden = !$('musicBox').hidden; auInit(); AU.ctx.resume?.(); if (AU.mode === 'off') setMusic('off'); };
 $('musicX').onclick = () => $('musicBox').hidden = true;
@@ -1181,9 +1171,8 @@ document.querySelectorAll('input[name=mus]').forEach(r => r.onchange = () => {
 $('musFile').onchange = () => { const f = $('musFile').files[0]; if (!f) return; auInit();
   if (!AU.el) { AU.el = new Audio(); AU.el.loop = true; AU.src = AU.ctx.createMediaElementSource(AU.el); AU.src.connect(AU.music); }
   AU.el.src = URL.createObjectURL(f); AU.fname = f.name; setMusic('file'); };
-$('waterOn').onchange = () => setMusic(AU.mode);
 let musPref = 'calm';
-try { const sv = JSON.parse(localStorage.getItem('weirMusic') || 'null'); if (sv) { musPref = sv.mode || 'calm'; $('musVol').value = sv.vol; $('waterOn').checked = sv.water; $('waterVol').value = sv.wvol; } } catch (e) {}
+try { const sv = JSON.parse(localStorage.getItem('weirMusic') || 'null'); if (sv) { musPref = sv.mode || 'calm'; $('musVol').value = sv.vol; } } catch (e) {}
 // เริ่มเพลงบรรเลงอัตโนมัติเมื่อแตะ/คลิกหน้าเว็บครั้งแรก (ค่าเริ่มต้น) — ถ้าเคยปิดไว้จะไม่เปิดเอง
 const firstTouch = e => { removeEventListener('pointerdown', firstTouch, true); removeEventListener('keydown', firstTouch, true);
   if (e.target && e.target.closest && e.target.closest('#musicBox,#tMusic,#tSound')) return;
