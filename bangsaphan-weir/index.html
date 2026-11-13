@@ -205,7 +205,7 @@ body.night .chips span{background:#1f2a38b8;border-color:#3a4658;color:#eef2f7}b
 #hud .hm3 div{padding:0 8px;border-left:1px solid #e6e3da}#hud .hm3 div:first-child{padding-left:0;border-left:0}
 #hud small{display:block;font-size:10.5px;color:#7a867e}#hud b{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.3px}#hud i{font-style:normal;font-size:10px;color:#8b968e;margin-left:3px}
 body.sideopen #hud{opacity:0;pointer-events:none}
-body.zen #hud{opacity:0}
+body.zen #hud,body:has(#tour:not([hidden])) #hud{opacity:0;pointer-events:none}
 @media (max-width:1560px){#hud{bottom:96px}}
 @media (max-width:900px){#hud{display:none}.chips span{padding:5px 9px;font-size:13px}}
 .lb{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 3px;font-size:11.5px;border-radius:14px}
@@ -410,7 +410,7 @@ const SYSTEM = {
       { id: 'weir', th: 'สันฝายรูปโค้ง (Ogee)', en: 'Ogee weir crest', color: '#22d3ee',
         desc: 'สันฝายคอนกรีตยาว 39.40 ม. รูปโค้งตามแนวน้ำล้น น้ำจึงไหลแนบผิวลงสู่แอ่งน้ำนิ่งอย่างราบเรียบ ปริมาณน้ำล้นคำนวณจาก Q = C·L·H^1.5 โดย H คือความลึกน้ำเหนือสัน',
         spec: [['ระดับสันฝาย', '+13.50 ม.รทก.'], ['ความยาวสันฝาย', '39.40 ม. (4 ช่วง)'], ['สูงจากพื้นเหนือน้ำ', '4.00 ม.'], ['โค้งท้ายฝาย', 'R 3.621 ม. ลาด 45°']], kpis: ['Hw', 'Qw'] },
-      { id: 'gates', th: 'ประตูระบายน้ำ', en: 'Sluice gates', color: '#6366f1',
+      { id: 'gates', th: 'ประตูระบายน้ำ', en: 'Sluice gates', color: '#6366f1', cam: { pos: [GX + 38, 12.2, -20.4], tgt: [GX, 15.2, -22.15] },
         desc: 'บานระบายเหล็ก 2 บาน ขนาด 6.00 × 3.33 ม. ธรณี +10.50 ม.รทก. ใช้ระบายน้ำหลากและควบคุมระดับน้ำเหนือฝาย น้ำไหลใต้บานตามสูตร q = C·W·√(2gy)',
         spec: [['จำนวน / ขนาด', '2 บาน · 6.00 × 3.33 ม.'], ['ระดับธรณีด้านเหนือน้ำ', '+10.50 ม.รทก.'], ['ระดับพื้นท้ายบาน', '+8.00 ม.รทก.']], kpis: ['a1', 'a2', 'Qg'] },
       { id: 'sand', th: 'ช่องระบายทราย', en: 'Sand sluice', color: '#c2410c',
@@ -1115,6 +1115,7 @@ function highlight(id, on) {
     else if (o.userData.base) o.material = o.userData.base; });
 }
 let flyAnim = null;
+window.__weir = { camera, controls, flyTo: v => flyTo(v) };
 function flyTo(v, dur = 1.3) { flyAnim = { t: 0, dur, p0: camera.position.clone(), t0: controls.target.clone(), p1: V3(...v.pos), t1: V3(...v.tgt) }; }
 const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 function camFor(p) {
