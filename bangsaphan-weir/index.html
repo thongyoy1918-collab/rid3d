@@ -1269,13 +1269,6 @@ function keys(f, t, vol) { const C = AU.ctx, o = C.createOscillator(), o2 = C.cr
   g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + 0.01); g2.gain.exponentialRampToValueAtTime(0.0008, t + 1.6); o.connect(g2); g2.connect(AU.music); o.start(t); o2.start(t); o.stop(t + 1.7); o2.stop(t + 1.7); }
 const TRACKS = [
   { id: 'hanami', name: 'Hanami Dreams', tag: 'Japanese lofi · lofiroomcafe · 2:43', file: 'music/hanami-dreams.mp3' },
-  { id: 'chill', name: 'ชิลยามค่ำ · พักสายตา', tag: '70 BPM · เปียโนนุ่ม', bpm: 70, chords: [[41, 52, 57, 60, 64, 67], [40, 50, 55, 59, 62], [38, 50, 53, 57, 60, 64], [36, 48, 52, 55, 59, 62]], scale: [72, 74, 76, 79, 81, 84, 86], bass: 'soft', hat: 'swing', lead: 'keys', dens: 0.32, hold: 1, kick: 'soft', crackle: true, padMul: 1.25 },
-  { id: 'calm', name: 'ริมน้ำผ่อนคลาย', tag: '92 BPM', bpm: 92, chords: [[48, 55, 64, 71], [45, 52, 60, 67], [41, 48, 57, 64], [43, 50, 59, 62]], scale: [72, 74, 76, 79, 81, 84, 86, 88], bass: 'walk', hat: '8', lead: 'bell', dens: 0.75, hold: 2 },
-  { id: 'morning', name: 'เช้าในสวนมะพร้าว', tag: '66 BPM · ช้า', bpm: 66, chords: [[41, 48, 57, 64, 67], [43, 50, 59, 62, 69], [45, 52, 60, 64, 67], [41, 48, 55, 64, 69]], scale: [77, 79, 81, 84, 86, 88, 91], bass: 'root', hat: 'none', lead: 'bell', dens: 0.45, hold: 1 },
-  { id: 'breeze', name: 'ลมทะเลบางสะพาน', tag: '112 BPM · บอสซ่า', bpm: 112, chords: [[50, 57, 65, 72], [55, 62, 65, 71], [50, 57, 64, 69], [52, 59, 67, 74]], scale: [74, 76, 77, 79, 81, 83, 86], bass: 'bossa', hat: '16', lead: 'keys', dens: 0.55, hold: 1 },
-  { id: 'ranat', name: 'ระนาดบรรเลง', tag: '100 BPM · ไทย', bpm: 100, chords: [[43, 50, 59, 62], [48, 55, 64, 67], [45, 52, 60, 64], [43, 50, 59, 62]], scale: [67, 69, 71, 74, 76, 79, 81, 83, 86], bass: 'root', hat: '8', lead: 'ranat', dens: 0.9, hold: 1 },
-  { id: 'lofi', name: 'โลไฟยามค่ำ', tag: '80 BPM · ชิล', bpm: 80, chords: [[45, 52, 60, 67, 71], [50, 57, 60, 65, 69], [43, 50, 59, 65, 69], [48, 55, 64, 71]], scale: [69, 72, 74, 76, 79, 81, 84], bass: 'root', hat: 'swing', lead: 'keys', dens: 0.4, hold: 1, kick: true },
-  { id: 'fun', name: 'สนุกริมคลอง', tag: '124 BPM · เร็ว', bpm: 124, chords: [[48, 55, 64, 67], [43, 50, 59, 62], [45, 52, 60, 64], [41, 48, 57, 60]], scale: [72, 74, 76, 79, 81, 84], bass: 'walk', hat: '8', lead: 'bell', dens: 0.85, hold: 1, kick: true },
 ];
 function musicTick() {
   const C = AU.ctx, T = AU.track, beat = 60 / T.bpm, BAR = beat * 4, e8 = beat / 2, e16 = beat / 4;
@@ -1313,11 +1306,11 @@ function markTrack() { crackle(!!(AU.track && AU.track.crackle && AU.mode.starts
 function setMusic(mode) {
   auInit(); AU.ctx.resume?.(); AU.mode = mode;
   clearInterval(AU.timer); AU.timer = null; if (AU.el) AU.el.pause();
-  if (mode === 'calm') mode = AU.mode = 't:calm';
+  if (mode !== 'off' && mode !== 'file') mode = AU.mode = 't:hanami';   // ใช้เพลง Hanami Dreams เพลงเดียว
   if (AU.tel) AU.tel.pause();
   if (mode.startsWith('t:') && (TRACKS.find(t => 't:' + t.id === mode) || {}).file) { AU.track = TRACKS.find(t => 't:' + t.id === mode); AU.mode = mode;
     if (!AU.tel) { AU.tel = new Audio(); AU.tel.preload = 'auto'; AU.tsrc = AU.ctx.createMediaElementSource(AU.tel); AU.tsrc.connect(AU.music);
-      AU.tel.onended = () => { if ($('musAuto').checked && !document.body.classList.contains('zen')) $('musNext').onclick(); else { AU.tel.currentTime = 0; AU.tel.play().catch(() => {}); } }; }
+      AU.tel.loop = true; }
     if (!AU.tel.src.endsWith(AU.track.file)) AU.tel.src = AU.track.file;
     AU.tel.play().catch(() => {}); markTrack(); $('musNow').textContent = `กำลังเล่น: ${AU.track.name} (${AU.track.tag})`; }
   else if (mode.startsWith('t:')) { AU.track = TRACKS.find(t => 't:' + t.id === mode) || TRACKS[1]; AU.mode = mode = 't:' + AU.track.id; AU.bars = 0; AU.step = 0; AU.nextT = AU.ctx.currentTime + 0.1; musicTick(); AU.timer = setInterval(musicTick, 250); markTrack(); }
@@ -1353,7 +1346,7 @@ try { const sv = JSON.parse(localStorage.getItem('weirMusic') || 'null'); if (sv
 // เริ่มเพลงบรรเลงอัตโนมัติเมื่อแตะ/คลิกหน้าเว็บครั้งแรก (ค่าเริ่มต้น) — ถ้าเคยปิดไว้จะไม่เปิดเอง
 const firstTouch = e => { removeEventListener('pointerdown', firstTouch, true); removeEventListener('keydown', firstTouch, true);
   if (e.target && e.target.closest && e.target.closest('#musicBox,#tMusic,#tSound')) return;
-  if (musPref && musPref !== 'off') setMusic(musPref === 'calm' ? 't:calm' : musPref); };
+  if (musPref && musPref !== 'off') setMusic('t:hanami'); };
 addEventListener('pointerdown', firstTouch, true); addEventListener('keydown', firstTouch, true);
 
 /* ---- บรรยากาศ: เวลาและสภาพอากาศ ---- */
