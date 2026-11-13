@@ -213,6 +213,10 @@ body.zen #hud,body:has(#tour:not([hidden])) #hud{opacity:0;pointer-events:none}
 .lb.sel em{background:#e2e9db;color:#1f2f29}
 .segs button i[data-ic] svg{width:16px;height:16px}
 .big i[data-ic]{margin-right:6px}
+.pimg{margin:8px 0 10px}.pimg img{width:100%;aspect-ratio:16/8;object-fit:cover;border-radius:10px;display:block;cursor:zoom-in;border:1px solid #e3e1d8}
+.pimg figcaption{font-size:10.5px;color:#8b968e;margin-top:4px}
+#pzoom{position:fixed;inset:0;z-index:90;background:#0b1410d9;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:4vh 4vw}
+#pzoom img{max-width:100%;max-height:100%;border-radius:12px;box-shadow:0 20px 60px #0008}
 [hidden]{display:none!important}
 @media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
 @media (max-width:560px){#tabs{top:70px;transform:translateX(-50%);position:fixed}#hero{top:118px}#hero .k{margin-bottom:8px}#hero p{display:none}#side{top:118px}}
@@ -410,7 +414,7 @@ const SYSTEM = {
       { id: 'weir', th: 'สันฝายรูปโค้ง (Ogee)', en: 'Ogee weir crest', color: '#22d3ee',
         desc: 'สันฝายคอนกรีตยาว 39.40 ม. รูปโค้งตามแนวน้ำล้น น้ำจึงไหลแนบผิวลงสู่แอ่งน้ำนิ่งอย่างราบเรียบ ปริมาณน้ำล้นคำนวณจาก Q = C·L·H^1.5 โดย H คือความลึกน้ำเหนือสัน',
         spec: [['ระดับสันฝาย', '+13.50 ม.รทก.'], ['ความยาวสันฝาย', '39.40 ม. (4 ช่วง)'], ['สูงจากพื้นเหนือน้ำ', '4.00 ม.'], ['โค้งท้ายฝาย', 'R 3.621 ม. ลาด 45°']], kpis: ['Hw', 'Qw'] },
-      { id: 'gates', th: 'ประตูระบายน้ำ', en: 'Sluice gates', color: '#6366f1', cam: { pos: [GX + 38, 12.2, -20.4], tgt: [GX, 15.2, -22.15] },
+      { id: 'gates', th: 'ประตูระบายน้ำ', en: 'Sluice gates', color: '#6366f1',
         desc: 'บานระบายเหล็ก 2 บาน ขนาด 6.00 × 3.33 ม. ธรณี +10.50 ม.รทก. ใช้ระบายน้ำหลากและควบคุมระดับน้ำเหนือฝาย น้ำไหลใต้บานตามสูตร q = C·W·√(2gy)',
         spec: [['จำนวน / ขนาด', '2 บาน · 6.00 × 3.33 ม.'], ['ระดับธรณีด้านเหนือน้ำ', '+10.50 ม.รทก.'], ['ระดับพื้นท้ายบาน', '+8.00 ม.รทก.']], kpis: ['a1', 'a2', 'Qg'] },
       { id: 'sand', th: 'ช่องระบายทราย', en: 'Sand sluice', color: '#c2410c',
@@ -1131,10 +1135,14 @@ function selectPart(id, fly = true) {
   if (fly) flyTo(camFor(p));
   if (mode !== 'tour') { showInfo(p); openSide('explore'); $('side').scrollTop = 0; }
 }
+const PIMG = { weir: 1, gates: 1, sand: 1, bridge: 1, hoist: 1, walls: 1 };
+const pimgHTML = id => PIMG[id] ? `<figure class="pimg"><img src="img/part-${id}.jpg" alt="" loading="lazy" data-zoom><figcaption>ภาพจากแบบจำลอง · คลิกเพื่อขยาย</figcaption></figure>` : '';
+document.addEventListener('click', e => { const im = e.target.closest && e.target.closest('img[data-zoom]'); if (!im) return;
+  const z = document.createElement('div'); z.id = 'pzoom'; z.innerHTML = `<img src="${im.src}">`; z.onclick = () => z.remove(); document.body.appendChild(z); });
 function showInfo(p) {
   const el = $('info'); el.hidden = false;
   el.innerHTML = `<button class="x" id="infoX">✕</button><div class="k">${p.group.th} · ${p.group.en}</div><h3>${p.th}</h3><div class="en">${p.en}</div>
-    <p>${p.desc}</p><table class="spec">${p.spec.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>
+    ${pimgHTML(p.id)}<p>${p.desc}</p><table class="spec">${p.spec.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>
     ${p.kpis.length ? `<div class="k" style="margin-top:8px">ค่าจากการจำลองขณะนี้</div><div class="live" id="infoLive">${kpiHTML(p.kpis)}</div>` : ''}
     <div class="btnrow">${['weir', 'gates', 'sand', 'basin', 'endsill', 'apron', 'blocks'].includes(p.id) ? '<button class="btn pri" id="infoCut">✂ ดูในรูปตัด</button>' : ''}<button class="btn" id="infoNext">ส่วนถัดไป →</button></div>`;
   $('infoX').onclick = () => { el.hidden = true; highlight(selId, false); selId = null; document.querySelectorAll('.pr').forEach(b => b.classList.remove('sel')); };
@@ -1199,7 +1207,7 @@ function tourGo(i) {
   const head = `<div class="k">${s.intro ? 'เริ่มต้น' : s.quiz ? 'ท้ายทัวร์' : `ขั้นที่ ${tIdx}/${TOUR.length - 2} · ${findPart(s.id).group.th}`}</div><h3>${s.title}</h3>`;
   let body = '';
   if (s.quiz) body = QUIZ.map((q, qi) => `<div class="quiz"><p><b>${qi + 1}. ${q.q}</b></p>${q.a.map((a, ai) => `<label data-q="${qi}" data-a="${ai}">${a}</label>`).join('')}</div>`).join('') + '<p style="color:#64748b">ลองต่อ: กด “🌧 น้ำหลากตามแบบ 670” ที่แผงด้านล่าง แล้วดูว่าระดับน้ำขึ้นสูงสุดเท่าไร และน้ำกระโดดยังอยู่ในแอ่งหรือไม่</p>';
-  else body = `<p>${s.text}</p>` + (s.id ? `<div class="live">${kpiHTML(findPart(s.id).kpis.slice(0, 4))}</div>` : '');
+  else body = (s.id ? pimgHTML(s.id) : '') + `<p>${s.text}</p>` + (s.id ? `<div class="live">${kpiHTML(findPart(s.id).kpis.slice(0, 4))}</div>` : '');
   el.innerHTML = `<button class="x" id="tourX">✕</button>${head}${body}<div class="prog"><i style="width:${tIdx / (TOUR.length - 1) * 100}%"></i></div>
     <div class="btnrow"><button class="btn" id="tPrev" ${tIdx ? '' : 'disabled'}>← ย้อนกลับ</button><button class="btn ${tAuto ? 'on' : ''}" id="tPlay">${tAuto ? '❚❚ หยุด' : '▶ เล่นอัตโนมัติ'}</button><button class="btn pri" id="tNext">${tIdx < TOUR.length - 1 ? 'ถัดไป →' : 'จบทัวร์'}</button></div>`;
   $('tourX').onclick = () => setMode('explore'); $('tPrev').onclick = () => tourGo(tIdx - 1);
