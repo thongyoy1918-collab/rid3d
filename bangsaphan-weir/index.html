@@ -1116,25 +1116,32 @@ const CHORDS = [[48, 55, 64, 71], [45, 52, 60, 67], [41, 48, 57, 64], [43, 50, 5
 const PENTA = [72, 74, 76, 79, 81, 84, 86, 88];
 function pad(f, t, dur, vol) { const C = AU.ctx, o = C.createOscillator(), o2 = C.createOscillator(), g2 = C.createGain(), flt = C.createBiquadFilter();
   o.type = 'triangle'; o2.type = 'sine'; o.frequency.value = f; o2.frequency.value = f * 1.003; flt.type = 'lowpass'; flt.frequency.value = 1400;
-  g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + 1.6); g2.gain.setValueAtTime(vol, t + dur - 1.8); g2.gain.linearRampToValueAtTime(0, t + dur + 1.5);
+  const at = Math.min(1.6, dur * 0.2); g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + at); g2.gain.setValueAtTime(vol, t + dur - at); g2.gain.linearRampToValueAtTime(0, t + dur + 0.9);
   o.connect(flt); o2.connect(flt); flt.connect(g2); g2.connect(AU.music); o.start(t); o2.start(t); o.stop(t + dur + 1.6); o2.stop(t + dur + 1.6); }
 function bell(f, t, vol) { const C = AU.ctx, o = C.createOscillator(), g2 = C.createGain(); o.type = 'sine'; o.frequency.value = f;
-  g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + 0.02); g2.gain.exponentialRampToValueAtTime(0.0008, t + 2.6);
-  o.connect(g2); g2.connect(AU.music); o.start(t); o.stop(t + 2.7); }
+  g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + 0.01); g2.gain.exponentialRampToValueAtTime(0.0008, t + 1.3);
+  o.connect(g2); g2.connect(AU.music); o.start(t); o.stop(t + 1.4); }
+function pluck(f, t, vol) { const C = AU.ctx, o = C.createOscillator(), g2 = C.createGain(), flt = C.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.value = f; flt.type = 'lowpass'; flt.frequency.setValueAtTime(900, t); flt.frequency.exponentialRampToValueAtTime(160, t + 0.4);
+  g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + 0.01); g2.gain.exponentialRampToValueAtTime(0.0008, t + 0.55); o.connect(flt); flt.connect(g2); g2.connect(AU.music); o.start(t); o.stop(t + 0.6); }
+function shaker(t, vol) { const C = AU.ctx; if (!AU.nz) { const nb = C.createBuffer(1, C.sampleRate * 0.2, C.sampleRate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; AU.nz = nb; }
+  const s0 = C.createBufferSource(), hp = C.createBiquadFilter(), g2 = C.createGain(); s0.buffer = AU.nz; hp.type = 'highpass'; hp.frequency.value = 6500;
+  g2.gain.setValueAtTime(vol, t); g2.gain.exponentialRampToValueAtTime(0.0005, t + 0.09); s0.connect(hp); hp.connect(g2); g2.connect(AU.music); s0.start(t); s0.stop(t + 0.12); }
 function calmTick() {
-  const C = AU.ctx, BAR = 6.4;
-  while (AU.nextT < C.currentTime + 1.5) {
-    const t = AU.nextT, ch = CHORDS[AU.step % 4];
-    ch.forEach((n, i) => pad(NOTE(n), t, BAR, i ? 0.035 : 0.05));
-    let last = PENTA[3];
-    for (let k = 0; k < 4; k++) if (Math.random() < 0.72) { last = PENTA[clamp(PENTA.indexOf(last) + Math.floor(Math.random() * 5) - 2, 0, PENTA.length - 1)]; bell(NOTE(last), t + k * BAR / 4 + Math.random() * 0.25, 0.045); }
-    AU.nextT += BAR; AU.step++;
+  const C = AU.ctx, BAR = 2.6, beat = BAR / 4, e8 = BAR / 8;   // ≈ 92 BPM
+  while (AU.nextT < C.currentTime + 1.2) {
+    const t = AU.nextT, ch = CHORDS[Math.floor(AU.step / 2) % 4];
+    if (AU.step % 2 === 0) ch.forEach((n, i) => pad(NOTE(n), t, BAR * 2, i ? 0.028 : 0.04));
+    for (let k = 0; k < 4; k++) pluck(NOTE(ch[0] - 12 + (k === 2 ? 7 : 0)), t + k * beat, k % 2 ? 0.05 : 0.08);  // เบสเดินตามจังหวะ
+    for (let k = 0; k < 8; k++) shaker(t + k * e8 + (k % 2 ? 0.02 : 0), k % 2 ? 0.05 : 0.022);
+    let last = AU.lastNote || PENTA[3];
+    for (let k = 0; k < 8; k++) if (Math.random() < (k % 2 ? 0.55 : 0.85)) { last = PENTA[clamp(PENTA.indexOf(last) + Math.floor(Math.random() * 5) - 2, 0, PENTA.length - 1)]; bell(NOTE(last), t + k * e8, 0.04); }
+    AU.lastNote = last; AU.nextT += BAR; AU.step++;
   }
 }
 function setMusic(mode) {
   auInit(); AU.ctx.resume?.(); AU.mode = mode;
   clearInterval(AU.timer); AU.timer = null; if (AU.el) AU.el.pause();
-  if (mode === 'calm') { AU.nextT = AU.ctx.currentTime + 0.1; calmTick(); AU.timer = setInterval(calmTick, 500); $('musNow').textContent = 'กำลังเล่น: เพลงบรรเลงผ่อนคลาย (สุ่มทำนองใหม่ตลอด)'; }
+  if (mode === 'calm') { AU.nextT = AU.ctx.currentTime + 0.1; calmTick(); AU.timer = setInterval(calmTick, 250); $('musNow').textContent = 'กำลังเล่น: เพลงบรรเลงผ่อนคลาย (สุ่มทำนองใหม่ตลอด)'; }
   else if (mode === 'file' && AU.el) { AU.el.play().catch(() => {}); $('musNow').textContent = 'กำลังเล่น: ' + AU.fname; }
   else if (mode === 'off') $('musNow').textContent = 'ปิดเพลง · เสียงน้ำ ' + ($('waterOn').checked ? 'เปิด' : 'ปิด');
   $('tMusic').classList.toggle('on', mode !== 'off'); if (mode !== 'off') { AU.lastMode = mode; AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); } soundBtn();
