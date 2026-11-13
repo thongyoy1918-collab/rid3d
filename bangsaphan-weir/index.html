@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#dcdbd5;--bar:#ecebe5;--ink:#1f2f29;--dark:#233d33;--mut:#6b7a70;--sub:#6e8173;--pill:#dfe6d4;--panel:#f4f2ec;--line:#d9d6cc;--ok:#3f7d4e;--warn:#b7791f;--bad:#b4382f}
+:root{--bg:#eef1f4;--bar:#ecebe5;--ink:#1f2f29;--dark:#233d33;--mut:#6b7a70;--sub:#6e8173;--pill:#dfe6d4;--panel:#f4f2ec;--line:#d9d6cc;--ok:#3f7d4e;--warn:#b7791f;--bad:#b4382f}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);font-family:'IBM Plex Sans Thai',system-ui,sans-serif;color:var(--ink);font-size:13.5px}
 #c{position:fixed;inset:0;display:block}
@@ -154,10 +154,12 @@ body.sideopen #compass{right:430px}
 #chartBig .card{position:relative;padding:16px 18px 12px;width:min(1100px,94vw)}
 #chartBig canvas{width:100%;height:auto;display:block;background:#f8f7f2;border-radius:10px}
 #chartBig h3{margin:0 0 8px;font-size:15px}
-#musicBox{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;width:300px;padding:14px;z-index:30}
+#musicBox{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;width:330px;max-height:70vh;overflow:auto;padding:14px;z-index:30}
 #musicBox h4{margin:0 0 8px;font-size:14px}
 #musicBox label{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12.5px}
 #musicBox label:hover{background:#ebe9e1}
+#musicBox label small.t{margin-left:auto;color:#8b968e;font-size:10.5px}
+#musicBox label.playing{background:var(--pill);font-weight:600}
 #musicBox .row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px}
 #musicBox input[type=range]{flex:1}
 #musicBox .now{font-size:11px;color:var(--mut);margin-top:6px;min-height:15px}
@@ -255,7 +257,7 @@ body.sideopen #compass{right:430px}
   <button id="tRot" title="หมุนชม">⟳ หมุนชม</button>
   <button id="tReset" title="เริ่มใหม่">↺ เริ่มใหม่</button>
   <button id="tSound" title="เปิด/ปิดเพลง">🔇 เพลง</button>
-  <button id="tMusic" class="hm" title="ตั้งค่าเพลง">♫</button>
+  <button id="tMusic" title="ลิสต์เพลง">♫ ลิสต์เพลง</button>
   <button id="tShot" class="hm" title="บันทึกภาพ 4K">📷</button>
   <button id="tFull" class="hm" title="เต็มจอ">⛶</button>
 </nav>
@@ -271,11 +273,12 @@ body.sideopen #compass{right:430px}
 <div id="logFull" class="card" hidden></div>
 <div id="musicBox" class="card" hidden>
   <button class="x" id="musicX">✕</button>
-  <h4>♫ เพลงประกอบ</h4>
-  <label><input type="radio" name="mus" value="off" checked> ปิดเพลง</label>
-  <label><input type="radio" name="mus" value="calm"> เพลงบรรเลงผ่อนคลาย <small style="color:#94a3b8">(สร้างในเครื่อง)</small></label>
-  <label><input type="radio" name="mus" value="file"> ไฟล์เพลงของฉัน… <small style="color:#94a3b8">(mp3 / m4a / wav)</small></label>
+  <h4>♫ ลิสต์เพลง</h4>
+  <label><input type="radio" name="mus" value="off" checked> ⏹ ปิดเพลง</label>
+  <div id="trackList"></div>
+  <label><input type="radio" name="mus" value="file"> 📁 ไฟล์เพลงของฉัน… <small style="color:#94a3b8">(mp3 / m4a / wav)</small></label>
   <input type="file" id="musFile" accept="audio/*" hidden>
+  <div class="row"><input type="checkbox" id="musAuto" checked> เล่นต่อเนื่องทั้งลิสต์ (เปลี่ยนเพลงทุก ~1.5 นาที) <button class="btn" id="musNext" style="margin-left:auto">⏭</button></div>
   <div class="row">🎵 เพลง <input type="range" id="musVol" min="0" max="100" value="45"></div>
   <div class="now" id="musNow">ปิดเพลงอยู่</div>
 </div>
@@ -467,8 +470,8 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#dcdbd5');
-scene.fog = new THREE.Fog('#dcdbd5', 520, 1200);
+scene.background = new THREE.Color('#eef1f4');
+scene.fog = new THREE.Fog('#eef1f4', 420, 980);
 const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 3000);
 const HOME = { pos: [-150, 98, 168], tgt: [10, 9, 6] };
 camera.position.set(...HOME.pos);
@@ -632,20 +635,13 @@ function buildTerrain() {
   const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide }));
   m.receiveShadow = true; m.raycast = () => {}; scene.add(m);
   // ขอบไดโอรามา
-  // ขอบไดโอรามาเป็นชั้นดิน (หญ้า → ดินชั้นบน → ดินชั้นล่าง → ฐานเข้ม)
-  const BANDS = [[0.9, '#8faa64'], [3.2, '#9b7c56'], [5.5, '#7e6345'], [99, '#5e4a36']];
-  const skirt = (pts) => { const v = [], col = [], cc = new THREE.Color();
-    for (let i = 0; i < pts.length - 1; i++) { const [x0, z0] = pts[i], [x1, z1] = pts[i + 1]; const y0 = terrainH(x0, z0), y1 = terrainH(x1, z1);
-      let d0 = 0;
-      for (const [d, hex] of BANDS) { const ta0 = Math.max(2, y0 - d0), ta1 = Math.max(2, y1 - d0), tb0 = Math.max(2, y0 - d), tb1 = Math.max(2, y1 - d); if (ta0 <= 2 && ta1 <= 2) break;
-        v.push(x0, ta0, z0, x1, ta1, z1, x1, tb1, z1, x0, ta0, z0, x1, tb1, z1, x0, tb0, z0); cc.set(hex); for (let k = 0; k < 6; k++) col.push(cc.r, cc.g, cc.b); d0 = d; } }
-    const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); g2.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g2.computeVertexNormals();
-    const sm = new THREE.Mesh(g2, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide })); sm.raycast = () => {}; scene.add(sm); };
+  const skirt = (pts) => { const v = []; for (let i = 0; i < pts.length - 1; i++) { const [x0, z0] = pts[i], [x1, z1] = pts[i + 1]; const y0 = terrainH(x0, z0), y1 = terrainH(x1, z1);
+    v.push(x0, y0, z0, x1, y1, z1, x1, 2, z1, x0, y0, z0, x1, 2, z1, x0, 2, z0); } const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); g2.computeVertexNormals();
+    const sm = new THREE.Mesh(g2, new THREE.MeshStandardMaterial({ color: '#8a6d4b', roughness: 1, side: THREE.DoubleSide })); sm.raycast = () => {}; scene.add(sm); };
   const N = 240; const edge = (fx) => Array.from({ length: N + 1 }, (_, i) => fx(i / N));
   skirt(edge(t => [lerp(TX[0], TX[1], t), TZ[1]])); skirt(edge(t => [lerp(TX[0], TX[1], t), TZ[0]]));
   skirt(edge(t => [TX[0], lerp(TZ[0], TZ[1], t)])); skirt(edge(t => [TX[1], lerp(TZ[0], TZ[1], t)]));
   const base = new THREE.Mesh(new THREE.BoxGeometry(TX[1] - TX[0], 2, TZ[1] - TZ[0]), M.soil); base.position.y = 1; base.raycast = () => {}; scene.add(base);
-  const plinth = new THREE.Mesh(new THREE.BoxGeometry(TX[1] - TX[0] + 10, 5, TZ[1] - TZ[0] + 10), std('#2e2a25')); plinth.position.y = -0.5; plinth.raycast = () => {}; plinth.receiveShadow = true; scene.add(plinth);
 }
 
 /* ================= โครงสร้างฝาย ================= */
@@ -823,7 +819,7 @@ function buildTrees() {
   const crownG = mergeGeometries(frond); crownG.translate(0, 9.2, 0);
   const trunkG = new THREE.CylinderGeometry(0.16, 0.26, 9.4, 6); trunkG.translate(0, 4.7, 0);
   const N = 900, trunks = new THREE.InstancedMesh(trunkG, std('#8a7a63'), N), crowns = new THREE.InstancedMesh(crownG, std('#ffffff', { side: THREE.DoubleSide }), N);
-  const tall = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.2, 1), std('#ffffff', { flatShading: true }), 260);
+  const tall = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.2, 0), std('#ffffff', { flatShading: true }), 260);
   const o = new THREE.Object3D(), c = new THREE.Color(); let k = 0, kt = 0;
   const roadPts = ROADS.flatMap(rc => rc.getSpacedPoints(80));
   const ok = (x, z) => { const [, d, w] = natural(x, z); if (d < w + 12) return false; if (x > -70 && x < 120 && Math.abs(z) < 62) return false; if (x > -60 && x < -30 && z > -75 && z < -50) return false;
@@ -834,7 +830,7 @@ function buildTrees() {
     const y = terrainH(x, z), s = 0.75 + Math.random() * 0.5;
     o.position.set(x, y - 0.2, z); o.rotation.set((Math.random() - 0.5) * 0.18, Math.random() * 6.3, (Math.random() - 0.5) * 0.18); o.scale.set(s, s * (0.9 + Math.random() * 0.4), s); o.updateMatrix();
     trunks.setMatrixAt(k, o.matrix); crowns.setMatrixAt(k, o.matrix); c.setHSL(0.24 + Math.random() * 0.05, 0.45, 0.28 + Math.random() * 0.1); crowns.setColorAt(k, c); k++;
-    if (kt < 260 && Math.random() < 0.25) { const x2 = x + 4 + Math.random() * 3, z2 = z + Math.random() * 4; if (ok(x2, z2)) { o.position.set(x2, terrainH(x2, z2) + 2.4, z2); o.rotation.set(0, Math.random() * 3, 0); const s2 = 0.7 + Math.random() * 0.6; o.scale.set(s2, s2 * 0.9, s2); o.updateMatrix(); tall.setMatrixAt(kt, o.matrix); const rr = Math.random(); if (rr < 0.08) c.set('#e4a3b8'); else if (rr < 0.14) c.set('#e5844f'); else if (rr < 0.19) c.set('#a58bcb'); else if (rr < 0.24) c.set('#e3c64c'); else c.setHSL(0.24 + Math.random() * 0.07, 0.38, 0.27 + Math.random() * 0.12); tall.setColorAt(kt, c); kt++; } }
+    if (kt < 260 && Math.random() < 0.25) { const x2 = x + 4 + Math.random() * 3, z2 = z + Math.random() * 4; if (ok(x2, z2)) { o.position.set(x2, terrainH(x2, z2) + 2.4, z2); o.rotation.set(0, Math.random() * 3, 0); const s2 = 0.7 + Math.random() * 0.6; o.scale.set(s2, s2 * 0.9, s2); o.updateMatrix(); tall.setMatrixAt(kt, o.matrix); c.setHSL(0.27 + Math.random() * 0.04, 0.4, 0.25 + Math.random() * 0.08); tall.setColorAt(kt, c); kt++; } }
   }
   trunks.count = crowns.count = k; tall.count = kt;
   for (const m of [trunks, crowns, tall]) { m.castShadow = true; m.raycast = () => {}; scene.add(m); }
@@ -1184,24 +1180,53 @@ function pluck(f, t, vol) { const C = AU.ctx, o = C.createOscillator(), g2 = C.c
 function shaker(t, vol) { const C = AU.ctx; if (!AU.nz) { const nb = C.createBuffer(1, C.sampleRate * 0.2, C.sampleRate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; AU.nz = nb; }
   const s0 = C.createBufferSource(), hp = C.createBiquadFilter(), g2 = C.createGain(); s0.buffer = AU.nz; hp.type = 'highpass'; hp.frequency.value = 6500;
   g2.gain.setValueAtTime(vol, t); g2.gain.exponentialRampToValueAtTime(0.0005, t + 0.09); s0.connect(hp); hp.connect(g2); g2.connect(AU.music); s0.start(t); s0.stop(t + 0.12); }
-function calmTick() {
-  const C = AU.ctx, BAR = 2.6, beat = BAR / 4, e8 = BAR / 8;   // ≈ 92 BPM
+function kick(t, vol) { const C = AU.ctx, o = C.createOscillator(), g2 = C.createGain(); o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.18);
+  g2.gain.setValueAtTime(vol, t); g2.gain.exponentialRampToValueAtTime(0.0008, t + 0.32); o.connect(g2); g2.connect(AU.music); o.start(t); o.stop(t + 0.35); }
+function ranat(f, t, vol) { const C = AU.ctx; for (const [m, v] of [[1, 1], [2, 0.35], [4.1, 0.12]]) { const o = C.createOscillator(), g2 = C.createGain(); o.type = 'triangle'; o.frequency.value = f * m;
+  g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol * v, t + 0.004); g2.gain.exponentialRampToValueAtTime(0.0006, t + 0.45); o.connect(g2); g2.connect(AU.music); o.start(t); o.stop(t + 0.5); } }
+function keys(f, t, vol) { const C = AU.ctx, o = C.createOscillator(), o2 = C.createOscillator(), g2 = C.createGain(); o.type = 'sine'; o2.type = 'triangle'; o.frequency.value = f; o2.frequency.value = f * 2.001;
+  const g3 = C.createGain(); g3.gain.value = 0.25; o2.connect(g3); g3.connect(g2);
+  g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + 0.01); g2.gain.exponentialRampToValueAtTime(0.0008, t + 1.6); o.connect(g2); g2.connect(AU.music); o.start(t); o2.start(t); o.stop(t + 1.7); o2.stop(t + 1.7); }
+const TRACKS = [
+  { id: 'calm', name: 'ริมน้ำผ่อนคลาย', tag: '92 BPM', bpm: 92, chords: [[48, 55, 64, 71], [45, 52, 60, 67], [41, 48, 57, 64], [43, 50, 59, 62]], scale: [72, 74, 76, 79, 81, 84, 86, 88], bass: 'walk', hat: '8', lead: 'bell', dens: 0.75, hold: 2 },
+  { id: 'morning', name: 'เช้าในสวนมะพร้าว', tag: '66 BPM · ช้า', bpm: 66, chords: [[41, 48, 57, 64, 67], [43, 50, 59, 62, 69], [45, 52, 60, 64, 67], [41, 48, 55, 64, 69]], scale: [77, 79, 81, 84, 86, 88, 91], bass: 'root', hat: 'none', lead: 'bell', dens: 0.45, hold: 1 },
+  { id: 'breeze', name: 'ลมทะเลบางสะพาน', tag: '112 BPM · บอสซ่า', bpm: 112, chords: [[50, 57, 65, 72], [55, 62, 65, 71], [50, 57, 64, 69], [52, 59, 67, 74]], scale: [74, 76, 77, 79, 81, 83, 86], bass: 'bossa', hat: '16', lead: 'keys', dens: 0.55, hold: 1 },
+  { id: 'ranat', name: 'ระนาดบรรเลง', tag: '100 BPM · ไทย', bpm: 100, chords: [[43, 50, 59, 62], [48, 55, 64, 67], [45, 52, 60, 64], [43, 50, 59, 62]], scale: [67, 69, 71, 74, 76, 79, 81, 83, 86], bass: 'root', hat: '8', lead: 'ranat', dens: 0.9, hold: 1 },
+  { id: 'lofi', name: 'โลไฟยามค่ำ', tag: '80 BPM · ชิล', bpm: 80, chords: [[45, 52, 60, 67, 71], [50, 57, 60, 65, 69], [43, 50, 59, 65, 69], [48, 55, 64, 71]], scale: [69, 72, 74, 76, 79, 81, 84], bass: 'root', hat: 'swing', lead: 'keys', dens: 0.4, hold: 1, kick: true },
+  { id: 'fun', name: 'สนุกริมคลอง', tag: '124 BPM · เร็ว', bpm: 124, chords: [[48, 55, 64, 67], [43, 50, 59, 62], [45, 52, 60, 64], [41, 48, 57, 60]], scale: [72, 74, 76, 79, 81, 84], bass: 'walk', hat: '8', lead: 'bell', dens: 0.85, hold: 1, kick: true },
+];
+function musicTick() {
+  const C = AU.ctx, T = AU.track, beat = 60 / T.bpm, BAR = beat * 4, e8 = beat / 2, e16 = beat / 4;
   while (AU.nextT < C.currentTime + 1.2) {
-    const t = AU.nextT, ch = CHORDS[Math.floor(AU.step / 2) % 4];
-    if (AU.step % 2 === 0) ch.forEach((n, i) => pad(NOTE(n), t, BAR * 2, i ? 0.028 : 0.04));
-    for (let k = 0; k < 4; k++) pluck(NOTE(ch[0] - 12 + (k === 2 ? 7 : 0)), t + k * beat, k % 2 ? 0.05 : 0.08);  // เบสเดินตามจังหวะ
-    for (let k = 0; k < 8; k++) shaker(t + k * e8 + (k % 2 ? 0.02 : 0), k % 2 ? 0.05 : 0.022);
-    let last = AU.lastNote || PENTA[3];
-    for (let k = 0; k < 8; k++) if (Math.random() < (k % 2 ? 0.55 : 0.85)) { last = PENTA[clamp(PENTA.indexOf(last) + Math.floor(Math.random() * 5) - 2, 0, PENTA.length - 1)]; bell(NOTE(last), t + k * e8, 0.04); }
-    AU.lastNote = last; AU.nextT += BAR; AU.step++;
+    const t = AU.nextT, ch = T.chords[Math.floor(AU.step / T.hold) % T.chords.length], r = ch[0] - 12;
+    if (AU.step % T.hold === 0) ch.forEach((n, i) => pad(NOTE(n), t, BAR * T.hold, i ? 0.026 : 0.036));
+    if (T.bass === 'walk') for (let k = 0; k < 4; k++) pluck(NOTE(r + [0, 4, 7, 9][k]), t + k * beat, k % 2 ? 0.05 : 0.08);
+    else if (T.bass === 'root') { pluck(NOTE(r), t, 0.08); pluck(NOTE(r + 7), t + beat * 2, 0.06); }
+    else if (T.bass === 'bossa') for (const [b, iv] of [[0, 0], [1.5, 7], [2, 0], [3.5, 7]]) pluck(NOTE(r + iv), t + b * beat, 0.07);
+    if (T.hat === '8') for (let k = 0; k < 8; k++) shaker(t + k * e8, k % 2 ? 0.05 : 0.022);
+    else if (T.hat === '16') for (let k = 0; k < 16; k++) shaker(t + k * e16, k % 4 === 2 ? 0.05 : 0.02);
+    else if (T.hat === 'swing') for (let k = 0; k < 4; k++) { shaker(t + k * beat, 0.03); shaker(t + k * beat + beat * 0.66, 0.045); }
+    if (T.kick) for (let k = 0; k < 4; k += 2) kick(t + k * beat, 0.32);
+    const steps = T.lead === 'ranat' ? 16 : 8, dt = BAR / steps; let last = AU.lastNote && T.scale.includes(AU.lastNote) ? AU.lastNote : T.scale[2];
+    for (let k = 0; k < steps; k++) if (Math.random() < T.dens * (k % 2 ? 0.7 : 1)) {
+      last = T.scale[clamp(T.scale.indexOf(last) + Math.floor(Math.random() * 5) - 2, 0, T.scale.length - 1)];
+      const f = NOTE(last), tt = t + k * dt + (T.hat === 'swing' && k % 2 ? dt * 0.3 : 0);
+      if (T.lead === 'ranat') ranat(f, tt, 0.045); else if (T.lead === 'keys') keys(f, tt, 0.05); else bell(f, tt, 0.04);
+    }
+    AU.lastNote = last; AU.nextT += BAR; AU.step++; AU.bars = (AU.bars || 0) + 1;
+    if ($('musAuto').checked && AU.bars * BAR > 90) { const i = (TRACKS.indexOf(T) + 1) % TRACKS.length; AU.bars = 0; AU.track = TRACKS[i]; AU.step = 0; markTrack(); }
   }
 }
+function markTrack() { const id = AU.track && AU.mode.startsWith('t:') ? 't:' + AU.track.id : AU.mode;
+  document.querySelectorAll('#musicBox label').forEach(l => { const inp = l.querySelector('input'); l.classList.toggle('playing', !!inp && inp.value === id && id !== 'off'); if (inp) inp.checked = inp.value === id; });
+  if (AU.mode.startsWith('t:')) $('musNow').textContent = `กำลังเล่น: ${AU.track.name} (${AU.track.tag}) · ทำนองสุ่มใหม่ตลอด`; }
 function setMusic(mode) {
   auInit(); AU.ctx.resume?.(); AU.mode = mode;
   clearInterval(AU.timer); AU.timer = null; if (AU.el) AU.el.pause();
-  if (mode === 'calm') { AU.nextT = AU.ctx.currentTime + 0.1; calmTick(); AU.timer = setInterval(calmTick, 250); $('musNow').textContent = 'กำลังเล่น: เพลงบรรเลงผ่อนคลาย (สุ่มทำนองใหม่ตลอด)'; }
+  if (mode === 'calm') mode = AU.mode = 't:calm';
+  if (mode.startsWith('t:')) { AU.track = TRACKS.find(t => 't:' + t.id === mode) || TRACKS[0]; AU.mode = mode = 't:' + AU.track.id; AU.bars = 0; AU.step = 0; AU.nextT = AU.ctx.currentTime + 0.1; musicTick(); AU.timer = setInterval(musicTick, 250); markTrack(); }
   else if (mode === 'file' && AU.el) { AU.el.play().catch(() => {}); $('musNow').textContent = 'กำลังเล่น: ' + AU.fname; }
-  else if (mode === 'off') $('musNow').textContent = 'ปิดเพลงอยู่';
+  else if (mode === 'off') { $('musNow').textContent = 'ปิดเพลงอยู่'; markTrack(); }
   $('tMusic').classList.toggle('on', mode !== 'off'); if (mode !== 'off') { AU.lastMode = mode; AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); } soundBtn();
   try { localStorage.setItem('weirMusic', JSON.stringify({ mode: mode === 'file' ? 'off' : mode, vol: +$('musVol').value })); } catch (e) {}
 }
@@ -1209,8 +1234,8 @@ function soundBtn() { const on = AU.ctx && !AU.muted && AU.mode !== 'off'; const
 function toggleSound() {
   auInit(); AU.ctx.resume?.();
   const playing = !AU.muted && AU.mode !== 'off';
-  if (playing) { AU.muted = true; setMusic('off'); AU.master.gain.setTargetAtTime(0, AU.ctx.currentTime, 0.15); document.querySelector('input[name=mus][value=off]').checked = true; }
-  else { AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); const m = AU.el && AU.lastMode === 'file' ? 'file' : 'calm'; document.querySelector(`input[name=mus][value=${m}]`).checked = true; setMusic(m); }
+  if (playing) { const lm = AU.mode; AU.muted = true; setMusic('off'); AU.lastMode = lm; AU.master.gain.setTargetAtTime(0, AU.ctx.currentTime, 0.15); }
+  else { AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); const m = AU.lastMode && AU.lastMode !== 'off' && (AU.lastMode !== 'file' || AU.el) ? AU.lastMode : 't:calm'; setMusic(m); }
   soundBtn();
 }
 function audioUpdate() {
@@ -1220,17 +1245,19 @@ function audioUpdate() {
 $('tMusic').onclick = () => { $('musicBox').hidden = !$('musicBox').hidden; auInit(); AU.ctx.resume?.(); if (AU.mode === 'off') setMusic('off'); };
 $('musicX').onclick = () => $('musicBox').hidden = true;
 $('tSound').onclick = toggleSound;
+$('trackList').innerHTML = TRACKS.map((t, i) => `<label><input type="radio" name="mus" value="t:${t.id}"> ${i + 1}. ${t.name} <small class="t">${t.tag}</small></label>`).join('');
+$('musNext').onclick = () => { const i = AU.track ? (TRACKS.indexOf(AU.track) + 1) % TRACKS.length : 0; setMusic('t:' + TRACKS[i].id); };
 document.querySelectorAll('input[name=mus]').forEach(r => r.onchange = () => {
   if (r.value === 'file') { if (AU.el) setMusic('file'); else $('musFile').click(); } else setMusic(r.value); });
 $('musFile').onchange = () => { const f = $('musFile').files[0]; if (!f) return; auInit();
   if (!AU.el) { AU.el = new Audio(); AU.el.loop = true; AU.src = AU.ctx.createMediaElementSource(AU.el); AU.src.connect(AU.music); }
   AU.el.src = URL.createObjectURL(f); AU.fname = f.name; setMusic('file'); };
-let musPref = 'calm';
+let musPref = 't:calm';
 try { const sv = JSON.parse(localStorage.getItem('weirMusic') || 'null'); if (sv) { musPref = sv.mode || 'calm'; $('musVol').value = sv.vol; } } catch (e) {}
 // เริ่มเพลงบรรเลงอัตโนมัติเมื่อแตะ/คลิกหน้าเว็บครั้งแรก (ค่าเริ่มต้น) — ถ้าเคยปิดไว้จะไม่เปิดเอง
 const firstTouch = e => { removeEventListener('pointerdown', firstTouch, true); removeEventListener('keydown', firstTouch, true);
   if (e.target && e.target.closest && e.target.closest('#musicBox,#tMusic,#tSound')) return;
-  if (musPref === 'calm') { const r = document.querySelector('input[name=mus][value=calm]'); r.checked = true; setMusic('calm'); } };
+  if (musPref && musPref !== 'off') setMusic(musPref === 'calm' ? 't:calm' : musPref); };
 addEventListener('pointerdown', firstTouch, true); addEventListener('keydown', firstTouch, true);
 
 /* ---- แผงควบคุม ---- */
