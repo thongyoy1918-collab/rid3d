@@ -994,7 +994,7 @@ function buildWater() {
   W.jS = makeJet('sand', ssurf, Z.sand[0] + 0.02, Z.sand[1] - 0.02, sm());
   W.jS.material.color.set('#e2c79f');
   // ฟองน้ำกระโดด
-  W.foam = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.42, 0), new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.85, roughness: 0.6, depthWrite: false }), 520);
+  W.foam = new THREE.InstancedMesh(new THREE.CircleGeometry(0.6, 9).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.42, depthWrite: false, side: THREE.DoubleSide }), 520);   // ฟองน้ำแบน ๆ บนผิวน้ำ
   W.foam.raycast = () => {}; W.foam.renderOrder = 4; scene.add(W.foam);
   W.foamSeed = Array.from({ length: 520 }, () => [Math.random(), Math.random(), Math.random(), Math.random()]);
 }
@@ -1548,8 +1548,8 @@ function updateScene(dt, time) {
     const zs = [[Z.weir, S.Qw], [Z.g1, S.Qg1], [Z.g2, S.Qg2], [Z.sand, S.Qs]].filter(z => z[1] > 0.05);
     for (let i = 0; i < n; i++) { const r = W.foamSeed[i], zz = zs[Math.floor(r[3] * zs.length)] || [Z.weir];
       const x = TOE + 0.3 + shift + r[0] * Lj, z = lerp(zz[0][0], zz[0][1], r[1]), surf = shift > 0 && x > 29 ? S.TW : S.TWb;
-      const bob = Math.sin(time * 6 + r[2] * 20) * 0.18; const s = 0.5 + r[2] * 0.9 * (1 - (x - TOE - shift) / (Lj + 1));
-      m4.compose(V3(x, surf + 0.05 + bob, z), q4, sc.set(s, s * 0.6, s)); W.foam.setMatrixAt(i, m4); }
+      const bob = Math.sin(time * 6 + r[2] * 20) * 0.04; const s = 0.5 + r[2] * 0.9 * (1 - (x - TOE - shift) / (Lj + 1));
+      q4.setFromAxisAngle(V3(0, 1, 0), r[0] * 6.28 + time * (r[1] - 0.5)); const fs = s * (1.1 + 0.25 * Math.sin(time * 3 + r[3] * 9)); m4.compose(V3(x, surf + 0.06 + bob, z), q4, sc.set(fs * 1.5, 1, fs)); q4.identity(); W.foam.setMatrixAt(i, m4); }
     W.foam.instanceMatrix.needsUpdate = true;
   }
   // อนุภาค
