@@ -707,7 +707,13 @@ const CSAMP = []; { const cv = new THREE.CatmullRomCurve3(CANAL_PTS.map(([x, z])
   for (let i = 0; i <= n; i++) { const p = cv.getPointAt(i / n), t = cv.getTangentAt(i / n); CSAMP.push({ x: p.x, z: p.z, tx: t.x, tz: t.z, s: L * i / n }); } }
 const CS_GATE = CSAMP.reduce((b, q) => Math.abs(q.z - CGATE_Z) < Math.abs(b.z - CGATE_Z) && q.s < 40 ? q : b, CSAMP[0]).s;
 const canalBed = sc => CBED0 - CSLOPE * Math.max(0, sc - CS_GATE);
-function canalInfo(x, z) { if (x < -80 || z < 4) return null; let best = 1e9, bs = 0; for (const q of CSAMP) { const d = (x - q.x) ** 2 + (z - q.z) ** 2; if (d < best) { best = d; bs = q.s; } } return [Math.sqrt(best), bs]; }
+const CGRID = new Map(), CCELL = 20; for (const q of CSAMP) { const k = Math.floor(q.x / CCELL) + ',' + Math.floor(q.z / CCELL); if (!CGRID.has(k)) CGRID.set(k, []); CGRID.get(k).push(q); }
+function canalInfo(x, z) {   // ค้นหาเฉพาะช่องกริดใกล้เคียง (เร็ว)
+  if (x < -90 || z < 0) return null; const cx = Math.floor(x / CCELL), cz = Math.floor(z / CCELL); let best = 1e9, bs = 0, hit = false;
+  for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) { const L = CGRID.get((cx + i) + ',' + (cz + j)); if (!L) continue; hit = true;
+    for (const q of L) { const d = (x - q.x) ** 2 + (z - q.z) ** 2; if (d < best) { best = d; bs = q.s; } } }
+  return hit ? [Math.sqrt(best), bs] : null;
+}
 const canalYn = Q => Q > 0.01 ? Math.pow(Q * 0.025 / (3 * Math.sqrt(CSLOPE)), 0.6) : 0;
 const bump = (x, z, cx, cz, r, a) => a * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (r * r));
 function groundH(x, z) {
