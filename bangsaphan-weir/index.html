@@ -13,151 +13,158 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#1f2937">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#1f2937;--mut:#6b7280;--line:#e5e7eb;--acc:#2563eb;--card:#fffffff2;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+:root{--bg:#dcdbd5;--bar:#ecebe5;--ink:#1f2f29;--dark:#233d33;--mut:#6b7a70;--sub:#6e8173;--pill:#dfe6d4;--panel:#f4f2ec;--line:#d9d6cc;--ok:#3f7d4e;--warn:#b7791f;--bad:#b4382f}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden;background:#eef1f4;font-family:'IBM Plex Sans Thai',system-ui,sans-serif;color:var(--ink);font-size:13px}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);font-family:'IBM Plex Sans Thai',system-ui,sans-serif;color:var(--ink);font-size:13.5px}
 #c{position:fixed;inset:0;display:block}
 button{font:inherit;color:inherit;cursor:pointer}
-.card{background:var(--card);border-radius:12px;box-shadow:0 4px 22px #0f172a1a;backdrop-filter:blur(6px)}
-/* top bar */
-#top{position:fixed;left:10px;right:10px;top:10px;display:flex;align-items:center;gap:10px;pointer-events:none}
-#top>*{pointer-events:auto}
-#brand{display:flex;gap:10px;align-items:center;padding:8px 14px 8px 8px}
-#brand .ic{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#2563eb,#0ea5e9);display:grid;place-items:center;color:#fff;font-size:20px}
-#brand b{display:block;font-size:14.5px;letter-spacing:.1px}
-#brand small{color:var(--mut);font-size:11.5px}
-#modes{margin:0 auto;display:flex;gap:2px;padding:4px}
-#modes button,#tools button{border:0;background:none;padding:7px 13px;border-radius:9px;font-weight:500;white-space:nowrap}
-#modes button.on{background:#1f2937;color:#fff}
-#modes button:not(.on):hover,#tools button:hover{background:#eef2f7}
-#tools{display:flex;gap:2px;padding:4px}
-#tools button{padding:7px 9px;font-size:14px}
-#tools button.on{background:#dbeafe;color:#1d4ed8}
-/* parts */
-#parts{position:fixed;left:10px;top:72px;width:236px;max-height:calc(100vh - 330px);overflow:auto;padding:10px 8px 10px 10px}
-#parts h4{margin:2px 4px 6px;font-size:13px}
-#parts h4 small{display:block;font-weight:400;color:var(--mut);font-size:11px}
-.gh{margin:10px 4px 3px;font-size:10.5px;color:#64748b;font-weight:600;letter-spacing:.2px;text-transform:uppercase}
-.gh i{font-style:normal;font-weight:400}
-.pr{display:grid;grid-template-columns:12px 1fr;column-gap:7px;width:100%;text-align:left;border:0;background:none;padding:5px 6px;border-radius:8px}
-.pr:hover{background:#eef4ff}.pr.sel{background:#dbeafe}
-.pr b{font-weight:600;font-size:12.5px}.pr small{grid-column:2;color:var(--mut);font-size:10.5px;line-height:1.2}
-.dot{width:9px;height:9px;border-radius:50%;margin-top:5px}
-#legend{display:grid;grid-template-columns:1fr 1fr;gap:3px 6px;margin:6px 4px 2px;font-size:11px}
-#legend span{display:flex;align-items:center;gap:5px}#legend i{width:14px;height:5px;border-radius:3px;display:inline-block}
-/* info */
-#info{position:fixed;right:10px;top:72px;width:300px;max-height:calc(100vh - 330px);overflow:auto;padding:14px}
-#info .k{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.3px}
-#info h3{margin:2px 0 0;font-size:16px}#info .en{color:var(--mut);font-size:11.5px}
-#info p{line-height:1.6;margin:8px 0}
-.spec{width:100%;border-collapse:collapse;font-size:11.5px;margin:6px 0}
-.spec td{padding:4px 0;border-top:1px solid var(--line)}.spec td:last-child{text-align:right;font-weight:600}
+/* แถบบน */
+#topbar{position:fixed;left:0;right:0;top:0;height:64px;background:var(--bar);border-bottom:1px solid #d8d5cb;display:flex;align-items:center;padding:0 14px;z-index:10}
+#logo{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--ink)}
+#logo .s{font-family:'Noto Serif Thai',serif;font-size:27px;font-weight:700;letter-spacing:-1px;width:34px}
+#logo .d{width:1px;height:34px;background:#cfccc1}
+#logo b{display:block;font-weight:500;font-size:13.5px}#logo small{font-size:10.5px;color:var(--mut)}
+#tabs{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:2px;padding:5px;border:1px solid #d6d3c9;border-radius:30px;background:#f1efe9}
+#tabs button{border:0;background:none;padding:7px 15px;border-radius:22px;font-size:14px;color:#3b4a43;white-space:nowrap}
+#tabs button.on{background:var(--dark);color:#fff}
+#tabs button:not(.on):hover{background:#e4e2da}
+#tright{margin-left:auto;display:flex;gap:8px}
+.sq{width:46px;height:46px;border:1px solid #d3d0c6;border-radius:10px;background:#f8f7f3;font-size:19px;display:grid;place-items:center}
+.sq:hover{background:#fff}
+/* หัวเรื่องลอย */
+#hero{position:fixed;left:24px;top:86px;max-width:560px;pointer-events:none;z-index:2}
+#hero .k{font-size:13px;font-weight:600;color:#5d6a62;margin-bottom:22px}
+#hero h1{margin:0;font-size:38px;line-height:1.05;font-weight:700;letter-spacing:-.8px;color:#23332c}
+#hero h2{margin:4px 0 8px;font-size:22px;font-weight:400;color:var(--sub)}
+#hero p{margin:0;font-size:14px;line-height:1.6;color:#4b5a52}
+#miniStat{margin-top:12px;display:inline-flex;gap:10px;align-items:center;background:#f4f2ecd9;border:1px solid #e3e0d6;border-radius:20px;padding:5px 12px;font-size:12px;color:#3b4a43;pointer-events:auto}
+#miniStat .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+#miniStat.warn .dot{background:var(--warn)}#miniStat.danger .dot{background:var(--bad)}
+/* แผงข้าง */
+#side{position:fixed;right:0;top:64px;bottom:0;width:410px;background:var(--panel);border-left:1px solid #dcd9cf;overflow:auto;z-index:8;padding:24px 26px 30px;transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+#side.open{transform:none}
+.pane{display:none}.pane.on{display:block}
+.pk{font-size:12.5px;font-weight:600;color:#5d6a62;margin-bottom:14px}
+.ph1{font-size:34px;line-height:1.15;margin:0 0 18px;font-weight:500;color:#23332c}
+.ph1 span{display:block;color:var(--sub)}
+.box{border:1px solid var(--line);border-radius:10px;padding:5px;margin:10px 0;background:#f8f7f2}
+.segs{display:grid;gap:4px}.segs.c2{grid-template-columns:1fr 1fr}.segs.c3{grid-template-columns:repeat(3,1fr)}.segs.c5{grid-template-columns:repeat(5,1fr)}
+.segs button{border:0;background:none;border-radius:7px;padding:9px 6px;font-size:13.5px;color:#2f3e37}
+.segs button.on{background:var(--pill)}
+.segs button:hover:not(.on){background:#eeece4}
+.lbl{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;margin:14px 0 4px}
+.lbl b{font-variant-numeric:tabular-nums}.lbl em{font-style:normal;color:var(--mut);font-size:11.5px;margin-left:6px}
+input[type=range]{width:100%;accent-color:var(--dark)}
+.sw{position:relative;width:38px;height:22px;flex:none}.sw input{opacity:0;width:0;height:0}
+.sw i{position:absolute;inset:0;background:#cfd3c8;border-radius:12px;transition:.2s;cursor:pointer}
+.sw i:before{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.sw input:checked+i{background:#6f8b6c}.sw input:checked+i:before{transform:translateX(16px)}
+.big{display:block;width:100%;border:0;border-radius:8px;padding:13px;font-size:15px;font-weight:600;margin-top:12px}
+.big.dark{background:var(--dark);color:#fff}.big.dark:hover{background:#2c4a3f}
+.big.lite{background:#e6e9df;color:#56645b;font-weight:500}
+.big.red{background:#8f2f28;color:#fff}
+.note{background:#e3e9dc;border-radius:8px;padding:12px 14px;margin-top:10px;font-size:13px;color:#43524a;line-height:1.55}
+.desc{font-size:14px;line-height:1.7;color:#3f4c45;margin:10px 0}
+#status{font-weight:600;font-size:12.5px;padding:3px 10px;border-radius:20px;background:#dfe9d8;color:var(--ok)}
+#status.warn{background:#f6e9cf;color:var(--warn)}#status.danger{background:#f4d8d3;color:var(--bad)}
+#clock{color:var(--mut);font-size:12.5px;margin-left:8px;font-variant-numeric:tabular-nums}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:12px;background:#f8f7f2}
+.kpis div{padding:8px 11px;border-bottom:1px solid #e6e3da;border-right:1px solid #e6e3da;min-width:0}
+.kpis div:nth-child(2n){border-right:0}
+.kpis small{display:block;color:var(--mut);font-size:11px}.kpis b{font-size:17px;font-variant-numeric:tabular-nums}.kpis i{font-style:normal;color:var(--mut);font-size:11px;margin-left:3px}
+.kpis .w b{color:var(--warn)}.kpis .d b{color:var(--bad)}.kpis .g b{color:var(--ok)}
+#spark{width:100%;height:auto;aspect-ratio:760/400;display:block;background:#f8f7f2;border:1px solid var(--line);border-radius:10px;cursor:zoom-in;margin-top:8px}
+#log{margin-top:10px;font-size:12.5px;color:#43524a;background:#e3e9dc;border-radius:8px;padding:10px 12px;cursor:pointer;line-height:1.5}
+#logFull{position:fixed;right:420px;bottom:90px;width:380px;max-height:300px;overflow:auto;padding:12px 14px;font-size:12px;line-height:1.7;z-index:9}
+.card{background:#f7f5f0f5;border:1px solid #e2dfd5;border-radius:12px;box-shadow:0 10px 30px #1f2f2914}
+.sec{font-size:12px;font-weight:600;color:#5d6a62;margin:22px 0 4px;letter-spacing:.2px}
+/* ส่วนประกอบ */
+#plist .gh{margin:16px 0 4px;font-size:11.5px;font-weight:600;color:#7a867e}
+#plist .gh i{font-style:normal;font-weight:400}
+.pr{display:grid;grid-template-columns:12px 1fr;column-gap:9px;width:100%;text-align:left;border:0;background:none;padding:7px 8px;border-radius:8px}
+.pr:hover{background:#ebe9e1}.pr.sel{background:var(--pill)}
+.pr b{font-weight:600;font-size:13.5px}.pr small{grid-column:2;color:var(--mut);font-size:11px}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:6px}
+#legend{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px;margin:8px 0;font-size:12px}
+#legend span{display:flex;align-items:center;gap:6px}#legend i{width:16px;height:5px;border-radius:3px;display:inline-block}
+#info{position:relative;border:1px solid var(--line);background:#f8f7f2;border-radius:12px;padding:14px 16px;margin-bottom:8px}
+#info .k{font-size:11px;color:var(--mut);font-weight:600}
+#info h3{margin:2px 0 0;font-size:20px;font-weight:600}#info .en{color:var(--mut);font-size:12px}
+#info p{line-height:1.7;margin:8px 0;color:#3f4c45}
+.spec{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
+.spec td{padding:5px 0;border-top:1px solid #e4e1d8}.spec td:last-child{text-align:right;font-weight:600}
 .live{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
-.live div{background:#f3f6fa;border-radius:8px;padding:6px 8px}
+.live div{background:#eceae2;border-radius:8px;padding:6px 9px}
 .live small{display:block;color:var(--mut);font-size:10.5px}.live b{font-size:16px}.live i{font-style:normal;color:var(--mut);font-size:10.5px;margin-left:3px}
-.x{position:absolute;right:8px;top:8px;border:0;background:#f1f5f9;border-radius:7px;width:26px;height:26px}
+.x{position:absolute;right:10px;top:10px;border:0;background:#ebe9e1;border-radius:7px;width:28px;height:28px}
 .btnrow{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
-.btn{border:1px solid #d6dde6;background:#fff;border-radius:8px;padding:5px 10px;font-size:12px}
-.btn.pri{background:#1f2937;color:#fff;border-color:#1f2937}
-.btn.red{background:#dc2626;color:#fff;border-color:#dc2626}
-.btn.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
-/* tour */
-#tour{position:fixed;right:10px;top:72px;width:330px;padding:16px}
-#tour .k{font-size:11px;color:#b45309;font-weight:600}
-#tour h3{margin:4px 0 6px;font-size:18px}
-#tour p{line-height:1.65;margin:6px 0}
-#tour .prog{height:4px;background:#e5e7eb;border-radius:3px;margin:10px 0}
-#tour .prog i{display:block;height:100%;background:#2563eb;border-radius:3px}
-.quiz label{display:block;padding:6px 8px;border:1px solid #e2e8f0;border-radius:8px;margin:4px 0;cursor:pointer}
-.quiz label.ok{background:#dcfce7;border-color:#86efac}.quiz label.no{background:#fee2e2;border-color:#fca5a5}
-/* cut */
-#cutbar{position:fixed;left:50%;transform:translateX(-50%);top:72px;padding:8px 14px;display:flex;align-items:center;gap:10px}
-#cutbar input{width:220px}
-/* sim */
-#sim{position:fixed;left:10px;right:10px;bottom:10px;padding:8px 12px 6px}
-#sim header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-#sim header b{font-size:13.5px}
-#status{font-weight:600;font-size:12px;padding:2px 9px;border-radius:20px;background:#dcfce7;color:var(--ok)}
-#status.warn{background:#fef3c7;color:var(--warn)}#status.danger{background:#fee2e2;color:var(--bad)}
-#clock{color:var(--mut);font-size:12px;font-variant-numeric:tabular-nums}
-.spd{margin-left:auto;display:flex;gap:2px;background:#f1f5f9;border-radius:8px;padding:2px}
-.spd button{border:0;background:none;padding:3px 9px;border-radius:6px;font-size:12px}
-.spd button.on{background:#fff;box-shadow:0 1px 3px #0002;font-weight:600}
-#fold{border:0;background:#f1f5f9;border-radius:7px;padding:3px 9px}
-#simBody{display:grid;grid-template-columns:104px 1.2fr 2.2fr;gap:14px;align-items:start}
-#sim.folded #simBody{display:none}
-.gauge{position:relative;width:100px;height:100px;text-align:center}
-.gauge svg{width:100px;height:100px}
-.gauge .trk{fill:none;stroke:#e5e7eb;stroke-width:9}
-.gauge .arc{fill:none;stroke:#0ea5e9;stroke-width:9;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dasharray .3s}
-.gauge b{position:absolute;left:0;right:0;top:30px;font-size:21px}
-.gauge small{position:absolute;left:0;right:0;top:58px;font-size:10px;color:var(--mut);line-height:1.15}
-.ctl label{display:block;font-size:11.5px;margin-bottom:4px}
-.ctl label b{font-variant-numeric:tabular-nums}
-.ctl label em{font-style:normal;color:var(--mut);font-size:10.5px}
-.ctl input[type=range]{width:100%;margin:1px 0 0;accent-color:#2563eb;height:16px}
-.scen{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
-.scen button{border:1px solid #d6dde6;background:#fff;border-radius:7px;padding:3px 7px;font-size:11px}
-.scen button.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
-.seg{display:inline-flex;gap:2px;background:#f1f5f9;border-radius:7px;padding:2px;margin-left:4px}
-.seg button{border:0;background:none;padding:1px 8px;border-radius:5px;font-size:11px}
-.seg button.on{background:#22c55e;color:#fff}
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.kpis div{background:#f3f6fa;border-radius:8px;padding:5px 7px;min-width:0}
-.kpis small{display:block;color:var(--mut);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kpis b{font-size:15.5px;font-variant-numeric:tabular-nums}.kpis i{font-style:normal;color:var(--mut);font-size:10px;margin-left:2px}
-.kpis .w{background:#fef3c7}.kpis .d{background:#fee2e2}.kpis .g{background:#dcfce7}
-#chartCard{position:fixed;right:10px;bottom:240px;width:400px;padding:8px 10px 10px}
-#chartCard .ch{display:flex;align-items:center;gap:6px;font-weight:600;font-size:12.5px;margin-bottom:5px}
-#chartCard .ch button{border:0;background:#f1f5f9;border-radius:6px;padding:1px 8px;font-size:12px}
-#chartCard .ch span{margin-right:auto}
-#chartCard.folded #spark{display:none}
-#gateCtl label{margin-bottom:6px}
-#chartCard{max-height:calc(100vh - 90px);overflow:auto}
-#spark{width:100%;height:auto;aspect-ratio:760/400;display:block;background:#f8fafc;border-radius:8px;cursor:zoom-in}
-#chartBig{position:fixed;inset:0;background:#0f172a66;display:grid;place-items:center;z-index:45}
-#chartBig .card{position:relative;padding:16px 18px 12px;width:min(1100px,94vw)}
-#chartBig canvas{width:100%;height:auto;display:block;background:#f8fafc;border-radius:10px}
-#chartBig h3{margin:0 0 8px;font-size:15px}
-#log{margin-top:6px;font-size:11.5px;color:#334155;border-top:1px solid var(--line);padding-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
-#logFull{position:fixed;left:10px;bottom:230px;width:420px;max-height:260px;overflow:auto;padding:10px 12px;font-size:11.5px;line-height:1.7}
-/* labels */
-#labels{position:fixed;inset:0;pointer-events:none}
-.lb{position:absolute;transform:translate(-50%,-100%);background:#fff;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:600;box-shadow:0 2px 8px #0002;white-space:nowrap;pointer-events:auto;cursor:pointer;border-left:3px solid var(--c)}
-.lb::after{content:'';position:absolute;left:50%;bottom:-5px;width:1px;height:5px;background:#64748b}
-.lb.sel{background:#1f2937;color:#fff}
-.el{position:absolute;transform:translate(-50%,-50%);font-size:10.5px;font-weight:700;color:#0f172a;background:#fde68aee;border-radius:4px;padding:0 4px;white-space:nowrap}
-.el.w{background:#bae6fdee}
-#hint{position:fixed;left:256px;bottom:236px;font-size:11px;color:#475569;background:#ffffffc0;border-radius:7px;padding:3px 8px}
-#compass{position:fixed;left:256px;bottom:270px;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700}
-#compass .n{position:absolute;inset:4px;transition:none}
-#compass .n:before{content:'';position:absolute;left:50%;top:2px;transform:translateX(-50%);border:6px solid transparent;border-bottom:13px solid #dc2626;border-top:0}
-#compass .n span{position:absolute;left:50%;top:-14px;transform:translateX(-50%);color:#dc2626}
-/* loader */
-#loader{position:fixed;inset:0;background:#eef1f4;display:grid;place-items:center;z-index:50;text-align:center}
+.btn{border:1px solid #d3d0c5;background:#fbfaf6;border-radius:8px;padding:6px 12px;font-size:12.5px}
+.btn.pri{background:var(--dark);color:#fff;border-color:var(--dark)}.btn.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+/* หลักการ */
+.art h3{font-size:18px;margin:26px 0 8px;font-weight:600}
+.art p{font-size:14px;line-height:1.8;color:#3f4c45;margin:0 0 12px}
+.art .eq{font-family:'IBM Plex Mono',monospace;background:#eceae2;border-radius:6px;padding:2px 7px;font-size:12.5px}
+.art hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+/* แถบล่าง */
+#dock{position:fixed;left:50%;transform:translateX(-50%);bottom:36px;display:flex;gap:2px;padding:6px;background:#f2f0ea;border:1px solid #e0ddd3;border-radius:40px;box-shadow:0 10px 30px #1f2f2918;z-index:7;transition:left .35s}
+#dock button{border:0;background:none;padding:9px 13px;border-radius:24px;font-size:13.5px;color:#2f3e37;white-space:nowrap}
+#dock button.on{background:var(--pill)}
+#dock button:hover:not(.on){background:#e7e5dd}
+#dock .sep{width:1px;background:#dcd9cf;margin:6px 4px}
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:10px;font-size:11px;color:#7d867f;white-space:nowrap;z-index:6;transition:left .35s}
+body.sideopen #dock,body.sideopen #hint{left:calc(50% - 205px)}
+body.sideopen #hero{opacity:.0;pointer-events:none}
+#hero{transition:opacity .3s}
+#compass{position:fixed;right:20px;bottom:40px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:#f2f0ea;border:1px solid #e0ddd3;z-index:6;transition:right .35s}
+body.sideopen #compass{right:430px}
+#compass .n{position:absolute;inset:4px}
+#compass .n:before{content:'';position:absolute;left:50%;top:2px;transform:translateX(-50%);border:6px solid transparent;border-bottom:13px solid #8f2f28;border-top:0}
+#compass .n span{position:absolute;left:50%;top:-15px;transform:translateX(-50%);color:#8f2f28}
+/* ทัวร์ */
+#tour{position:fixed;left:24px;bottom:100px;width:360px;padding:18px;z-index:9}
+#tour .k{font-size:12px;color:#8a5a2b;font-weight:600}
+#tour h3{margin:4px 0 6px;font-size:20px;font-weight:600}
+#tour p{line-height:1.7;margin:6px 0;color:#3f4c45}
+#tour .prog{height:4px;background:#e2dfd5;border-radius:3px;margin:12px 0}
+#tour .prog i{display:block;height:100%;background:var(--dark);border-radius:3px}
+.quiz label{display:block;padding:7px 9px;border:1px solid #dcd9cf;border-radius:8px;margin:4px 0;cursor:pointer;background:#fbfaf6}
+.quiz label.ok{background:#dfe9d8;border-color:#9dbb92}.quiz label.no{background:#f4d8d3;border-color:#d9a39b}
+/* รูปตัด */
+#cutbar{position:fixed;left:50%;transform:translateX(-50%);top:80px;padding:9px 16px;display:flex;align-items:center;gap:12px;z-index:7}
+#cutbar input{width:230px}
+/* ป้าย */
+#labels{position:fixed;inset:0;pointer-events:none;z-index:3}
+.lb{position:absolute;transform:translate(-50%,calc(-100% - 7px));background:#fbfaf6;border-radius:14px;padding:4px 11px;font-size:12px;font-weight:500;box-shadow:0 3px 10px #1f2f2922;white-space:nowrap;pointer-events:auto;cursor:pointer;border:1px solid #e6e3da}
+.lb::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:#fbfaf6;border-bottom:0}
+.lb.sel{background:var(--dark);color:#fff;border-color:var(--dark)}.lb.sel::after{border-top-color:var(--dark)}
+.el{position:absolute;transform:translate(-50%,-50%);font-size:11px;font-weight:700;color:#1f2f29;background:#f2e6bfee;border-radius:5px;padding:1px 6px;white-space:nowrap}
+.el.w{background:#cde3ecee}
+/* โหลด */
+#loader{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:50;text-align:center}
 #loader .bx{width:280px}
-#loader .spin{width:44px;height:44px;border-radius:50%;border:4px solid #dbeafe;border-top-color:#2563eb;margin:0 auto 14px;animation:sp 1s linear infinite}
+#loader .spin{width:42px;height:42px;border-radius:50%;border:3px solid #cfd6c8;border-top-color:var(--dark);margin:0 auto 16px;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-#loader b{display:block;font-size:15px}#loader small{color:var(--mut)}
-#loader .bar{height:6px;background:#e2e8f0;border-radius:4px;margin:12px 0 4px;overflow:hidden}#loader .bar i{display:block;height:100%;width:0;background:#2563eb}
-#about{position:fixed;inset:0;background:#0f172a66;display:grid;place-items:center;z-index:40}
-#about .card{width:min(560px,92vw);max-height:84vh;overflow:auto;padding:20px 22px;position:relative;line-height:1.65}
-#about h3{margin:0 0 6px}
-#about li{margin:2px 0}
-#musicBox{position:fixed;right:10px;top:68px;width:290px;padding:14px;z-index:30}
+#loader b{display:block;font-size:15px;font-weight:600}#loader small{color:var(--mut)}
+#loader .bar{height:4px;background:#cfccc2;border-radius:3px;margin:14px 0 5px;overflow:hidden}#loader .bar i{display:block;height:100%;width:0;background:var(--dark)}
+#about{position:fixed;inset:0;background:#1f2f2955;display:grid;place-items:center;z-index:40}
+#about .card{width:min(560px,92vw);max-height:84vh;overflow:auto;padding:22px 24px;position:relative;line-height:1.7}
+#chartBig{position:fixed;inset:0;background:#1f2f2955;display:grid;place-items:center;z-index:45}
+#chartBig .card{position:relative;padding:16px 18px 12px;width:min(1100px,94vw)}
+#chartBig canvas{width:100%;height:auto;display:block;background:#f8f7f2;border-radius:10px}
+#chartBig h3{margin:0 0 8px;font-size:15px}
+#musicBox{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;width:300px;padding:14px;z-index:30}
 #musicBox h4{margin:0 0 8px;font-size:14px}
 #musicBox label{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12.5px}
-#musicBox label:hover{background:#f1f5f9}
+#musicBox label:hover{background:#ebe9e1}
 #musicBox .row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px}
-#musicBox input[type=range]{flex:1;accent-color:#2563eb}
-#musicBox .now{font-size:11px;color:#64748b;margin-top:6px;min-height:15px}
-#tMusic.on{background:#dbeafe;color:#1d4ed8}
-#tSound.on{background:#dcfce7;color:#15803d}
+#musicBox input[type=range]{flex:1}
+#musicBox .now{font-size:11px;color:var(--mut);margin-top:6px;min-height:15px}
+#tSound.on,#tMusic.on{background:var(--pill)}
 [hidden]{display:none!important}
-@media (max-width:1100px){#simBody{grid-template-columns:96px 1fr 1fr}.kpis{grid-column:1/-1}#chartCard{width:330px}#parts,#info{max-height:calc(100vh - 420px)}#hint,#compass{display:none}}
-@media (max-width:760px){#chartCard{left:10px;right:10px;width:auto}#chartCard #spark,#chartCard .ch:first-child{display:none}#parts{display:none}#parts.open{display:block;max-height:50vh;z-index:5}#brand small{display:none}#modes{position:fixed;top:62px;left:50%;transform:translateX(-50%)}#tools button.hm{display:none}#info,#tour{left:10px;right:10px;width:auto;top:112px;max-height:35vh}#simBody{grid-template-columns:1fr 1fr}.gauge{display:none}.kpis{grid-template-columns:repeat(3,1fr)}#sim{max-height:48vh;overflow:auto}}
+@media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
+@media (max-width:560px){#tabs{top:70px;transform:translateX(-50%);position:fixed}#hero{top:118px}#hero .k{margin-bottom:8px}#hero p{display:none}#side{top:118px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
@@ -165,71 +172,101 @@ button{font:inherit;color:inherit;cursor:pointer}
 <canvas id="c"></canvas>
 <div id="labels"></div>
 
-<div id="top">
-  <div id="brand" class="card"><a href="../" title="← RID Prachuap 3D" style="text-decoration:none"><div class="ic">≋</div></a><div><b>Bang Saphan Diversion Weir 3D</b><small>ฝายทดน้ำคลองบางสะพาน (ฝายวังยาว) · ต.พงศ์ประศาสน์ อ.บางสะพาน</small></div></div>
-  <div id="modes" class="card"><button data-m="explore" class="on">🧭 สำรวจ</button><button data-m="tour">▶ ทัวร์เรียนรู้</button><button data-m="cut">✂ รูปตัด</button></div>
-  <div id="tools" class="card">
-    <button id="tParts" title="ส่วนประกอบ" class="hm" style="display:none">☰</button>
-    <button id="tLabels" class="on" title="ป้ายชื่อ">🏷</button>
-    <button id="tFlow" class="on" title="แสดงเส้นทางไหล">≈</button>
-    <button id="tXray" title="X-ray คอนกรีตโปร่ง">◐</button>
-    <button id="tRot" title="หมุนอัตโนมัติ" class="hm">⟳</button>
-    <button id="tReset" title="มุมเริ่มต้น">⌂</button>
-    <button id="tShot" title="บันทึกภาพ 4K" class="hm">📷</button>
-    <button id="tFull" title="เต็มจอ" class="hm">⛶</button>
-    <button id="tSound" title="เปิด/ปิดเพลงและเสียง" style="font-size:12.5px;font-weight:600;padding:7px 11px">🔇 เพลง ปิด</button>
-    <button id="tMusic" title="ตั้งค่าเพลง">♫</button>
-    <button id="tAbout" title="ที่มาข้อมูล">ⓘ</button>
-    <a href="../" title="กลับหน้ารวม RID Prachuap 3D" style="display:flex;align-items:center;padding:0 10px;font-size:12px;font-weight:600;color:#1f4fa8;text-decoration:none;white-space:nowrap" class="hm">← RID 3D</a>
-  </div>
+<header id="topbar">
+  <a id="logo" href="../" title="RID Prachuap 3D"><span class="s">R.</span><span class="d"></span><div><b>โลกจำลองชลประทาน</b><small>RID Prachuap 3D · คป.ประจวบคีรีขันธ์</small></div></a>
+  <nav id="tabs"><button data-p="explore">01 · สำรวจ</button><button data-p="sim">02 · จำลองการทำงาน</button><button data-p="learn">03 · หลักการ</button></nav>
+  <div id="tright"><button class="sq" id="tAbout" title="ที่มาข้อมูล">ⓘ</button><button class="sq" id="tParts" title="เปิด/ปิดแผง">☰</button></div>
+</header>
+
+<div id="hero">
+  <div class="k">ฝายวังยาว · ต.พงศ์ประศาสน์ อ.บางสะพาน</div>
+  <h1>Bang Saphan Weir</h1>
+  <h2>ฝายทดน้ำคลองบางสะพาน</h2>
+  <p>สันฝาย +13.50 ยาว 39.40 เมตร บานระบาย 2 บาน และแอ่งน้ำนิ่ง 20 เมตร<br>ลองเปิดบาน ปล่อยน้ำหลาก แล้วดูน้ำไหลผ่านฝายแบบ 3 มิติ</p>
+  <div id="miniStat"><span class="dot"></span><span id="miniTxt">กำลังโหลด…</span></div>
 </div>
 
-<aside id="parts" class="card">
-  <h4>ส่วนประกอบของฝาย<small>คลิกเพื่อดูตำแหน่งและหน้าที่</small></h4>
-  <div id="plist"></div>
-  <div class="gh">สัญลักษณ์เส้นทางไหล</div>
-  <div id="legend"></div>
+<aside id="side">
+  <!-- 01 สำรวจ -->
+  <section class="pane" id="paneExplore">
+    <div class="pk">ส่วนประกอบของฝาย</div>
+    <div class="ph1">ทางเดินของน้ำ<span>จากต้นน้ำสู่ท้ายน้ำ</span></div>
+    <div id="info" hidden></div>
+    <div id="parts"><div id="plist"></div></div>
+    <div class="sec">สัญลักษณ์เส้นทางไหล</div>
+    <div id="legend"></div>
+  </section>
+  <!-- 02 จำลอง -->
+  <section class="pane" id="paneSim">
+    <div class="pk">แผงควบคุมฝายทดน้ำ</div>
+    <div class="ph1">เปิดบาน<span>และปล่อยน้ำหลาก</span></div>
+    <div id="sim">
+      <div style="display:flex;align-items:center"><span id="status">● ทำงานปกติ</span><span id="clock"></span></div>
+      <div class="box"><div class="segs c5 spd"><button data-s="0">❚❚</button><button data-s="1" class="on">×1</button><button data-s="5">×5</button><button data-s="20">×20</button><button data-s="60">×60</button></div></div>
+      <div class="lbl"><span>น้ำไหลเข้า</span><span><b id="vQin"></b><em>ลบ.ม./วินาที</em></span></div>
+      <input id="qin" type="range" min="0" max="900" step="0.5" value="8">
+      <div class="box"><div class="segs c2" id="scen"><button data-k="dry">☀ หน้าแล้ง</button><button data-k="normal" class="on">🌤 ปกติ</button><button data-k="flood">🌧 น้ำหลากตามแบบ 670</button><button data-k="over">⛈ เกินแบบ 870</button></div></div>
+      <div class="lbl" style="margin-top:16px"><span>ควบคุมบานอัตโนมัติ <em>เปิดบานเมื่อระดับ &gt; +14.50</em></span><label class="sw"><input type="checkbox" id="auto"><i></i></label></div>
+      <div class="sec">สั่งการบานระบาย</div>
+      <div id="gateCtl">
+        <div class="lbl"><span>บาน 1 (ฝั่งเหนือ)</span><span><b id="vA1"></b><em id="eA1"></em></span></div><input id="a1" type="range" min="0" max="7" step="0.05" value="0">
+        <div class="lbl"><span>บาน 2</span><span><b id="vA2"></b><em id="eA2"></em></span></div><input id="a2" type="range" min="0" max="7" step="0.05" value="0">
+        <div class="lbl"><span>บานระบายทราย</span><span><b id="vAS"></b><em id="eAS"></em></span></div><input id="aS" type="range" min="0" max="3.5" step="0.05" value="0">
+      </div>
+      <button class="big dark" id="emerg">เปิดบานเต็มที่</button>
+      <button class="big lite" id="closeAll">ปิดบานทั้งหมด · กลับสู่ภาวะปกติ</button>
+      <div class="kpis" id="kpis"></div>
+      <div class="sec" style="display:flex;justify-content:space-between;align-items:center">ระดับน้ำย้อนหลัง <button class="btn" id="chartMax">⤢ ขยาย</button></div>
+      <canvas id="spark" width="760" height="400" title="คลิกเพื่อขยายกราฟ"></canvas>
+      <div id="log" title="คลิกเพื่อดูบันทึกทั้งหมด"></div>
+    </div>
+  </section>
+  <!-- 03 หลักการ -->
+  <section class="pane art" id="paneLearn">
+    <div class="pk">หลักการจำลอง / หลักฐาน</div>
+    <div class="ph1">น้ำ ฝาย<span>และพลังงาน</span></div>
+    <button class="big dark" id="startTour">▶ เริ่มทัวร์เรียนรู้ทีละส่วน</button>
+    <h3>01 / ฝายทดน้ำทำอะไร</h3>
+    <p>ฝายยกระดับน้ำในคลองบางสะพานให้สูงถึงสันฝาย +13.50 ม.รทก. น้ำส่วนที่เกินจะไหลล้นข้ามสันไปเอง ส่วนบานระบาย 2 บาน (6.00 × 3.33 ม.) ใช้ระบายน้ำหลากและควบคุมระดับ และช่องระบายทรายฝั่งใต้ใช้ล้างตะกอนหน้าฝาย</p>
+    <h3>02 / น้ำล้นสันฝาย</h3>
+    <p>อัตราการไหลข้ามสันคำนวณจาก <span class="eq">Q = C·L·H<sup>1.5</sup></span> โดย L = 39.40 ม. คือความยาวสันฝาย H คือความลึกน้ำเหนือสัน และ C ≈ 2.1 เมื่อน้ำท้ายฝายสูงจนท่วมสัน อัตราการไหลจะลดลงตามสัดส่วนการจม</p>
+    <h3>03 / น้ำไหลใต้บาน</h3>
+    <p>เมื่อยกบานขึ้น a เมตร น้ำพุ่งออกใต้บานตาม <span class="eq">q = C·W·√(2gy)</span> (C ≈ 0.61, W = 6.00 ม.) เครื่องกว้านยกบานได้ราว 0.30 ม./นาที ถ้ายกบานพ้นผิวน้ำ การไหลจะกลายเป็นแบบฝายสันกว้าง</p>
+    <h3>04 / น้ำกระโดดในแอ่งน้ำนิ่ง</h3>
+    <p>น้ำที่ไหลลงจากสันมีความเร็วสูง (Froude &gt; 1) แอ่งน้ำนิ่งยาว 20 ม. ที่ระดับ +8.00 ทำให้เกิดน้ำกระโดด ความลึกหลังกระโดด <span class="eq">y₂ = y₁/2·(√(1+8F₁²) − 1)</span> ถ้าระดับน้ำท้ายฝายต่ำกว่า 8.00 + y₂ น้ำกระโดดจะหลุดออกนอกแอ่งและกัดเซาะท้องคลอง</p>
+    <h3>05 / ระดับน้ำท้ายฝาย</h3>
+    <p>คำนวณจากสมการแมนนิงของลำน้ำท้ายฝาย (n = 0.035, ความลาด 0.001) เพื่อหาความลึกน้ำจากปริมาณน้ำที่ไหลผ่าน ค่าเหล่านี้เป็นค่าสมมติเพื่อการเรียนรู้</p>
+    <hr>
+    <h3>ที่มาข้อมูล</h3>
+    <p>แบบกรมชลประทาน เลขที่ 184979 (ผังบริเวณ) 184980 (แปลน) และ 184981 (รูปตัด) โครงการชลประทานประจวบคีรีขันธ์ ลงวันที่ 18 ก.ค. 2546 · รูปทรงห้องเครื่องกว้าน บันได และราวสะพาน ทำตามภาพถ่ายปี 2569 · พิกัด <a href="https://www.google.com/maps?q=11.231037,99.3041257" target="_blank">11.231037, 99.304126</a></p>
+    <div class="note">หน้านี้เป็นแบบจำลองเพื่อการเรียนรู้ ตัวเลขเป็นค่าประมาณ ไม่ใช่ข้อมูลตรวจวัดจริง และไม่ใช้แทนการคำนวณเพื่อสั่งการบานจริง</div>
+  </section>
 </aside>
 
-<aside id="info" class="card" hidden></aside>
+<nav id="dock">
+  <span id="views" style="display:contents"></span>
+  <span class="sep"></span>
+  <span id="modes" style="display:contents"><button data-m="tour">▶ ทัวร์</button><button data-m="cut">✂ รูปตัด</button></span>
+  <span class="sep"></span>
+  <button id="tLabels" class="on" title="ป้ายชื่อ">🏷 ป้าย</button>
+  <button id="tFlow" class="on hm" title="เส้นทางไหล">≈ เส้นทางไหล</button>
+  <button id="tXray" class="hm" title="X-ray">◐ X-ray</button>
+  <button id="tRot" title="หมุนชม">⟳ หมุนชม</button>
+  <button id="tReset" title="เริ่มใหม่">↺ เริ่มใหม่</button>
+  <button id="tSound" title="เปิด/ปิดเพลง">🔇 เพลง</button>
+  <button id="tMusic" class="hm" title="ตั้งค่าเพลง">♫</button>
+  <button id="tShot" class="hm" title="บันทึกภาพ 4K">📷</button>
+  <button id="tFull" class="hm" title="เต็มจอ">⛶</button>
+</nav>
+<div id="hint">ลากเพื่อหมุน · ล้อเมาส์/บีบนิ้วเพื่อซูม · คลิกขวาลากเพื่อเลื่อน · คลิกส่วนประกอบเพื่อดูรายละเอียด</div>
+<div id="compass"><div class="n"><span>N</span></div></div>
+
 <aside id="tour" class="card" hidden></aside>
 <div id="cutbar" class="card" hidden>
   <b>รูปตัดตามแนวน้ำไหล</b>
   <input id="cutZ" type="range" min="-28" max="28.6" step="0.05" value="5">
   <span id="cutName" style="min-width:150px"></span>
 </div>
-
-<div id="hint">ลาก = หมุน · ล้อเมาส์ = ซูม · คลิกขวาลาก = เลื่อน · คลิกส่วนประกอบเพื่อดูรายละเอียด</div>
-<div id="compass" class="card"><div class="n"><span>N</span></div></div>
-
-<section id="sim" class="card">
-  <header>
-    <b>แผงควบคุมฝายทดน้ำ</b><span id="status">● ทำงานปกติ</span><span id="clock"></span>
-    <span class="spd"><button data-s="0">❚❚</button><button data-s="1" class="on">1×</button><button data-s="5">5×</button><button data-s="20">20×</button><button data-s="60">60×</button></span>
-    <button id="fold">▾</button>
-  </header>
-  <div id="simBody">
-    <div class="gauge"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" class="trk"/><circle id="gArc" cx="50" cy="50" r="42" class="arc" stroke-dasharray="0 264"/></svg><b id="gPct">0%</b><small>ของน้ำหลาก<br>ออกแบบ 670</small></div>
-    <div class="ctl">
-      <label>น้ำไหลเข้า <b id="vQin"></b> <em>ลบ.ม./วินาที</em><input id="qin" type="range" min="0" max="900" step="0.5" value="8"></label>
-      <div class="scen" id="scen">
-        <button data-k="dry">☀ หน้าแล้ง</button><button data-k="normal" class="on">🌤 ปกติ</button><button data-k="flood">🌧 น้ำหลากตามแบบ 670</button><button data-k="over">⛈ เกินแบบ 870</button><button data-k="flush">⟲ ล้างตะกอน</button>
-      </div>
-      <label style="margin-top:6px"><input type="checkbox" id="auto"> ควบคุมบานอัตโนมัติ <em>(เปิดบานเมื่อระดับ &gt; +14.50)</em></label>
-    </div>
-    <div class="kpis" id="kpis"></div>
-  </div>
-  <div id="log" title="คลิกเพื่อดูบันทึกทั้งหมด"></div>
-</section>
-<aside id="chartCard" class="card"><div class="ch"><span>📈 กราฟระดับน้ำ</span><button id="chartMax" title="ขยาย">⤢ ขยาย</button><button id="chartFold" title="ย่อ/แสดง">–</button></div><canvas id="spark" width="760" height="400" title="คลิกเพื่อขยายกราฟ"></canvas>
-  <div class="ch" style="margin:10px 0 4px"><span>🎛 สั่งการบานระบาย</span></div>
-<div class="ctl" id="gateCtl">
-      <label>บาน 1 (เหนือ) ยก <b id="vA1"></b> <em id="eA1"></em><input id="a1" type="range" min="0" max="7" step="0.05" value="0"></label>
-      <label>บาน 2 ยก <b id="vA2"></b> <em id="eA2"></em><input id="a2" type="range" min="0" max="7" step="0.05" value="0"></label>
-      <label>บานระบายทราย ยก <b id="vAS"></b> <em id="eAS"></em><input id="aS" type="range" min="0" max="3.5" step="0.05" value="0"></label>
-            <div class="btnrow" style="margin-top:2px"><button class="btn red" id="emerg">⚠ เปิดบานเต็มที่</button><button class="btn" id="closeAll">ปิดบานทั้งหมด</button></div>
-    </div>
-</aside>
 <div id="logFull" class="card" hidden></div>
 <div id="musicBox" class="card" hidden>
   <button class="x" id="musicX">✕</button>
@@ -242,18 +279,10 @@ button{font:inherit;color:inherit;cursor:pointer}
   <div class="now" id="musNow">ปิดเพลงอยู่</div>
 </div>
 <div id="chartBig" hidden><div class="card"><button class="x" id="chartX">✕</button><h3>ระดับน้ำเหนือฝาย / ท้ายฝาย และน้ำไหลเข้า</h3><canvas id="sparkBig" width="2000" height="900"></canvas></div></div>
-
 <div id="about" hidden><div class="card">
   <button class="x" id="aboutX">✕</button>
-  <h3>ที่มาข้อมูลและข้อจำกัด</h3>
-  <ul>
-    <li><b>ขนาดและระดับของอาคาร</b> มาจากแบบกรมชลประทาน เลขที่ 184979 (ผังบริเวณ), 184980 (แปลน), 184981 (รูปตัด) ของโครงการชลประทานประจวบคีรีขันธ์ ลงวันที่ 18 ก.ค. 2546 และตารางข้อมูลฝายวังยาว</li>
-    <li>ระดับสันฝาย +13.500 · ความยาวสันฝาย 39.40 ม. · พื้นเหนือน้ำ +9.500 · พื้นท้ายน้ำ +8.000 · ธรณีบานระบาย +10.500 · บานระบาย 6.00 × 3.33 ม. จำนวน 2 บาน · Q สูงสุด 670 ลบ.ม./วินาที · พื้นที่รับน้ำฝน 351.092 ตร.กม.</li>
-    <li>รูปทรงห้องเครื่องกว้าน บันได และราวสะพาน ทำตามภาพถ่ายฝายวังยาวปี 2569 · พิกัด <a href="https://www.google.com/maps?q=11.231037,99.3041257" target="_blank">11.231037, 99.304126</a></li>
-    <li><b>สมการจำลอง:</b> น้ำล้นสันฝาย Q = C·L·H<sup>1.5</sup> (C = 2.1) · น้ำไหลใต้บาน q = C·W·√(2gy) (C = 0.61) เมื่อยกบานพ้นน้ำใช้สมการฝายสันกว้าง · ระดับน้ำท้ายฝายคำนวณจากสมการแมนนิง · ความลึกหลังน้ำกระโดด y₂ = y₁/2·(√(1+8F₁²) − 1)</li>
-    <li><b>ค่าสมมติ (ไม่มีในแบบ):</b> พื้นที่ผิวน้ำเหนือฝาย, ค่าระดับน้ำท้ายน้ำ, ความเร็วยกบาน 0.30 ม./นาที และรูปทรงภูมิประเทศรอบฝาย (วาดให้ใกล้เคียงผังบริเวณ)</li>
-    <li>หน้านี้เป็น<b>แบบจำลองเพื่อการเรียนรู้</b> ตัวเลขเป็นค่าประมาณ ไม่ใช่ข้อมูลตรวจวัดจริง และไม่ใช้แทนการคำนวณเพื่อสั่งการบานจริง</li>
-  </ul>
+  <h3 style="margin-top:0">ที่มาข้อมูลและข้อจำกัด</h3>
+  <p>ขนาดและระดับของอาคารมาจากแบบกรมชลประทาน เลขที่ 184979–184981 (18 ก.ค. 2546) และตารางข้อมูลฝายวังยาว · ค่าสมมติ: พื้นที่ผิวน้ำเหนือฝาย ระดับน้ำท้ายน้ำ ความเร็วยกบาน และภูมิประเทศรอบฝาย · แบบจำลองเพื่อการเรียนรู้ ไม่ใช่ข้อมูลตรวจวัดจริง</p>
 </div></div>
 
 <div id="loader"><div class="bx"><div class="spin"></div><b id="ldTh">กำลังสร้างฝายทดน้ำ…</b><small>Building the 3D diversion weir</small><div class="bar"><i id="ldBar"></i></div><small id="ldPct">0%</small></div></div>
@@ -437,8 +466,8 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#eef1f4');
-scene.fog = new THREE.Fog('#eef1f4', 420, 980);
+scene.background = new THREE.Color('#dcdbd5');
+scene.fog = new THREE.Fog('#dcdbd5', 520, 1200);
 const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 3000);
 const HOME = { pos: [-92, 52, 96], tgt: [6, 11, 0] };
 camera.position.set(...HOME.pos);
@@ -602,13 +631,20 @@ function buildTerrain() {
   const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide }));
   m.receiveShadow = true; m.raycast = () => {}; scene.add(m);
   // ขอบไดโอรามา
-  const skirt = (pts) => { const v = []; for (let i = 0; i < pts.length - 1; i++) { const [x0, z0] = pts[i], [x1, z1] = pts[i + 1]; const y0 = terrainH(x0, z0), y1 = terrainH(x1, z1);
-    v.push(x0, y0, z0, x1, y1, z1, x1, 2, z1, x0, y0, z0, x1, 2, z1, x0, 2, z0); } const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); g2.computeVertexNormals();
-    const sm = new THREE.Mesh(g2, new THREE.MeshStandardMaterial({ color: '#8a6d4b', roughness: 1, side: THREE.DoubleSide })); sm.raycast = () => {}; scene.add(sm); };
+  // ขอบไดโอรามาเป็นชั้นดิน (หญ้า → ดินชั้นบน → ดินชั้นล่าง → ฐานเข้ม)
+  const BANDS = [[0.9, '#8faa64'], [3.2, '#9b7c56'], [5.5, '#7e6345'], [99, '#5e4a36']];
+  const skirt = (pts) => { const v = [], col = [], cc = new THREE.Color();
+    for (let i = 0; i < pts.length - 1; i++) { const [x0, z0] = pts[i], [x1, z1] = pts[i + 1]; const y0 = terrainH(x0, z0), y1 = terrainH(x1, z1);
+      let d0 = 0;
+      for (const [d, hex] of BANDS) { const ta0 = Math.max(2, y0 - d0), ta1 = Math.max(2, y1 - d0), tb0 = Math.max(2, y0 - d), tb1 = Math.max(2, y1 - d); if (ta0 <= 2 && ta1 <= 2) break;
+        v.push(x0, ta0, z0, x1, ta1, z1, x1, tb1, z1, x0, ta0, z0, x1, tb1, z1, x0, tb0, z0); cc.set(hex); for (let k = 0; k < 6; k++) col.push(cc.r, cc.g, cc.b); d0 = d; } }
+    const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); g2.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g2.computeVertexNormals();
+    const sm = new THREE.Mesh(g2, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.DoubleSide })); sm.raycast = () => {}; scene.add(sm); };
   const N = 240; const edge = (fx) => Array.from({ length: N + 1 }, (_, i) => fx(i / N));
   skirt(edge(t => [lerp(TX[0], TX[1], t), TZ[1]])); skirt(edge(t => [lerp(TX[0], TX[1], t), TZ[0]]));
   skirt(edge(t => [TX[0], lerp(TZ[0], TZ[1], t)])); skirt(edge(t => [TX[1], lerp(TZ[0], TZ[1], t)]));
   const base = new THREE.Mesh(new THREE.BoxGeometry(TX[1] - TX[0], 2, TZ[1] - TZ[0]), M.soil); base.position.y = 1; base.raycast = () => {}; scene.add(base);
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(TX[1] - TX[0] + 10, 5, TZ[1] - TZ[0] + 10), std('#2e2a25')); plinth.position.y = -0.5; plinth.raycast = () => {}; plinth.receiveShadow = true; scene.add(plinth);
 }
 
 /* ================= โครงสร้างฝาย ================= */
@@ -786,7 +822,7 @@ function buildTrees() {
   const crownG = mergeGeometries(frond); crownG.translate(0, 9.2, 0);
   const trunkG = new THREE.CylinderGeometry(0.16, 0.26, 9.4, 6); trunkG.translate(0, 4.7, 0);
   const N = 900, trunks = new THREE.InstancedMesh(trunkG, std('#8a7a63'), N), crowns = new THREE.InstancedMesh(crownG, std('#ffffff', { side: THREE.DoubleSide }), N);
-  const tall = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.2, 0), std('#ffffff', { flatShading: true }), 260);
+  const tall = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.2, 1), std('#ffffff', { flatShading: true }), 260);
   const o = new THREE.Object3D(), c = new THREE.Color(); let k = 0, kt = 0;
   const roadPts = ROADS.flatMap(rc => rc.getSpacedPoints(80));
   const ok = (x, z) => { const [, d, w] = natural(x, z); if (d < w + 12) return false; if (x > -70 && x < 120 && Math.abs(z) < 62) return false; if (x > -60 && x < -30 && z > -75 && z < -50) return false;
@@ -797,7 +833,7 @@ function buildTrees() {
     const y = terrainH(x, z), s = 0.75 + Math.random() * 0.5;
     o.position.set(x, y - 0.2, z); o.rotation.set((Math.random() - 0.5) * 0.18, Math.random() * 6.3, (Math.random() - 0.5) * 0.18); o.scale.set(s, s * (0.9 + Math.random() * 0.4), s); o.updateMatrix();
     trunks.setMatrixAt(k, o.matrix); crowns.setMatrixAt(k, o.matrix); c.setHSL(0.24 + Math.random() * 0.05, 0.45, 0.28 + Math.random() * 0.1); crowns.setColorAt(k, c); k++;
-    if (kt < 260 && Math.random() < 0.25) { const x2 = x + 4 + Math.random() * 3, z2 = z + Math.random() * 4; if (ok(x2, z2)) { o.position.set(x2, terrainH(x2, z2) + 2.4, z2); o.rotation.set(0, Math.random() * 3, 0); const s2 = 0.7 + Math.random() * 0.6; o.scale.set(s2, s2 * 0.9, s2); o.updateMatrix(); tall.setMatrixAt(kt, o.matrix); c.setHSL(0.27 + Math.random() * 0.04, 0.4, 0.25 + Math.random() * 0.08); tall.setColorAt(kt, c); kt++; } }
+    if (kt < 260 && Math.random() < 0.25) { const x2 = x + 4 + Math.random() * 3, z2 = z + Math.random() * 4; if (ok(x2, z2)) { o.position.set(x2, terrainH(x2, z2) + 2.4, z2); o.rotation.set(0, Math.random() * 3, 0); const s2 = 0.7 + Math.random() * 0.6; o.scale.set(s2, s2 * 0.9, s2); o.updateMatrix(); tall.setMatrixAt(kt, o.matrix); const rr = Math.random(); if (rr < 0.08) c.set('#e4a3b8'); else if (rr < 0.14) c.set('#e5844f'); else if (rr < 0.19) c.set('#a58bcb'); else if (rr < 0.24) c.set('#e3c64c'); else c.setHSL(0.24 + Math.random() * 0.07, 0.38, 0.27 + Math.random() * 0.12); tall.setColorAt(kt, c); kt++; } }
   }
   trunks.count = crowns.count = k; tall.count = kt;
   for (const m of [trunks, crowns, tall]) { m.castShadow = true; m.raycast = () => {}; scene.add(m); }
@@ -1015,7 +1051,7 @@ function selectPart(id, fly = true) {
   selId = id; const p = findPart(id); highlight(id, true);
   document.querySelectorAll('.pr').forEach(b => b.classList.toggle('sel', b.dataset.id === id));
   if (fly) flyTo(camFor(p));
-  if (mode !== 'tour') showInfo(p);
+  if (mode !== 'tour') { showInfo(p); openSide('explore'); $('side').scrollTop = 0; }
 }
 function showInfo(p) {
   const el = $('info'); el.hidden = false;
@@ -1040,6 +1076,25 @@ canvas.addEventListener('pointerup', e => {
   if (water) selectPart(water, false);
 });
 
+/* ---- แผงข้าง 01/02/03 ---- */
+let curPane = null;
+const PANES = { explore: 'paneExplore', sim: 'paneSim', learn: 'paneLearn' };
+function openSide(p) { curPane = p; $('side').classList.add('open'); document.body.classList.add('sideopen');
+  for (const [k, id] of Object.entries(PANES)) $(id).classList.toggle('on', k === p);
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.p === p)); $('tParts').textContent = '✕'; viewShift(true); }
+function closeSide() { $('side').classList.remove('open'); document.body.classList.remove('sideopen'); document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('on')); $('tParts').textContent = '☰'; viewShift(false); }
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => curPane === b.dataset.p && $('side').classList.contains('open') ? closeSide() : openSide(b.dataset.p));
+let shiftK = 0, shiftT = 0;
+function viewShift(on) { shiftT = on && innerWidth > 900 ? 1 : 0; }
+function applyShift(dt) { shiftK += (shiftT - shiftK) * Math.min(1, dt * 6); const w = innerWidth, h = innerHeight, pw = 410 * shiftK;
+  if (shiftK < 0.001) { if (camera.view && camera.view.enabled) { camera.clearViewOffset(); camera.aspect = w / h; camera.updateProjectionMatrix(); } }
+  else { camera.aspect = (w + pw) / h; camera.setViewOffset(w + pw, h, pw, 0, w, h); } }
+$('startTour').onclick = () => { closeSide(); setMode('tour'); };
+// มุมกล้องลัด
+const VIEWS = [['↗ มุมสูง', () => HOME], ['▥ ประตูระบาย', () => camFor(findPart('gates'))], ['≋ สันฝาย', () => camFor(findPart('weir'))], ['◡ แอ่งน้ำนิ่ง', () => camFor(findPart('basin'))], ['⊞ ผังบน', () => ({ pos: [8, 230, 1], tgt: [8, 10, 0] })]];
+VIEWS.forEach(([t, f], i) => { const b = document.createElement('button'); b.textContent = t; if (!i) b.className = 'on'; if (i > 2) b.classList.add('hm');
+  b.onclick = () => { document.querySelectorAll('#views button').forEach(x => x.classList.toggle('on', x === b)); flyTo(f()); }; $('views').appendChild(b); });
+
 /* ---- modes ---- */
 let mode = 'explore';
 function setMode(m) {
@@ -1049,7 +1104,7 @@ function setMode(m) {
   if (m === 'cut') { updateCaps(); flyCut(); }
 }
 function flyCut() { const z = cutPlane.constant; flyTo({ pos: [6, 15, z + 62], tgt: [6, 11.5, z] }); }
-document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMode(mode === b.dataset.m ? 'explore' : b.dataset.m));
 $('cutZ').oninput = () => { cutPlane.constant = +$('cutZ').value; updateCaps(); };
 
 /* ---- ทัวร์ + แบบทดสอบ ---- */
@@ -1085,9 +1140,9 @@ tg('tXray', v => { for (const m of CONCRETE_MATS) { m.transparent = v; m.opacity
 tg('tRot', v => controls.autoRotate = v);
 $('tReset').onclick = () => flyTo(HOME);
 $('tFull').onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
-$('tAbout').onclick = () => $('about').hidden = false; $('aboutX').onclick = () => $('about').hidden = true;
+$('tAbout').onclick = () => openSide('learn'); $('aboutX').onclick = () => $('about').hidden = true;
 $('about').onclick = e => { if (e.target.id === 'about') $('about').hidden = true; };
-$('tParts').onclick = () => $('parts').classList.toggle('open');
+$('tParts').onclick = () => $('side').classList.contains('open') ? closeSide() : openSide(curPane || 'explore');
 if (window.top !== window) $('tShot').style.display = 'none';
 $('tShot').onclick = () => {
   const w = 3840, h = Math.round(3840 * innerHeight / innerWidth);
@@ -1095,8 +1150,6 @@ $('tShot').onclick = () => {
   canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'ฝายทดน้ำคลองบางสะพาน-4K.png'; a.click(); });
   resize();
 };
-$('fold').onclick = () => { $('sim').classList.toggle('folded'); $('fold').textContent = $('sim').classList.contains('folded') ? '▴' : '▾'; };
-$('chartFold').onclick = () => { $('chartCard').classList.toggle('folded'); $('chartFold').textContent = $('chartCard').classList.contains('folded') ? '+' : '–'; layoutPanels(); };
 $('chartMax').onclick = () => $('spark').onclick();
 $('spark').onclick = () => { $('chartBig').hidden = false; drawChart($('sparkBig'), true); };
 $('chartX').onclick = () => $('chartBig').hidden = true;
@@ -1205,8 +1258,7 @@ function syncUI() {
   $('eA1').textContent = Math.abs(S.c1 - S.a1) > 0.01 ? `→ สั่ง ${S.c1.toFixed(2)}` : ''; $('eA2').textContent = Math.abs(S.c2 - S.a2) > 0.01 ? `→ สั่ง ${S.c2.toFixed(2)}` : ''; $('eAS').textContent = Math.abs(S.cS - S.aS) > 0.01 ? `→ สั่ง ${S.cS.toFixed(2)}` : '';
   for (const [id, key] of [['a1', 'c1'], ['a2', 'c2'], ['aS', 'cS']]) if (document.activeElement !== $(id)) $(id).value = S[key];
   $('kpis').innerHTML = kpiHTML(['h', 'TW', 'Qin', 'Qw', 'Qg', 'Qs', 'Qout', 'fb', 'jump', 'F1']);
-  const pct = S.Qout / QDES; $('gPct').textContent = Math.round(pct * 100) + '%'; $('gArc').style.strokeDasharray = `${Math.min(pct, 1.3) / 1.3 * 264} 264`;
-  $('gArc').style.stroke = pct > 1 ? '#dc2626' : pct > 0.6 ? '#f59e0b' : '#0ea5e9';
+  { const st = $('status').className; $('miniStat').className = st; $('miniTxt').textContent = `${$('status').textContent.replace('● ', '')} · เหนือฝาย +${S.h.toFixed(2)} · ท้ายฝาย +${S.TW.toFixed(2)} · ไหลผ่าน ${fq(S.Qout)} ลบ.ม./วิ`; }
   $('clock').textContent = clockStr(S.t);
   const il = $('infoLive'); if (il && selId) il.innerHTML = kpiHTML(findPart(selId).kpis);
   drawSpark(); audioUpdate();
@@ -1281,22 +1333,15 @@ function updateScene(dt, time) {
 }
 
 /* ================= loop ================= */
-function layoutPanels() {
-  const sh = $('sim').offsetHeight + 20, cc = $('chartCard');
-  cc.style.bottom = sh + 'px'; cc.style.maxHeight = Math.max(200, innerHeight - sh - 80) + 'px'; $('hint').style.bottom = sh + 'px'; $('compass').style.bottom = (sh + 30) + 'px'; $('logFull').style.bottom = sh + 'px';
-  const ch = cc.offsetParent ? cc.offsetHeight + 10 : 0, avail = innerHeight - sh - ch - 82;
-  for (const id of ['info', 'tour']) $(id).style.maxHeight = Math.max(160, avail) + 'px';
-  $('tour').style.overflow = 'auto'; $('parts').style.maxHeight = Math.max(160, innerHeight - sh - 82) + 'px';
-}
+function layoutPanels() {}
 function resize() { renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
 addEventListener('resize', () => { resize(); layoutPanels(); });
-new ResizeObserver(layoutPanels).observe(document.getElementById('sim'));
 const clock = new THREE.Clock();
 function loop() {
   const dt = Math.min(clock.getDelta(), 0.1), time = clock.elapsedTime;
   if (S.speed > 0) step(dt);
   if (flyAnim) { flyAnim.t = Math.min(1, flyAnim.t + dt / flyAnim.dur); const k = ease(flyAnim.t); camera.position.lerpVectors(flyAnim.p0, flyAnim.p1, k); controls.target.lerpVectors(flyAnim.t0, flyAnim.t1, k); if (flyAnim.t >= 1) flyAnim = null; }
-  smoothZoom(dt); controls.update(); updateScene(dt, time);
+  smoothZoom(dt); applyShift(dt); controls.update(); updateScene(dt, time);
   renderer.render(scene, camera); placeLabels();
   if (++frame % 8 === 0) syncUI();
   document.querySelector('#compass .n').style.transform = `rotate(${controls.getAzimuthalAngle()}rad)`;
