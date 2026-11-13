@@ -176,6 +176,43 @@ body.night #hero h1,body.night #hero .k{color:#eef2f7}body.night #hero h2{color:
 #dock::-webkit-scrollbar{display:none}
 body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,body.zen #compass,body.zen #labels,body.zen #tour,body.zen #cutbar,body.zen #musicBox,body.zen #atmList{opacity:0;pointer-events:none;transition:opacity .8s}
 #zenHint{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);color:#e6edf5;font-size:12.5px;background:#0f172a66;padding:6px 14px;border-radius:20px;z-index:20;transition:opacity 1.2s}
+/* --- professional refresh --- */
+i[data-ic]{display:inline-flex;vertical-align:-3px}i[data-ic] svg{width:17px;height:17px}
+#dock{gap:0;padding:5px 6px;border-radius:16px;background:#f7f6f2f2;backdrop-filter:blur(8px)}
+#dock .grp{display:flex;gap:2px}
+#dock button{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:500;color:#33423b}
+#dock button.ic{padding:8px 9px}
+#dock button.on{background:#e2e9db;color:var(--dark)}
+#dock .sep{margin:6px 6px}
+[data-tip]{position:relative}
+[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);background:#1f2f29;color:#fff;font-size:11.5px;font-weight:500;padding:5px 9px;border-radius:6px;white-space:nowrap;pointer-events:none;z-index:40;box-shadow:0 4px 12px #0003}
+#topbar [data-tip]:hover::after,#atmList [data-tip]:hover::after{bottom:auto;top:calc(100% + 10px)}
+.sq{width:42px;height:42px;border-radius:10px}.sq svg{width:19px;height:19px}
+#hero .k{font-size:11.5px;letter-spacing:1.6px;font-weight:600;color:#6c7a71;margin-bottom:14px}
+#hero h1{font-size:40px;letter-spacing:-1px}
+#hero h2{font-size:18px;margin:6px 0 16px;color:#5e7064}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{display:flex;flex-direction:column;background:#ffffffb8;border:1px solid #e3e1d8;border-radius:10px;padding:7px 12px;font-size:15px;font-weight:600;color:#23332c;font-variant-numeric:tabular-nums;backdrop-filter:blur(6px)}
+.chips small{font-size:10.5px;font-weight:500;color:#7a867e;letter-spacing:.2px}
+body.night .chips span{background:#1f2a38b8;border-color:#3a4658;color:#eef2f7}body.night .chips small{color:#a9b6c6}
+#hud{position:fixed;left:24px;bottom:30px;width:330px;padding:12px 14px;z-index:6;border-radius:14px;background:#f7f6f2f2;backdrop-filter:blur(8px);transition:opacity .3s}
+#hud .hh{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:8px}
+#hud .hh b{font-weight:600}
+#hud .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px #3f7d4e22}
+#hud.warn .dot{background:var(--warn);box-shadow:0 0 0 3px #b7791f22}#hud.danger .dot{background:var(--bad);box-shadow:0 0 0 3px #b4382f22}
+#hudClock{margin-left:auto;color:#7a867e;font-variant-numeric:tabular-nums;font-size:11.5px}
+#hud .hm3{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid #e6e3da;padding-top:8px}
+#hud .hm3 div{padding:0 8px;border-left:1px solid #e6e3da}#hud .hm3 div:first-child{padding-left:0;border-left:0}
+#hud small{display:block;font-size:10.5px;color:#7a867e}#hud b{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.3px}#hud i{font-style:normal;font-size:10px;color:#8b968e;margin-left:3px}
+body.sideopen #hud{opacity:0;pointer-events:none}
+body.zen #hud{opacity:0}
+@media (max-width:1560px){#hud{bottom:96px}}
+@media (max-width:900px){#hud{display:none}.chips span{padding:5px 9px;font-size:13px}}
+.lb{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 3px;font-size:11.5px;border-radius:14px}
+.lb em{font-style:normal;font-size:10px;font-weight:700;background:#1f2f29;color:#fff;border-radius:10px;padding:2px 6px;font-variant-numeric:tabular-nums;letter-spacing:.3px}
+.lb.sel em{background:#e2e9db;color:#1f2f29}
+.segs button i[data-ic] svg{width:16px;height:16px}
+.big i[data-ic]{margin-right:6px}
 [hidden]{display:none!important}
 @media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
 @media (max-width:560px){#tabs{top:70px;transform:translateX(-50%);position:fixed}#hero{top:118px}#hero .k{margin-bottom:8px}#hero p{display:none}#side{top:118px}}
@@ -189,15 +226,19 @@ body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,bod
 <header id="topbar">
   <a id="logo" href="../" title="RID Prachuap 3D"><span class="s">R.</span><span class="d"></span><div><b>โลกจำลองอาคารชลประทาน</b><small>RID Prachuap 3D · คป.ประจวบคีรีขันธ์</small></div></a>
   <nav id="tabs"><button data-p="explore">01 · สำรวจ</button><button data-p="sim">02 · จำลองการทำงาน</button><button data-p="learn">03 · หลักการ</button></nav>
-  <div id="tright"><div id="atmList" title="เลือกบรรยากาศ"></div><button class="sq" id="tAbout" title="ที่มาข้อมูล">ⓘ</button><button class="sq" id="tParts" title="เปิด/ปิดแผง">☰</button></div>
+  <div id="tright"><div id="atmList" title="เลือกบรรยากาศ"></div><button class="sq" id="tAbout" data-tip="ที่มาข้อมูล"><i data-ic="info"></i></button><button class="sq" id="tParts" data-tip="เปิด/ปิดแผง"><i data-ic="menu"></i></button></div>
 </header>
 
 <div id="hero">
-  <div class="k">ฝายวังยาว · ต.พงศ์ประศาสน์ อ.บางสะพาน</div>
+  <div class="k">DIVERSION WEIR · KHLONG BANG SAPHAN</div>
   <h1>Bang Saphan Weir</h1>
-  <h2>ฝายทดน้ำคลองบางสะพาน</h2>
-  <p>สันฝาย +13.50 ยาว 39.40 เมตร บานระบาย 2 บาน และแอ่งน้ำนิ่ง 20 เมตร<br>ลองเปิดบาน ปล่อยน้ำหลาก แล้วดูน้ำไหลผ่านฝายแบบ 3 มิติ</p>
-  <div id="miniStat"><span class="dot"></span><span id="miniTxt">กำลังโหลด…</span></div>
+  <h2>ฝายทดน้ำคลองบางสะพาน · ฝายวังยาว</h2>
+  <div class="chips"><span><small>ระดับสันฝาย</small>+13.50</span><span><small>ความยาวสันฝาย</small>39.40 ม.</span><span><small>บานระบาย</small>2 × 6.00 ม.</span><span><small>Q ออกแบบ</small>670 ลบ.ม./วิ</span></div>
+  <div id="miniStat" hidden><span class="dot"></span><span id="miniTxt"></span></div>
+</div>
+<div id="hud" class="card">
+  <div class="hh"><span class="dot"></span><b id="hudSt">ทำงานปกติ</b><span id="hudClock"></span></div>
+  <div class="hm3"><div><small>ระดับเหนือฝาย</small><b id="hudH">—</b><i>ม.รทก.</i></div><div><small>ระดับท้ายฝาย</small><b id="hudTW">—</b><i>ม.รทก.</i></div><div><small>ไหลผ่านฝาย</small><b id="hudQ">—</b><i>ลบ.ม./วิ</i></div></div>
 </div>
 
 <aside id="side">
@@ -216,10 +257,10 @@ body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,bod
     <div class="ph1">เปิดบาน<span>และปล่อยน้ำหลาก</span></div>
     <div id="sim">
       <div style="display:flex;align-items:center"><span id="status">● ทำงานปกติ</span><span id="clock"></span></div>
-      <div class="box"><div class="segs c5 spd"><button data-s="0">❚❚</button><button data-s="1" class="on">×1</button><button data-s="5">×5</button><button data-s="20">×20</button><button data-s="60">×60</button></div></div>
+      <div class="box"><div class="segs c5 spd"><button data-s="0"><i data-ic="pause"></i></button><button data-s="1" class="on">×1</button><button data-s="5">×5</button><button data-s="20">×20</button><button data-s="60">×60</button></div></div>
       <div class="lbl"><span>น้ำไหลเข้า</span><span><b id="vQin"></b><em>ลบ.ม./วินาที</em></span></div>
       <input id="qin" type="range" min="0" max="900" step="0.5" value="8">
-      <div class="box"><div class="segs c2" id="scen"><button data-k="dry">☀ หน้าแล้ง</button><button data-k="normal" class="on">🌤 ปกติ</button><button data-k="flood">🌧 น้ำหลากตามแบบ 670</button><button data-k="over">⛈ เกินแบบ 870</button></div></div>
+      <div class="box"><div class="segs c2" id="scen"><button data-k="dry"><i data-ic="sun"></i> หน้าแล้ง</button><button data-k="normal" class="on"><i data-ic="cloudsun"></i> ปกติ</button><button data-k="flood"><i data-ic="rain"></i> น้ำหลากตามแบบ 670</button><button data-k="over"><i data-ic="storm"></i> เกินแบบ 870</button></div></div>
       <div class="lbl" style="margin-top:16px"><span>ควบคุมบานอัตโนมัติ <em>เปิดบานเมื่อระดับ &gt; +14.50</em></span><label class="sw"><input type="checkbox" id="auto"><i></i></label></div>
       <div class="sec">สั่งการบานระบาย</div>
       <div id="gateCtl">
@@ -230,7 +271,7 @@ body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,bod
       <button class="big dark" id="emerg">เปิดบานเต็มที่</button>
       <button class="big lite" id="closeAll">ปิดบานทั้งหมด · กลับสู่ภาวะปกติ</button>
       <div class="kpis" id="kpis"></div>
-      <div class="sec" style="display:flex;justify-content:space-between;align-items:center">ระดับน้ำย้อนหลัง <button class="btn" id="chartMax">⤢ ขยาย</button></div>
+      <div class="sec" style="display:flex;justify-content:space-between;align-items:center">ระดับน้ำย้อนหลัง <button class="btn" id="chartMax"><i data-ic="full"></i> ขยาย</button></div>
       <canvas id="spark" width="760" height="400" title="คลิกเพื่อขยายกราฟ"></canvas>
       <div id="log" title="คลิกเพื่อดูบันทึกทั้งหมด"></div>
     </div>
@@ -239,7 +280,7 @@ body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,bod
   <section class="pane art" id="paneLearn">
     <div class="pk">หลักการจำลอง / หลักฐาน</div>
     <div class="ph1">น้ำ ฝาย<span>และพลังงาน</span></div>
-    <button class="big dark" id="startTour">▶ เริ่มทัวร์เรียนรู้ทีละส่วน</button>
+    <button class="big dark" id="startTour"><i data-ic="tour"></i> เริ่มทัวร์เรียนรู้ทีละส่วน</button>
     <h3>01 / ฝายทดน้ำทำอะไร</h3>
     <p>ฝายยกระดับน้ำในคลองบางสะพานให้สูงถึงสันฝาย +13.50 ม.รทก. น้ำส่วนที่เกินจะไหลล้นข้ามสันไปเอง ส่วนบานระบาย 2 บาน (6.00 × 3.33 ม.) ใช้ระบายน้ำหลากและควบคุมระดับ และช่องระบายทรายฝั่งใต้ใช้ล้างตะกอนหน้าฝาย</p>
     <h3>02 / น้ำล้นสันฝาย</h3>
@@ -258,20 +299,25 @@ body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,bod
 </aside>
 
 <nav id="dock">
-  <span id="views" style="display:contents"></span>
+  <span id="views" class="grp"></span>
   <span class="sep"></span>
-  <span id="modes" style="display:contents"><button data-m="tour">▶ ทัวร์</button><button data-m="cut">✂ รูปตัด</button></span>
+  <span id="modes" class="grp"><button data-m="tour" data-tip="ทัวร์เรียนรู้ทีละส่วน"><i data-ic="tour"></i><span>ทัวร์</span></button><button data-m="cut" data-tip="ดูรูปตัดตามแนวน้ำไหล"><i data-ic="section"></i><span>รูปตัด</span></button></span>
   <span class="sep"></span>
-  <button id="tLabels" class="on" title="ป้ายชื่อ">🏷 ป้าย</button>
-  <button id="tFlow" class="on hm" title="เส้นทางไหล">≈ เส้นทางไหล</button>
-  <button id="tXray" class="hm" title="X-ray">◐ X-ray</button>
-  <button id="tRot" title="หมุนชม">⟳ หมุนชม</button>
-  <button id="tReset" title="เริ่มใหม่">↺ เริ่มใหม่</button>
-  <button id="tSound" title="เปิด/ปิดเพลง">🔇 เพลง</button>
-  <button id="tZen" title="โหมดพักสายตา: กลางคืน + หมุนช้า + เพลงชิล">☾ พักสายตา</button>
-  <button id="tMusic" title="ลิสต์เพลง" hidden>♫ ลิสต์เพลง</button>
-  <button id="tShot" class="hm" title="บันทึกภาพ 4K">📷</button>
-  <button id="tFull" class="hm" title="เต็มจอ">⛶</button>
+  <span class="grp">
+    <button id="tLabels" class="on ic" data-tip="ป้ายชื่อส่วนประกอบ"><i data-ic="tag"></i></button>
+    <button id="tFlow" class="on ic hm" data-tip="เส้นทางไหลของน้ำ"><i data-ic="flow"></i></button>
+    <button id="tXray" class="ic hm" data-tip="X-ray คอนกรีตโปร่ง"><i data-ic="xray"></i></button>
+    <button id="tRot" class="ic" data-tip="หมุนชมอัตโนมัติ"><i data-ic="rotate"></i></button>
+    <button id="tReset" class="ic" data-tip="กลับมุมเริ่มต้น"><i data-ic="reset"></i></button>
+  </span>
+  <span class="sep"></span>
+  <span class="grp">
+    <button id="tSound" data-tip="เปิด/ปิดเพลง"><i data-ic="mute"></i><span>เพลง</span></button>
+    <button id="tZen" data-tip="กลางคืน · หมุนช้า · เต็มจอ"><i data-ic="moon"></i><span>พักสายตา</span></button>
+    <button id="tMusic" hidden>ลิสต์เพลง</button>
+    <button id="tShot" class="ic hm" data-tip="บันทึกภาพ 4K"><i data-ic="camera"></i></button>
+    <button id="tFull" class="ic hm" data-tip="เต็มจอ"><i data-ic="full"></i></button>
+  </span>
 </nav>
 <div id="hint">ลากเพื่อหมุน · ล้อเมาส์/บีบนิ้วเพื่อซูม · คลิกขวาลากเพื่อเลื่อน · คลิกส่วนประกอบเพื่อดูรายละเอียด</div>
 <div id="compass"><div class="n"><span>N</span></div></div>
@@ -310,6 +356,25 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const $ = id => document.getElementById(id);
+const ICONS = {
+  top: '<path d="M5 19 19 5M9 5h10v10"/>', gate: '<path d="M3 20h18M5 20V5h14v15M8 9h8M8 12.5h8M8 16h8"/>', crest: '<path d="M3 16c3.5 0 4.5-6 9-6s5.5 6 9 6M3 20h18"/>',
+  basin: '<path d="M3 7v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 12c2 0 2 1.4 4.5 1.4S10 12 12 12s2 1.4 4.5 1.4S19 12 21 12"/>', plan: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16M12 4v16"/>',
+  tour: '<circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l5.5-3.5z"/>', section: '<circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><path d="M20 4 8 16M14.5 14.5 20 20M8 8l4 4"/>',
+  tag: '<path d="M20.5 13.5 13.5 20.5a2 2 0 0 1-2.8 0L3 12.8V3h9.8l7.7 7.7a2 2 0 0 1 0 2.8z"/><circle cx="7.6" cy="7.6" r="1.4"/>',
+  flow: '<path d="M3 8c2.4-1.8 4.6 1.8 7 0s4.6 1.8 7 0 3-.8 4 0M3 13c2.4-1.8 4.6 1.8 7 0s4.6 1.8 7 0 3-.8 4 0M3 18c2.4-1.8 4.6 1.8 7 0s4.6 1.8 7 0 3-.8 4 0"/>',
+  xray: '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/>', rotate: '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/>',
+  reset: '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v5h5"/>', sound: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+  mute: '<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="m16 9.5 5 5m0-5-5 5"/>', moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/>', full: '<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.6v.4"/>', menu: '<path d="M4 7h16M4 12h16M4 17h16"/>', close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/>',
+  cloudsun: '<circle cx="9" cy="9" r="3"/><path d="M9 3v1.3M3 9h1.3M4.8 4.8l.9.9M13.2 4.8l-.9.9"/><path d="M9 19.5h8.5a3.4 3.4 0 0 0 .3-6.8 4.8 4.8 0 0 0-9.2 1.3A2.8 2.8 0 0 0 9 19.5z"/>',
+  rain: '<path d="M7 14.5h10.5a3.6 3.6 0 0 0 .4-7.2A5.3 5.3 0 0 0 7.3 6.3 4.1 4.1 0 0 0 7 14.5z"/><path d="M8.5 17.5l-1 2.5M12.5 17.5l-1 2.5M16.5 17.5l-1 2.5"/>',
+  storm: '<path d="M7 14.5h10.5a3.6 3.6 0 0 0 .4-7.2A5.3 5.3 0 0 0 7.3 6.3 4.1 4.1 0 0 0 7 14.5z"/><path d="m12.8 15.5-2 3.2h3l-2 3.3"/>', pause: '<path d="M9 6v12M15 6v12"/>',
+};
+const IC = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[n] || ''}</svg>`;
+const paintIcons = (root = document) => root.querySelectorAll('i[data-ic]').forEach(e => { e.innerHTML = IC(e.dataset.ic); });
+paintIcons();
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -1014,7 +1079,7 @@ function buildUI() {
   });
   $('legend').innerHTML = SYSTEM.legend.map(([t, c]) => `<span><i style="background:${c}"></i>${t}</span>`).join('');
   // labels
-  for (const p of PARTS) { const d = document.createElement('div'); d.className = 'lb'; d.style.setProperty('--c', p.color); d.textContent = p.th; d.onclick = () => selectPart(p.id); $('labels').appendChild(d); LBL.push({ id: p.id, el: d }); }
+  for (const p of PARTS) { const d = document.createElement('div'); d.className = 'lb'; d.style.setProperty('--c', p.color); d.innerHTML = `<em>${String(PARTS.indexOf(p) + 1).padStart(2, '0')}</em>${p.th}`; d.onclick = () => selectPart(p.id); $('labels').appendChild(d); LBL.push({ id: p.id, el: d }); }
   for (const e of ELEVS) { const d = document.createElement('div'); d.className = 'el' + (e.w ? ' w' : ''); $('labels').appendChild(d); e.el = d; }
 }
 const LBL = [];
@@ -1093,8 +1158,8 @@ let curPane = null;
 const PANES = { explore: 'paneExplore', sim: 'paneSim', learn: 'paneLearn' };
 function openSide(p) { curPane = p; $('side').classList.add('open'); document.body.classList.add('sideopen');
   for (const [k, id] of Object.entries(PANES)) $(id).classList.toggle('on', k === p);
-  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.p === p)); $('tParts').textContent = '✕'; viewShift(true); }
-function closeSide() { $('side').classList.remove('open'); document.body.classList.remove('sideopen'); document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('on')); $('tParts').textContent = '☰'; viewShift(false); }
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.p === p)); $('tParts').innerHTML = IC('close'); viewShift(true); }
+function closeSide() { $('side').classList.remove('open'); document.body.classList.remove('sideopen'); document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('on')); $('tParts').innerHTML = IC('menu'); viewShift(false); }
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => curPane === b.dataset.p && $('side').classList.contains('open') ? closeSide() : openSide(b.dataset.p));
 let shiftK = 0, shiftT = 0;
 function viewShift(on) { shiftT = on && innerWidth > 900 ? 1 : 0; }
@@ -1103,8 +1168,8 @@ function applyShift(dt) { shiftK += (shiftT - shiftK) * Math.min(1, dt * 6); con
   else { camera.aspect = (w + pw) / h; camera.setViewOffset(w + pw, h, pw, 0, w, h); } }
 $('startTour').onclick = () => { closeSide(); setMode('tour'); };
 // มุมกล้องลัด
-const VIEWS = [['↗ มุมสูง', () => HOME], ['▥ ประตูระบาย', () => camFor(findPart('gates'))], ['≋ สันฝาย', () => camFor(findPart('weir'))], ['◡ แอ่งน้ำนิ่ง', () => camFor(findPart('basin'))], ['⊞ ผังบน', () => ({ pos: [8, 230, 1], tgt: [8, 10, 0] })]];
-VIEWS.forEach(([t, f], i) => { const b = document.createElement('button'); b.textContent = t; if (!i) b.className = 'on'; if (i > 2) b.classList.add('hm');
+const VIEWS = [['top|มุมสูง', () => HOME], ['gate|ประตูระบาย', () => camFor(findPart('gates'))], ['crest|สันฝาย', () => camFor(findPart('weir'))], ['basin|แอ่งน้ำนิ่ง', () => camFor(findPart('basin'))], ['plan|ผังบน', () => ({ pos: [8, 230, 1], tgt: [8, 10, 0] })]];
+VIEWS.forEach(([t, f], i) => { const b = document.createElement('button'); const [ic, lb] = t.split('|'); b.innerHTML = `${IC(ic)}<span>${lb}</span>`; b.dataset.tip = 'มุมกล้อง: ' + lb; if (!i) b.className = 'on'; if (i > 2) b.classList.add('hm');
   b.onclick = () => { document.querySelectorAll('#views button').forEach(x => x.classList.toggle('on', x === b)); flyTo(f()); }; $('views').appendChild(b); });
 
 /* ---- modes ---- */
@@ -1261,7 +1326,7 @@ function setMusic(mode) {
   $('tMusic').classList.toggle('on', mode !== 'off'); if (mode !== 'off') { AU.lastMode = mode; AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); } soundBtn();
   try { localStorage.setItem('weirMusic', JSON.stringify({ mode: mode === 'file' ? 'off' : mode, vol: +$('musVol').value })); } catch (e) {}
 }
-function soundBtn() { const on = AU.ctx && !AU.muted && AU.mode !== 'off'; const b = $('tSound'); b.classList.toggle('on', !!on); b.textContent = on ? '🔊 เพลง เปิด' : '🔇 เพลง ปิด'; }
+function soundBtn() { const on = AU.ctx && !AU.muted && AU.mode !== 'off'; const b = $('tSound'); b.classList.toggle('on', !!on); b.innerHTML = `<i data-ic="${on ? 'sound' : 'mute'}">${IC(on ? 'sound' : 'mute')}</i><span>เพลง</span>`; }
 function toggleSound() {
   auInit(); AU.ctx.resume?.();
   const playing = !AU.muted && AU.mode !== 'off';
@@ -1401,7 +1466,7 @@ function syncUI() {
   $('eA1').textContent = Math.abs(S.c1 - S.a1) > 0.01 ? `→ สั่ง ${S.c1.toFixed(2)}` : ''; $('eA2').textContent = Math.abs(S.c2 - S.a2) > 0.01 ? `→ สั่ง ${S.c2.toFixed(2)}` : ''; $('eAS').textContent = Math.abs(S.cS - S.aS) > 0.01 ? `→ สั่ง ${S.cS.toFixed(2)}` : '';
   for (const [id, key] of [['a1', 'c1'], ['a2', 'c2'], ['aS', 'cS']]) if (document.activeElement !== $(id)) $(id).value = S[key];
   $('kpis').innerHTML = kpiHTML(['h', 'TW', 'Qin', 'Qw', 'Qg', 'Qs', 'Qout', 'fb', 'jump', 'F1']);
-  { const st = $('status').className; $('miniStat').className = st; $('miniTxt').textContent = `${$('status').textContent.replace('● ', '')} · เหนือฝาย +${S.h.toFixed(2)} · ท้ายฝาย +${S.TW.toFixed(2)} · ไหลผ่าน ${fq(S.Qout)} ลบ.ม./วิ`; }
+  { const st = $('status').className; $('miniStat').className = st; $('hud').className = 'card ' + st; $('hudSt').textContent = $('status').textContent.replace('● ', ''); $('hudH').textContent = '+' + S.h.toFixed(2); $('hudTW').textContent = '+' + S.TW.toFixed(2); $('hudQ').textContent = fq(S.Qout); $('hudClock').textContent = clockStr(S.t); $('miniTxt').textContent = `${$('status').textContent.replace('● ', '')} · เหนือฝาย +${S.h.toFixed(2)} · ท้ายฝาย +${S.TW.toFixed(2)} · ไหลผ่าน ${fq(S.Qout)} ลบ.ม./วิ`; }
   $('clock').textContent = clockStr(S.t);
   const il = $('infoLive'); if (il && selId) il.innerHTML = kpiHTML(findPart(selId).kpis);
   drawSpark(); audioUpdate();
