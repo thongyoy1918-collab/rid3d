@@ -265,7 +265,7 @@ body.zen #hud,body:has(#tour:not([hidden])) #hud{opacity:0;pointer-events:none}
       <div class="lbl"><span>น้ำไหลเข้า</span><span><b id="vQin"></b><em>ลบ.ม./วินาที</em></span></div>
       <input id="qin" type="range" min="0" max="900" step="0.5" value="8">
       <div class="box"><div class="segs c2" id="scen"><button data-k="dry"><i data-ic="sun"></i> หน้าแล้ง</button><button data-k="normal" class="on"><i data-ic="cloudsun"></i> ปกติ</button><button data-k="flood"><i data-ic="rain"></i> น้ำหลากตามแบบ 670</button><button data-k="over"><i data-ic="storm"></i> เกินแบบ 870</button></div></div>
-      <div class="lbl" style="margin-top:16px"><span>ควบคุมบานอัตโนมัติ <em>เปิดบานเมื่อระดับ &gt; +14.50</em></span><label class="sw"><input type="checkbox" id="auto"><i></i></label></div>
+      <div class="lbl" style="margin-top:16px"><span>ควบคุมบานอัตโนมัติ <em>เปิดบานเมื่อระดับ &gt; +14.50</em></span><label class="sw"><input type="checkbox" id="auto" checked><i></i></label></div>
       <div class="sec">สั่งการบานระบาย</div>
       <div id="gateCtl">
         <div class="lbl"><span>บาน 1 (ฝั่งเหนือ)</span><span><b id="vA1"></b><em id="eA1"></em></span></div><input id="a1" type="range" min="0" max="7" step="0.05" value="0">
@@ -458,7 +458,7 @@ const findPart = id => PARTS.find(p => p.id === id);
 /* ================= state + ชลศาสตร์ ================= */
 const g = 9.81;
 const S = { t: 6 * 3600, h: 13.70, TW: 8.9, TWb: 9.1, Qin: 8, a1: 0, a2: 0, aS: 0, c1: 0, c2: 0, cS: 0, nP: 0, valve: 0.3,
-  Qw: 0, Qg1: 0, Qg2: 0, Qs: 0, Qp: 0, Qpipe: 0, Qout: 0, speed: 1, auto: false, hyd: null, hist: [], jump: null, peakH: 0 };
+  Qw: 0, Qg1: 0, Qg2: 0, Qs: 0, Qp: 0, Qpipe: 0, Qout: 0, speed: 1, auto: true, hyd: null, hist: [], jump: null, peakH: 0 };
 const SIM_PER_SEC = 60;  // 1 วินาทีจริง = 1 นาทีจำลอง (ที่ 1×)
 
 function areaH(h) { if (h <= UPFLOOR) return 3000; let A = 22000 + 21000 * (Math.min(h, BANK_UP) - UPFLOOR); if (h > BANK_UP) A += 450000 * (h - BANK_UP); return A; }
@@ -1461,7 +1461,7 @@ document.querySelectorAll('#scen button').forEach(b => b.onclick = () => {
   const k = b.dataset.k; setScenOn(k);
   if (k === 'flush') { S.cS = 1.75; log('เปิดบานระบายทรายเพื่อล้างตะกอนหน้าฝาย'); setScenOn(null); return; }
   const sc = SCEN[k];
-  if (sc.peak) { S.hyd = { t0: S.t, peak: sc.peak, base: Math.max(S.Qin, 8), label: sc.label }; S.peakH = S.h; log(`เริ่ม${sc.label}: น้ำสูงสุด ${sc.peak} ลบ.ม./วินาที ในอีก 5 ชม. (กด 20× หรือ 60× เพื่อเร่งเวลา)`); }
+  if (sc.peak) { S.auto = true; $('auto').checked = true; S.hyd = { t0: S.t, peak: sc.peak, base: Math.max(S.Qin, 8), label: sc.label }; S.peakH = S.h; log(`เริ่ม${sc.label}: น้ำสูงสุด ${sc.peak} ลบ.ม./วินาที ในอีก 5 ชม. (กด 20× หรือ 60× เพื่อเร่งเวลา)`); }
   else { S.hyd = null; S.Qin = sc.Qin; log(`สถานการณ์${sc.label}: น้ำไหลเข้า ${fq(sc.Qin)} ลบ.ม./วินาที`); }
 });
 function syncUI() {
