@@ -163,7 +163,10 @@ body.sideopen #compass{right:430px}
 #musicBox .row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px}
 #musicBox input[type=range]{flex:1}
 #musicBox .now{font-size:11px;color:var(--mut);margin-top:6px;min-height:15px}
-#tSound.on,#tMusic.on{background:var(--pill)}
+#tSound.on,#tMusic.on,#tAtm.on{background:var(--pill)}
+#atmBox{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;width:340px;padding:14px;z-index:30}
+#atmBox .segs button{text-align:left;padding:10px 12px}
+body.night #hero h1,body.night #hero .k{color:#eef2f7}body.night #hero h2{color:#c9d6cf}body.night #hero p{color:#d5dde6}
 #dock::-webkit-scrollbar{display:none}
 [hidden]{display:none!important}
 @media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
@@ -257,6 +260,7 @@ body.sideopen #compass{right:430px}
   <button id="tRot" title="หมุนชม">⟳ หมุนชม</button>
   <button id="tReset" title="เริ่มใหม่">↺ เริ่มใหม่</button>
   <button id="tSound" title="เปิด/ปิดเพลง">🔇 เพลง</button>
+  <button id="tAtm" title="เลือกบรรยากาศ">🌤 บรรยากาศ</button>
   <button id="tMusic" title="ลิสต์เพลง">♫ ลิสต์เพลง</button>
   <button id="tShot" class="hm" title="บันทึกภาพ 4K">📷</button>
   <button id="tFull" class="hm" title="เต็มจอ">⛶</button>
@@ -271,6 +275,11 @@ body.sideopen #compass{right:430px}
   <span id="cutName" style="min-width:150px"></span>
 </div>
 <div id="logFull" class="card" hidden></div>
+<div id="atmBox" class="card" hidden>
+  <button class="x" id="atmX">✕</button>
+  <h4 style="margin:0 0 10px;font-size:14px">🌤 เลือกบรรยากาศ</h4>
+  <div class="segs c2" id="atmList"></div>
+</div>
 <div id="musicBox" class="card" hidden>
   <button class="x" id="musicX">✕</button>
   <h4>♫ ลิสต์เพลง</h4>
@@ -501,7 +510,7 @@ function smoothZoom(dt) {
   if (Math.abs(nd - ZOOM.target) < ZOOM.target * 0.002) { ZOOM.target = null; ZOOM.point = null; }
 }
 
-scene.add(new THREE.HemisphereLight('#ffffff', '#9b927e', 1.05));
+const hemi = new THREE.HemisphereLight('#ffffff', '#9b927e', 1.05); scene.add(hemi);
 const sun = new THREE.DirectionalLight('#fff6e8', 2.5);
 sun.position.set(-90, 160, 70); sun.target.position.set(10, 10, 0);
 sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096);
@@ -1242,7 +1251,7 @@ function audioUpdate() {
   if (!AU.ctx) return;
   AU.music.gain.setTargetAtTime(+$('musVol').value / 100 * 0.9, AU.ctx.currentTime, 0.2);
 }
-$('tMusic').onclick = () => { $('musicBox').hidden = !$('musicBox').hidden; auInit(); AU.ctx.resume?.(); if (AU.mode === 'off') setMusic('off'); };
+$('tMusic').onclick = () => { $('atmBox').hidden = true; $('musicBox').hidden = !$('musicBox').hidden; auInit(); AU.ctx.resume?.(); if (AU.mode === 'off') setMusic('off'); };
 $('musicX').onclick = () => $('musicBox').hidden = true;
 $('tSound').onclick = toggleSound;
 $('trackList').innerHTML = TRACKS.map((t, i) => `<label><input type="radio" name="mus" value="t:${t.id}"> ${i + 1}. ${t.name} <small class="t">${t.tag}</small></label>`).join('');
@@ -1259,6 +1268,62 @@ const firstTouch = e => { removeEventListener('pointerdown', firstTouch, true); 
   if (e.target && e.target.closest && e.target.closest('#musicBox,#tMusic,#tSound')) return;
   if (musPref && musPref !== 'off') setMusic(musPref === 'calm' ? 't:calm' : musPref); };
 addEventListener('pointerdown', firstTouch, true); addEventListener('keydown', firstTouch, true);
+
+/* ---- บรรยากาศ: เวลาและสภาพอากาศ ---- */
+const ATM = {
+  day:     { name: '☀ กลางวันสดใส', sky: '#eef1f4', fog: [420, 980], sun: [-90, 160, 70], sunC: '#fff6e8', sunI: 2.5, hs: '#ffffff', hg: '#9b927e', hI: 1.05, exp: 1.05, lamp: 0, rain: 0, water: '#5b9fb6' },
+  morning: { name: '🌅 เช้าตรู่', sky: '#f3e3cf', fog: [300, 900], sun: [-230, 48, 70], sunC: '#ffc489', sunI: 2.1, hs: '#ffe8cc', hg: '#857a66', hI: 0.85, exp: 1.0, lamp: 0, rain: 0, water: '#6aa3b4' },
+  evening: { name: '🌇 ยามเย็น', sky: '#efc4a2', fog: [300, 880], sun: [230, 36, -50], sunC: '#ff9656', sunI: 1.9, hs: '#ffd0ac', hg: '#6b5b52', hI: 0.72, exp: 1.0, lamp: 0.45, rain: 0, water: '#6f9fae' },
+  night:   { name: '🌙 กลางคืน', sky: '#1a2232', fog: [240, 820], sun: [120, 180, -90], sunC: '#9fb4ff', sunI: 0.32, hs: '#5f76a8', hg: '#1c2030', hI: 0.38, exp: 1.15, lamp: 1, rain: 0, water: '#2f5a74' },
+  cloudy:  { name: '☁ ฟ้าครึ้ม', sky: '#cfd5da', fog: [220, 760], sun: [-90, 160, 70], sunC: '#e6ebf0', sunI: 1.0, hs: '#e4e9ee', hg: '#6c6f6a', hI: 1.0, exp: 1.0, lamp: 0, rain: 0, water: '#5f8fa0' },
+  rain:    { name: '🌧 ฝนตก', sky: '#a9b2ba', fog: [140, 560], sun: [-90, 160, 70], sunC: '#d6dee6', sunI: 0.75, hs: '#c9d2da', hg: '#4f5350', hI: 0.9, exp: 0.98, lamp: 0.25, rain: 1, water: '#557f8f' },
+};
+const ATMC = { cur: null, t: 1, from: null };
+const _c1 = new THREE.Color(), _c2 = new THREE.Color();
+function atmSnapshot() { return { sky: scene.background.clone(), sunC: sun.color.clone(), sunI: sun.intensity, hs: hemi.color.clone(), hg: hemi.groundColor.clone(), hI: hemi.intensity, exp: renderer.toneMappingExposure, sun: sun.position.clone(), fog: [scene.fog.near, scene.fog.far], lamp: LAMPS.k, rain: RAIN.k, water: W.pond ? W.pond.material.color.clone() : new THREE.Color('#5b9fb6') }; }
+function setAtm(key, instant) {
+  const A = ATM[key] || ATM.day; ATMC.from = atmSnapshot(); ATMC.to = A; ATMC.t = instant ? 1 : 0; ATMC.cur = key; if (instant) atmApply(1);
+  document.querySelectorAll('#atmList button').forEach(b => b.classList.toggle('on', b.dataset.a === key));
+  document.body.classList.toggle('night', key === 'night'); $('tAtm').textContent = A.name.split(' ')[0] + ' บรรยากาศ';
+  try { localStorage.setItem('weirAtm', key); } catch (e) {}
+}
+function atmApply(k) {
+  const F = ATMC.from, A = ATMC.to; if (!F || !A) return; const e = k * k * (3 - 2 * k);
+  scene.background.copy(F.sky).lerp(_c1.set(A.sky), e); scene.fog.color.copy(scene.background);
+  scene.fog.near = lerp(F.fog[0], A.fog[0], e); scene.fog.far = lerp(F.fog[1], A.fog[1], e);
+  sun.color.copy(F.sunC).lerp(_c1.set(A.sunC), e); sun.intensity = lerp(F.sunI, A.sunI, e); sun.position.lerpVectors(F.sun, _v3.set(...A.sun), e);
+  hemi.color.copy(F.hs).lerp(_c1.set(A.hs), e); hemi.groundColor.copy(F.hg).lerp(_c2.set(A.hg), e); hemi.intensity = lerp(F.hI, A.hI, e);
+  renderer.toneMappingExposure = lerp(F.exp, A.exp, e); LAMPS.k = lerp(F.lamp, A.lamp, e); RAIN.k = lerp(F.rain, A.rain, e);
+  if (W.pond) { const wc = _c1.copy(F.water).lerp(_c2.set(A.water), e); for (const m of [W.pond, W.basin, W.down]) m.material.color.copy(wc); }
+}
+const _v3 = new THREE.Vector3();
+const LAMPS = { k: 0, lights: [], bulbMat: null };
+const RAIN = { k: 0, pts: null, vel: 46 };
+function buildLamps() {
+  LAMPS.bulbMat = new THREE.MeshStandardMaterial({ color: '#fff3d0', emissive: '#ffcf7a', emissiveIntensity: 0 });
+  const poleG = new THREE.CylinderGeometry(0.06, 0.08, 4.2, 6); poleG.translate(0, 2.1, 0);
+  const zs = []; for (let z = Z.nW[0] - 6; z <= Z.sW[1] + 6; z += 12) zs.push(z);
+  const poles = new THREE.InstancedMesh(poleG, M.steel, zs.length), bulbs = new THREE.InstancedMesh(new THREE.SphereGeometry(0.22, 10, 8), LAMPS.bulbMat, zs.length), o = new THREE.Object3D();
+  zs.forEach((z, i) => { o.position.set(BX + 1.34, DECK + 0.32, z); o.updateMatrix(); poles.setMatrixAt(i, o.matrix); o.position.set(BX + 0.9, DECK + 4.5, z); o.updateMatrix(); bulbs.setMatrixAt(i, o.matrix); });
+  for (const m of [poles, bulbs]) { m.raycast = () => {}; scene.add(m); }
+  for (const z of [-24, -6, 10, 26]) { const L = new THREE.PointLight('#ffc978', 0, 40, 1.6); L.position.set(BX + 0.9, DECK + 4.2, z); scene.add(L); LAMPS.lights.push(L); }
+  const H = new THREE.PointLight('#ffe2a8', 0, 22, 1.6); H.position.set(HX, HOIST + 2.2, -22); scene.add(H); LAMPS.lights.push(H);
+  // ฝน
+  const N = 7000, pos = new Float32Array(N * 3); for (let i = 0; i < N; i++) pos.set([Math.random() * 300 - 140, 8 + Math.random() * 70, Math.random() * 260 - 130], i * 3);
+  const g0 = new THREE.BufferGeometry(); g0.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  RAIN.pts = new THREE.Points(g0, new THREE.PointsMaterial({ color: '#dfe7ef', size: 0.28, transparent: true, opacity: 0, depthWrite: false })); RAIN.pts.frustumCulled = false; RAIN.pts.raycast = () => {}; scene.add(RAIN.pts);
+}
+function atmUpdate(dt) {
+  if (ATMC.t < 1) { ATMC.t = Math.min(1, ATMC.t + dt / 1.6); atmApply(ATMC.t); }
+  LAMPS.bulbMat && (LAMPS.bulbMat.emissiveIntensity = LAMPS.k * 3);
+  LAMPS.lights.forEach(L => L.intensity = LAMPS.k * 120);
+  if (RAIN.pts) { RAIN.pts.visible = RAIN.k > 0.02; RAIN.pts.material.opacity = 0.65 * RAIN.k;
+    if (RAIN.pts.visible) { const a = RAIN.pts.geometry.attributes.position.array; for (let i = 1; i < a.length; i += 3) { a[i] -= RAIN.vel * dt; a[i - 1] += 3 * dt; if (a[i] < 8) { a[i] += 70; a[i - 1] = Math.random() * 300 - 140; } } RAIN.pts.geometry.attributes.position.needsUpdate = true; } }
+}
+$('atmList').innerHTML = Object.entries(ATM).map(([k, a]) => `<button data-a="${k}">${a.name}</button>`).join('');
+document.querySelectorAll('#atmList button').forEach(b => b.onclick = () => setAtm(b.dataset.a));
+$('tAtm').onclick = () => { $('atmBox').hidden = !$('atmBox').hidden; $('musicBox').hidden = true; };
+$('atmX').onclick = () => $('atmBox').hidden = true;
 
 /* ---- แผงควบคุม ---- */
 function setScenOn(k) { document.querySelectorAll('#scen button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); }
@@ -1329,6 +1394,7 @@ function drawChart(c, big) {
 
 /* ================= อัปเดตฉากตามการจำลอง ================= */
 function updateScene(dt, time) {
+  atmUpdate(dt);
   W.pond.position.y = W.pond2.position.y = W.pond3.position.y = S.h; W.basin.position.y = S.TWb; W.down.position.y = S.TW;
   waterTex.offset.x = (waterTex.offset.x + dt * 0.004 * (1 + S.Qout / 100)) % 1;
   const anim = (m, q, ref) => { m.visible = q > 0.01; m.material.opacity = clamp(0.35 + q / ref, 0.35, 0.92); m.material.map.offset.y = (m.material.map.offset.y - dt * (0.6 + Math.sqrt(q) * 0.25)) % 1; };
@@ -1378,7 +1444,7 @@ function loop() {
 /* ================= โหลดเป็นขั้น ================= */
 async function init() {
   resize();
-  const steps = [['ภูมิประเทศและคลอง', buildTerrain], ['ตัวฝายและแอ่งน้ำนิ่ง', buildWeir], ['สะพานและราว', buildBridge], ['บานระบายและห้องเครื่องกว้าน', buildGates],
+  const steps = [['ภูมิประเทศและคลอง', buildTerrain], ['ตัวฝายและแอ่งน้ำนิ่ง', buildWeir], ['สะพานและราว', buildBridge], ['ไฟส่องสว่างและฝน', buildLamps], ['บานระบายและห้องเครื่องกว้าน', buildGates],
     ['ถนน', buildUse], ['สวนมะพร้าว', buildTrees], ['ผิวน้ำ', buildWater], ['เส้นทางไหล', buildFlows], ['รูปตัด', buildCaps], ['แผงควบคุม', buildUI]];
   for (const [i, [name, fn]] of steps.entries()) {
     $('ldTh').textContent = `กำลังสร้าง${name}…`; fn();
@@ -1388,6 +1454,7 @@ async function init() {
   for (let i = 0; i < 400; i++) step(0.5 / 60 * 0 + 0.05); // ให้ระบบเข้าสู่สมดุล
   S.hist = []; LOG.length = 0;
   log('เริ่มจำลอง: น้ำไหลเข้า 8 ลบ.ม./วินาที บานปิด น้ำล้นสันฝายตามธรรมชาติ');
+  { let a0 = 'day'; try { a0 = localStorage.getItem('weirAtm') || 'day'; } catch (e) {} setAtm(a0, true); }
   $('loader').hidden = true; syncUI(); layoutPanels();
   renderer.setAnimationLoop(loop);
 }
