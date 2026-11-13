@@ -949,31 +949,37 @@ function ribbon(id, prof, z0, z1, off, mat) {
   const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); gg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); gg.setIndex(idx); gg.computeVertexNormals();
   const m = new THREE.Mesh(gg, mat); m.renderOrder = 3; m.userData.water = id; grp(id).add(m); return m;
 }
+const JNZ = 10;   // จำนวนช่องตามขวาง — ทำให้ผิวน้ำโค้งลงที่ขอบชิดผนัง
 function makeJet(id, prof, z0, z1, mat) {
-  const n = prof.length, pos = new Float32Array((n + 1) * 2 * 3), uv = new Float32Array((n + 1) * 2 * 2), idx = [];
+  const n = prof.length, cols = JNZ + 1, pos = new Float32Array((n + 1) * cols * 3), uv = new Float32Array((n + 1) * cols * 2), idx = [];
   let acc = 0;
   for (let i = 0; i <= n; i++) { const k = Math.max(0, i - 1); if (i > 1) acc += Math.hypot(prof[k][0] - prof[k - 1][0], prof[k][1] - prof[k - 1][1]);
-    uv.set([0, acc / 3, (z1 - z0) / 3, acc / 3], i * 4); if (i) { const a = i * 2; idx.push(a - 2, a, a - 1, a - 1, a, a + 1); } }
+    for (let j = 0; j < cols; j++) uv.set([(z1 - z0) / 3 * j / JNZ, acc / 3], (i * cols + j) * 2);
+    if (i) for (let j = 0; j < JNZ; j++) { const a = (i - 1) * cols + j, b2 = i * cols + j; idx.push(a, b2, a + 1, a + 1, b2, b2 + 1); } }
   const g0 = new THREE.BufferGeometry(); g0.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g0.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g0.setIndex(idx);
   const m = new THREE.Mesh(g0, mat); m.renderOrder = 3;
   const st = streakTex.clone(); st.needsUpdate = true;
   const ov = new THREE.Mesh(g0, new THREE.MeshBasicMaterial({ map: st, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }));
-  ov.renderOrder = 4; ov.raycast = () => {}; ov.position.y = 0.015; m.add(ov); m.userData.ov = ov; m.userData.water = id; m.frustumCulled = false; m.userData.jet = { prof, z0, z1 }; grp(id).add(m); return m;
+  ov.renderOrder = 4; ov.raycast = () => {}; ov.position.y = 0.015; m.add(ov); m.userData.ov = ov;
+  m.userData.water = id; m.frustumCulled = false; m.userData.jet = { prof, z0, z1 }; grp(id).add(m); return m;
 }
 // d0: ความลึกน้ำที่จุดควบคุม (ใต้บาน/บนสัน), up: ระดับน้ำเหนือ (ให้ผิวน้ำลาดต่อเนื่อง), dEnd: ความลึกที่ตีนฝาย
 function updateJet(m, q, B, d0, ctrlX, up, freeSurf) {
   m.visible = q > 0.01; if (!m.visible) return;
-  const { prof, z0, z1 } = m.userData.jet, P = m.geometry.attributes.position.array;
+  const { prof, z0, z1 } = m.userData.jet, P = m.geometry.attributes.position.array, cols = JNZ + 1;
   const v1 = Math.sqrt(2 * g * Math.max(S.h - BASIN, 0.3)), dEnd = clamp(q / B / v1, 0.06, 2.5);
-  const put = (i, x, y) => { P.set([x, y, z0, x, y, z1], i * 6); };
-  put(0, prof[0][0], prof[0][1] - 0.02);
+  // โค้งตามขวาง: กลางช่องเต็มความลึก ขอบชิดผนังลดลงแบบโค้งมน (ขอบน้ำโค้งเหมือนจริง)
+  const edge = j => { const u = j / JNZ; return 0.35 + 0.65 * Math.pow(Math.sin(Math.PI * u), 0.45); };
+  const row = (i, x, y, d) => { for (let j = 0; j < cols; j++) { const z = z0 + (z1 - z0) * j / JNZ; P.set([x, y + Math.max(d * edge(j), 0.03), z], (i * cols + j) * 3); } };
+  row(0, prof[0][0], prof[0][1] - 0.02, 0);
+  const dd = 2.6;   // ระยะลาดลงของผิวน้ำก่อนถึงสัน/บาน (drawdown) — ไม่ให้เป็นขั้นตั้งฉาก
   for (let i = 0; i < prof.length; i++) {
     const [x, y] = prof[i]; let d;
-    if (x <= ctrlX) d = freeSurf ? Math.max(up - y, d0) : d0;     // ก่อนจุดควบคุม: ผิวน้ำเท่าระดับเหนือ (น้ำล้น) หรือเท่าช่องเปิดใต้บาน
+    if (x <= ctrlX) d = freeSurf ? lerp(Math.max(up - y, d0), d0, smooth(ctrlX - dd, ctrlX, x)) : d0;
     else d = lerp(d0, dEnd, smooth(ctrlX, TOE, x));
-    let top = y + Math.max(d, 0.05);
-    if (x > TOE) top = Math.max(top, Math.min(S.TWb, y + d + 0.6));
-    put(i + 1, x, top);
+    let top = Math.max(d, 0.05);
+    if (x > TOE) top = Math.max(y + top, Math.min(S.TWb, y + d + 0.6)) - y;
+    row(i + 1, x, y, top);
   }
   m.geometry.attributes.position.needsUpdate = true; m.geometry.computeVertexNormals();
 }
