@@ -188,6 +188,7 @@
   <div>• รูปทรงอาคาร ขนาด ระดับพื้น และชั้นข้อมูล (Tag) ดึงจากไฟล์ SketchUp ของอาคารที่ทำการ โครงการชลประทานประจวบคีรีขันธ์ รวม 6,050 พื้นผิว (ไม่รวมเส้นกริดและเส้นบอกขนาด)</div>
   <div>• สีหลังคา ผนังอิฐ ขอบเสา ป้ายหน่วยงาน และผ้าม่าน ปรับตามภาพถ่ายอาคารจริง</div>
   <div>• ต้นไม้ ไม้พุ่ม สนามหญ้า ลาน และถนน เป็นการจัดฉากประกอบ ไม่ใช่ผังบริเวณจริง</div>
+  <div>• เจ้าหน้าที่ โต๊ะทำงาน ห้องประชุม และคนเดินรอบอาคาร เป็นภาพประกอบเพื่อให้ฉากมีชีวิต ไม่ใช่ผังห้องหรือจำนวนบุคลากรจริง</div>
   <div>• ตัวเลขพื้นที่ในแผงโครงสร้างเป็นพื้นที่ผิวของโมเดล ไม่ใช่ปริมาณงานก่อสร้าง</div>
   <button id="aboutX">ปิด</button></div></div>
 <div id="card"><button class="x" id="cardX">×</button><h4><span class="n" id="cardN"></span><span id="cardT"></span></h4><p id="cardP"></p></div>
@@ -431,6 +432,155 @@ const M = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0
 
   [-1, 1].forEach(s => { const bed = new THREE.Mesh(new THREE.BoxGeometry(7.6, .1, 2), M('#5f9a3c', { roughness: 1 })); bed.position.set(s * 6.4, .06, 8.3); bed.receiveShadow = true; scene.add(bed); tag('garden', bed); });
 }
+// ---------- staff at work: desks, chairs, computers and people (illustrative, not a real office layout) ----------
+const STAFF = [];   // animated people
+{
+  const mc = new Map();
+  const Mc = (c, o = {}) => { const k = c + JSON.stringify(o); if (!mc.has(k)) mc.set(k, new THREE.MeshStandardMaterial({ color: c, roughness: 0.75, clippingPlanes: [clip], ...o })); return mc.get(k); };
+  const capG = new THREE.CapsuleGeometry(1, 1, 3, 8), boxG = new THREE.BoxGeometry(1, 1, 1), sphG = new THREE.SphereGeometry(1, 14, 10), cylG = new THREE.CylinderGeometry(1, 1, 1, 10);
+  const mesh = (g, m, part, sx, sy, sz, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(g, m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; tag(part, o); return o; };
+  const cap = (r, len, m, y) => mesh(capG, m, 'staff', r, len / 2, r, 0, y, 0);   // capsule hanging from its pivot: centre at y
+  const SKIN = ['#c98f66', '#b9805a', '#d4a17a', '#a8704c'], HAIR = ['#1d1a18', '#2a211b', '#3a2a20'];
+  const LOOKS = [
+    { shirt: '#a8915f', pants: '#8c7a52' },   // ชุดกากี
+    { shirt: '#a8915f', pants: '#8c7a52' },
+    { shirt: '#9cc3e0', pants: '#2c3442' },   // เสื้อฟ้า
+    { shirt: '#f2f1ec', pants: '#22252a' },   // เสื้อขาว
+    { shirt: '#3f6f8f', pants: '#2c3442' },   // โปโลน้ำเงิน
+    { shirt: '#e6d3a8', pants: '#3a3b40' },
+  ];
+  let seq = 0;
+  // person faces +z, origin on the floor between the feet
+  function person({ seated = false, look = null, long = seq % 3 === 1 } = {}) {
+    const i = seq++, L = look || LOOKS[i % LOOKS.length];
+    const shirt = Mc(L.shirt), pants = Mc(L.pants), skin = Mc(SKIN[i % 4], { roughness: .6 }), hair = Mc(HAIR[i % 3], { roughness: .9 }), shoe = Mc('#1b1b1d');
+    const g = new THREE.Group(), hipY = seated ? 0.47 : 0.88;
+    const body = new THREE.Group(); body.position.y = hipY; g.add(body);
+    const legs = [-1, 1].map(s => {
+      const hip = new THREE.Group(); hip.position.set(s * 0.09, 0, 0); body.add(hip);
+      hip.add(cap(0.07, 0.3, pants, -0.21));
+      const knee = new THREE.Group(); knee.position.y = -0.43; hip.add(knee);
+      knee.add(cap(0.055, 0.3, pants, -0.2));
+      knee.add(mesh(boxG, shoe, 'staff', 0.1, 0.06, 0.22, 0, -0.41, 0.05));
+      if (seated) { hip.rotation.x = -Math.PI / 2; knee.rotation.x = Math.PI / 2; }
+      return { hip, knee };
+    });
+    body.add(mesh(boxG, pants, 'staff', 0.33, 0.12, 0.2, 0, 0.04, 0));
+    body.add(mesh(capG, shirt, 'staff', 0.17, 0.17, 0.11, 0, 0.32, 0));        // torso
+    body.add(mesh(cylG, skin, 'staff', 0.045, 0.08, 0.045, 0, 0.62, 0));        // neck
+    const head = new THREE.Group(); head.position.y = 0.76; body.add(head);
+    head.add(mesh(sphG, skin, 'staff', 0.1, 0.12, 0.105));
+    head.add(mesh(sphG, hair, 'staff', 0.108, 0.1, 0.112, 0, 0.035, -0.01));    // hair cap
+    if (long) head.add(mesh(boxG, hair, 'staff', 0.21, 0.22, 0.07, 0, -0.06, -0.08));
+    const arms = [-1, 1].map(s => {
+      const sh = new THREE.Group(); sh.position.set(s * 0.22, 0.52, 0); body.add(sh);
+      sh.add(cap(0.05, 0.22, shirt, -0.14));
+      const el = new THREE.Group(); el.position.y = -0.3; sh.add(el);
+      el.add(cap(0.042, 0.2, skin, -0.13)); el.add(mesh(sphG, skin, 'staff', 0.045, 0.05, 0.045, 0, -0.27, 0));
+      sh.rotation.z = s * 0.08;
+      return { sh, el };
+    });
+    const p = { g, body, head, legs, arms, seated, phase: Math.random() * 6.28, mode: 'idle' };
+    return p;
+  }
+  // a workstation: desk + monitor + keyboard + chair + seated person typing; local +z = towards the monitor
+  function station(x, y, z, rot, level, { busy = true } = {}) {
+    const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = rot;
+    const wood = Mc('#9b7650', { roughness: .6 }), metal = Mc('#3b3e44', { roughness: .4, metalness: .3 }), black = Mc('#1f2125', { roughness: .4 });
+    g.add(mesh(boxG, wood, 'furn', 1.4, 0.04, 0.7, 0, 0.74, 0.25));
+    [-0.66, 0.66].forEach(s => g.add(mesh(boxG, metal, 'furn', 0.04, 0.72, 0.62, s, 0.36, 0.25)));
+    g.add(mesh(boxG, wood, 'furn', 1.28, 0.36, 0.02, 0, 0.5, 0.58));          // modesty panel
+    g.add(mesh(boxG, black, 'furn', 0.08, 0.2, 0.08, 0, 0.86, 0.45));          // monitor stand
+    g.add(mesh(boxG, black, 'furn', 0.56, 0.34, 0.03, 0, 1.1, 0.46));          // monitor
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.52, 0.3), screenMat); scr.position.set(0, 1.1, 0.443); scr.rotation.y = Math.PI; g.add(scr); tag('furn', scr);
+    g.add(mesh(boxG, Mc('#2b2d31'), 'furn', 0.44, 0.02, 0.15, 0, 0.77, 0.12)); // keyboard
+    g.add(mesh(boxG, Mc('#f1efe8'), 'furn', 0.22, 0.02, 0.3, 0.45, 0.77, 0.2)); // papers
+    // chair
+    const ch = new THREE.Group(); ch.position.z = -0.36; g.add(ch);
+    ch.add(mesh(boxG, Mc('#2d3138'), 'furn', 0.46, 0.07, 0.44, 0, 0.44, 0));
+    ch.add(mesh(boxG, Mc('#2d3138'), 'furn', 0.44, 0.5, 0.06, 0, 0.76, -0.23));
+    ch.add(mesh(cylG, metal, 'furn', 0.025, 0.38, 0.025, 0, 0.22, 0));
+    [0, 1, 2, 3, 4].forEach(k => { const a = k / 5 * Math.PI * 2; ch.add(mesh(boxG, metal, 'furn', 0.04, 0.03, 0.3, Math.sin(a) * 0.14, 0.04, Math.cos(a) * 0.14)).rotation.y = a; });
+    if (busy) {
+      const p = person({ seated: true }); p.g.position.set(0, 0, -0.36); g.add(p.g); p.mode = 'type';
+      p.arms.forEach(a => { a.sh.rotation.x = -0.75; a.el.rotation.x = -0.85; a.sh.rotation.z *= 3; });
+      STAFF.push(p);
+    }
+    scene.add(g); g.userData.baseY = y; if (level) levelObjs[level].push(g);
+    return g;
+  }
+  const screenMat = new THREE.MeshStandardMaterial({ color: '#cfe4ff', emissive: '#9cc8ff', emissiveIntensity: 0.55, roughness: .3, clippingPlanes: [clip] });
+  const Y1 = 0.9, Y2 = 3.86;
+  // ชั้น 1 — สำนักงานฝั่งซ้ายและขวา (2 แถวหันหน้าเข้าหากัน)
+  [-8.2, -3.8, 3.8, 8.2].forEach((x, i) => { station(x, Y1, -1.85, 0, 0, { busy: i !== 2 }); station(x, Y1, 1.85, Math.PI, 0); });
+  // ชั้น 1 — เคาน์เตอร์ประชาสัมพันธ์กลางอาคาร
+  {
+    const g = new THREE.Group(); g.position.set(0, Y1, 0.9); scene.add(g);
+    g.add(mesh(boxG, Mc('#8a6a4a', { roughness: .55 }), 'furn', 2.4, 1.05, 0.5, 0, 0.52, 0.6));
+    g.add(mesh(boxG, Mc('#f3f1eb'), 'furn', 2.6, 0.05, 0.62, 0, 1.07, 0.6));
+    const p = person({ look: LOOKS[0] }); p.g.position.set(-0.4, 0, 0); g.add(p.g); p.mode = 'greet'; STAFF.push(p);
+  }
+  // ชั้น 2 — ห้องประชุม (ซ้าย) และโต๊ะทำงาน (ขวา)
+  {
+    const g = new THREE.Group(); g.position.set(-8.0, Y2, 0); g.userData.baseY = Y2; scene.add(g); levelObjs[1].push(g);
+    const wood = Mc('#7b5a3c', { roughness: .5 });
+    g.add(mesh(boxG, wood, 'furn', 2.6, 0.05, 1.1, 0, 0.74, 0));
+    g.add(mesh(boxG, Mc('#3b3e44'), 'furn', 0.5, 0.72, 0.5, 0, 0.36, 0));
+    g.add(mesh(boxG, Mc('#f1efe8'), 'furn', 0.3, 0.02, 0.22, -0.5, 0.775, -0.2));
+    g.add(mesh(boxG, Mc('#f1efe8'), 'furn', 0.3, 0.02, 0.22, 0.6, 0.775, 0.25));
+    [[-0.8, -0.85, 0], [0, -0.85, 0], [0.8, -0.85, 0], [-0.8, 0.85, Math.PI], [0.8, 0.85, Math.PI]].forEach(([x, z, r], k) => {
+      const ch = mesh(boxG, Mc('#5a4636'), 'furn', 0.44, 0.06, 0.44, x, 0.45, z + (z < 0 ? -0.08 : 0.08)); g.add(ch);
+      const bk = mesh(boxG, Mc('#5a4636'), 'furn', 0.44, 0.45, 0.05, x, 0.72, z + (z < 0 ? -0.3 : 0.3)); g.add(bk);
+      if (k === 1) return;   // ที่ว่าง
+      const p = person({ seated: true }); p.g.position.set(x, 0, z + (z < 0 ? -0.08 : 0.08)); p.g.rotation.y = r; g.add(p.g); p.mode = 'meet';
+      p.arms.forEach(a => { a.sh.rotation.x = -0.55; a.el.rotation.x = -0.9; });
+      STAFF.push(p);
+    });
+    const p = person({ look: LOOKS[2] }); p.g.position.set(-1.65, 0, 0); p.g.rotation.y = Math.PI / 2; g.add(p.g); p.mode = 'present'; STAFF.push(p);
+    // จอนำเสนอ
+    g.add(mesh(boxG, Mc('#1f2125'), 'furn', 0.06, 0.7, 1.2, -2.0, 1.45, 0));
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.6), screenMat); scr.position.set(-1.965, 1.45, 0); scr.rotation.y = Math.PI / 2; g.add(scr); tag('furn', scr);
+  }
+  [3.8, 8.2].forEach((x, i) => { station(x, Y2, -1.85, 0, 1); station(x, Y2, 1.85, Math.PI, 1, { busy: i === 0 }); });
+  // คนยืนดูวิวที่หน้าต่างมุขชั้น 2
+  { const p = person({ look: LOOKS[3] }); p.g.position.set(0.6, Y2, 6.2); p.g.userData.baseY = Y2; scene.add(p.g); levelObjs[1].push(p.g); p.mode = 'idle'; STAFF.push(p); }
+  // ภายนอก — คนเดินตามทางเดิน และคนยืนคุยกันหน้าอาคาร
+  const walker = (path, speed, look) => { const p = person({ look }); scene.add(p.g); p.mode = 'walk'; p.path = path.map(a => new THREE.Vector3(a[0], 0, a[1])); p.seg = 0; p.u = Math.random(); p.speed = speed; STAFF.push(p); return p; };
+  walker([[0.9, 17.6], [0.9, 10.2]], 1.1, LOOKS[0]);
+  walker([[-14, 12.2], [14, 12.2]], 1.25, LOOKS[2]);
+  walker([[13.5, 9.8], [13.5, -9], [-13.5, -9], [-13.5, 9.8]], 1.0, LOOKS[3]);
+  [[-3.4, 11.0, 0.9], [-2.6, 11.4, -2.2]].forEach(([x, z, r], k) => { const p = person({ look: LOOKS[k ? 4 : 1] }); p.g.position.set(x, 0, z); p.g.rotation.y = r; scene.add(p.g); p.mode = 'talk'; STAFF.push(p); });
+  window.__screenMat = screenMat;
+}
+function updateStaff(dt, t) {
+  STAFF.forEach(p => {
+    const ph = t * 1 + p.phase;
+    if (p.mode === 'type') {
+      p.arms.forEach((a, k) => a.el.rotation.x = -0.85 + Math.sin(ph * 9 + k * 1.7) * 0.06);
+      p.head.rotation.y = Math.sin(ph * 0.35) * 0.25; p.head.rotation.x = 0.08;
+    } else if (p.mode === 'meet') {
+      p.head.rotation.y = Math.sin(ph * 0.5) * 0.45; p.arms[1].el.rotation.x = -0.9 + Math.max(0, Math.sin(ph * 0.8)) * 0.4;
+    } else if (p.mode === 'present' || p.mode === 'talk' || p.mode === 'greet') {
+      const a = p.arms[p.mode === 'present' ? 0 : 1], k = Math.max(0, Math.sin(ph * 1.3));
+      a.sh.rotation.x = -0.4 - k * 0.5; a.el.rotation.x = -0.9 - k * 0.3; p.head.rotation.x = Math.sin(ph * 2.2) * 0.06;
+      p.head.rotation.y = Math.sin(ph * 0.4) * 0.3;
+    } else if (p.mode === 'idle') {
+      p.head.rotation.y = Math.sin(ph * 0.3) * 0.5; p.body.position.y = 0.88 + Math.sin(ph * 1.6) * 0.004;
+    } else if (p.mode === 'walk') {
+      const A = p.path[p.seg], B = p.path[(p.seg + 1) % p.path.length], len = A.distanceTo(B);
+      p.u += dt * p.speed / len;
+      if (p.u >= 1) { p.u = 0; if (p.path.length === 2) p.path.reverse(); else p.seg = (p.seg + 1) % p.path.length; }
+      const a2 = p.path[p.seg], b2 = p.path[(p.seg + 1) % p.path.length];
+      p.g.position.lerpVectors(a2, b2, p.u);
+      const yaw = Math.atan2(b2.x - a2.x, b2.z - a2.z); let d = yaw - p.g.rotation.y; d = Math.atan2(Math.sin(d), Math.cos(d)); p.g.rotation.y += d * Math.min(1, dt * 8);
+      const s = Math.sin(t * p.speed * 5.2 + p.phase);
+      p.legs[0].hip.rotation.x = s * 0.45; p.legs[1].hip.rotation.x = -s * 0.45;
+      p.legs[0].knee.rotation.x = Math.max(0, -s) * 0.6; p.legs[1].knee.rotation.x = Math.max(0, s) * 0.6;
+      p.arms[0].sh.rotation.x = -s * 0.4; p.arms[1].sh.rotation.x = s * 0.4;
+      p.body.position.y = 0.88 + Math.abs(Math.cos(t * p.speed * 5.2 + p.phase)) * 0.025;
+    }
+  });
+}
 // ---------- lights ----------
 const hemi = new THREE.HemisphereLight('#fffaf0', '#7d7562', 0.9); scene.add(hemi);
 const sun = new THREE.DirectionalLight('#ffffff', 2.6);
@@ -456,7 +606,7 @@ function applyEnv() {
   sun.intensity = 2.7 * day; sun.color.copy(C('#ffffff')).lerp(C('#ff9a55'), dusk * .85);
   hemi.intensity = 0.42 + 0.56 * day; hemi.color.copy(C('#9fb2d9')).lerp(C('#fffaf0'), day);
   scene.background.copy(C('#141c2e').lerp(C('#efeae0'), day).lerp(C('#e9a27a'), dusk * .25));
-  winMats.forEach(m => { m.emissiveIntensity = night * 1.1; if (m.transparent) m.opacity = 0.38 + night * 0.35; });
+  if (window.__screenMat) window.__screenMat.emissiveIntensity = 0.55 + night * 0.9; winMats.forEach(m => { m.emissiveIntensity = night * 1.1; if (m.transparent) m.opacity = 0.38 + night * 0.35; });
   interior.forEach(l => l.intensity = night * 40); curtainMat.emissiveIntensity = night * 0.55;
   bloom.strength = night * 0.6;
   document.body.classList.toggle('night', night > 0.55);
@@ -494,7 +644,7 @@ const PARTS = [
   { cat: 'หลังคา', icon: '⌂', items: [['roofTile', 'กระเบื้องหลังคา', ROOF_RED], ['roofTrim', 'ฝ้า ชายคา เชิงชาย', '#f3f1eb'], ['roofFrame', 'โครงหลังคา', '#8d9196']] },
   { cat: 'โครงสร้าง', icon: '▥', items: [['col1', 'เสาชั้น 1', '#f1efe8'], ['col2', 'เสาชั้น 2', '#6e7378'], ['beam2', 'คานชั้น 2', '#f1efe8'], ['beam3', 'คานหลังคา', '#f1efe8'], ['floor1', 'พื้นชั้น 1', '#cdc8bd'], ['floor2', 'องค์ประกอบชั้น 2', '#30353b'], ['stair', 'บันได', '#d8d3c8']] },
   { cat: 'ผนังและช่องเปิด', icon: '▦', items: [['wall1', 'ผนังชั้น 1', '#f4f2ec'], ['wall2', 'ผนังชั้น 2', '#f4f2ec'], ['brick', 'แผงอิฐโชว์แนว', '#dd967a'], ['frame', 'กรอบประตู-หน้าต่าง', '#30353b'], ['glass', 'กระจก', '#9fb7c9'], ['curtain', 'ผ้าม่าน', '#f6f3ec']] },
-  { cat: 'ส่วนประกอบอื่น', icon: '✦', items: [['misc', 'ส่วนประกอบทั่วไป', '#eeebe3'], ['sign', 'ป้ายหน่วยงาน', '#1b3f99'], ['garden', 'ต้นไม้และสวน', '#5f9a3c'], ['ground', 'ลานและพื้นดิน', '#cfcac0']] },
+  { cat: 'ส่วนประกอบอื่น', icon: '✦', items: [['misc', 'ส่วนประกอบทั่วไป', '#eeebe3'], ['sign', 'ป้ายหน่วยงาน', '#1b3f99'], ['staff', 'เจ้าหน้าที่', '#a8915f'], ['furn', 'โต๊ะ เก้าอี้ คอมพิวเตอร์', '#9b7650'], ['garden', 'ต้นไม้และสวน', '#5f9a3c'], ['ground', 'ลานและพื้นดิน', '#cfcac0']] },
 ];
 const MODE = {}; let edgesOn = true, solo = null, soloBackup = null;
 const ghostCache = new Map();
@@ -576,8 +726,8 @@ function highlight(id, on) {
 const PRESETS = {
   'ทั้งหมด': () => 'show',
   'เปิดหลังคา': p => (p === 'roofTile' || p === 'roofTrim') ? 'hide' : 'show',
-  'โครงสร้าง': p => ['col1', 'col2', 'beam2', 'beam3', 'floor1', 'floor2', 'stair', 'roofFrame', 'ground'].includes(p) ? 'show' : (p === 'garden' ? 'show' : 'hide'),
-  'X-ray': p => ['col1', 'col2', 'beam2', 'beam3', 'floor1', 'stair', 'roofFrame', 'ground', 'garden'].includes(p) ? 'show' : 'ghost',
+  'โครงสร้าง': p => ['col1', 'col2', 'beam2', 'beam3', 'floor1', 'floor2', 'stair', 'roofFrame', 'ground', 'staff', 'furn'].includes(p) ? 'show' : (p === 'garden' ? 'show' : 'hide'),
+  'X-ray': p => ['col1', 'col2', 'beam2', 'beam3', 'floor1', 'stair', 'roofFrame', 'ground', 'garden', 'staff', 'furn'].includes(p) ? 'show' : 'ghost',
 };
 const pb = document.getElementById('presets');
 Object.entries(PRESETS).forEach(([name, fn], i) => {
@@ -620,7 +770,8 @@ const STOPS = [
       'ผนังภายนอกเป็นผนังสีขาวสลับกับแผงอิฐโชว์แนวโทนส้มอ่อน หน้าต่างบานยาวเรียงตามช่วงเสา และมีผ้าม่านสีขาวด้านใน',
       'ใช้ปุ่ม ⚙ โครงสร้าง เพื่อเปิด-ปิดผนัง กรอบ กระจก และผ้าม่านทีละส่วน หรือคลิกชื่อชิ้นส่วนเพื่อแยกดู'],
     subs: [{ code: 'B1', name: 'แผงอิฐโชว์แนว', p: [-9.5, 2.4, 3.3], d: 'แผงผนังอิฐระหว่างช่วงหน้าต่าง สีส้มอ่อนตามภาพถ่ายอาคารจริง', cam: { pos: [-6, 3, 14], tgt: [-9, 2.2, 3] } },
-           { code: 'B2', name: 'ช่วงเสา 4.0 ม.', p: [-2, 2.4, 3.3], d: 'เสาเรียงตามกริด 4.0 ม. ตลอดความยาวอาคาร 20.0 ม.', cam: { pos: [-2, 14, 14], tgt: [-2, 1, 0] } }] },
+           { code: 'B2', name: 'ช่วงเสา 4.0 ม.', p: [-2, 2.4, 3.3], d: 'เสาเรียงตามกริด 4.0 ม. ตลอดความยาวอาคาร 20.0 ม.', cam: { pos: [-2, 14, 14], tgt: [-2, 1, 0] } },
+           { code: 'B3', name: 'เจ้าหน้าที่ปฏิบัติงานชั้น 1', p: [-6, 2.6, 1.85], d: 'เจ้าหน้าที่นั่งทำงานที่โต๊ะคอมพิวเตอร์ 2 แถวหันหน้าเข้าหากัน และมีเคาน์เตอร์ประชาสัมพันธ์กลางอาคาร (ภาพประกอบ)', cam: { pos: [-3, 4.6, 9], tgt: [-5, 1.4, 0] } }] },
   { code: 'C', title: 'มุขบันไดด้านหลัง', kicker: 'จุดแวะ 03 · ทางขึ้นชั้น 2', p: [0, 5.8, -6.4], mapXY: [0, -5.1],
     cam: { pos: [-13, 9, -21], tgt: [0, 3, -5] }, state: { preset: 'X-ray', cut: 10.6, ex: 0 },
     body: ['ด้านหลังอาคารมีมุขยื่นกว้าง 4.2 ม. ลึก 4.0 ม. เป็นที่ตั้งบันไดเชื่อมชั้น 1 กับชั้น 2',
@@ -631,7 +782,8 @@ const STOPS = [
     body: ['พื้นชั้น 2 อยู่ที่ระดับประมาณ +3.86 ม. ผังชั้น 2 ใช้แนวเสาและช่วงหน้าต่างเดียวกับชั้น 1',
       'ระหว่างชั้น 1 กับชั้น 2 มีหลังคากันสาดยื่นรอบอาคาร ช่วยกันแดดและฝนให้หน้าต่างชั้นล่าง และรับกับหลังคามุขทางเข้าด้านหน้า'],
     subs: [{ code: 'D1', name: 'พื้นชั้น 2 (+3.86 ม.)', p: [-4, 4.3, 0], d: 'ระดับพื้นชั้น 2 จากไฟล์แบบ ประมาณ +3.86 ม. จากระดับดิน', cam: { pos: [-10, 12, 14], tgt: [-4, 3.9, 0] } },
-           { code: 'D2', name: 'หลังคากันสาด', p: [-11.5, 3.8, 4.6], d: 'หลังคากันสาดกระเบื้องยื่นรอบอาคาร อยู่ระหว่างชั้น 1 และชั้น 2', cam: { pos: [-20, 6, 16], tgt: [-10, 3.4, 3] } }] },
+           { code: 'D2', name: 'หลังคากันสาด', p: [-11.5, 3.8, 4.6], d: 'หลังคากันสาดกระเบื้องยื่นรอบอาคาร อยู่ระหว่างชั้น 1 และชั้น 2', cam: { pos: [-20, 6, 16], tgt: [-10, 3.4, 3] } },
+           { code: 'D3', name: 'ห้องประชุมชั้น 2', p: [-8, 5.4, 0], d: 'เจ้าหน้าที่ประชุมงานรอบโต๊ะ มีผู้นำเสนอที่จอด้านข้าง (ภาพประกอบ)', cam: { pos: [-4.5, 7.6, 7], tgt: [-8, 4.4, 0] } }] },
   { code: 'E', title: 'หลังคาและโครงหลังคา', kicker: 'จุดแวะ 05 · ส่วนบนสุดของอาคาร', p: [0, 11, 0], mapXY: [0, -1.6],
     cam: { pos: [22, 18, 22], tgt: [0, 8, 0] }, state: { preset: 'ทั้งหมด', cut: 10.6, ex: 0 },
     body: ['หลังคาหลักปูกระเบื้องสีแดง ชายคายื่นรอบอาคารประมาณ 1.6 ม. ความสูงถึงสันหลังคาประมาณ 10.1 ม. มีจั่วระบายอากาศพร้อมยอดประดับ',
@@ -773,7 +925,7 @@ const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
   if (fly) { fly.t = Math.min(fly.t + dt / fly.dur, 1); const k = ease(fly.t); camera.position.lerpVectors(fly.p0, fly.p1, k); controls.target.lerpVectors(fly.t0, fly.t1, k); if (fly.t === 1) { fly = null; controls.enabled = true; } }
-  updateExplode(dt); controls.update(); composer.render(); placeHotspots();
+  updateExplode(dt); updateStaff(dt, clock.elapsedTime); controls.update(); composer.render(); placeHotspots();
 });
 const ld = document.getElementById('load'); ld.style.opacity = 0; setTimeout(() => ld.remove(), 700);
 console.log('faces', DATA.faces.length, 'tris', triCount, 'buckets', buckets.size);
