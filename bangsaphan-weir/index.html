@@ -271,6 +271,7 @@ body.zen #hud,body:has(#tour:not([hidden])) #hud{opacity:0;pointer-events:none}
         <div class="lbl"><span>บาน 1 (ฝั่งเหนือ)</span><span><b id="vA1"></b><em id="eA1"></em></span></div><input id="a1" type="range" min="0" max="7" step="0.05" value="0">
         <div class="lbl"><span>บาน 2</span><span><b id="vA2"></b><em id="eA2"></em></span></div><input id="a2" type="range" min="0" max="7" step="0.05" value="0">
         <div class="lbl"><span>บานระบายทราย</span><span><b id="vAS"></b><em id="eAS"></em></span></div><input id="aS" type="range" min="0" max="3.5" step="0.05" value="0">
+        <div class="lbl"><span>บานปากคลองปัตตามัง</span><span><b id="vAC"></b><em id="eAC"></em></span></div><input id="aC" type="range" min="0" max="1.6" step="0.05" value="0.5">
       </div>
       <button class="big dark" id="emerg">เปิดบานเต็มที่</button>
       <button class="big lite" id="closeAll">ปิดบานทั้งหมด · กลับสู่ภาวะปกติ</button>
@@ -396,7 +397,7 @@ const zc = r => (r[0] + r[1]) / 2;
 
 /* ================= ทะเบียนระบบ ================= */
 const SYSTEM = {
-  legend: [['น้ำต้นน้ำ', '#3b82f6'], ['ล้นสันฝาย', '#22d3ee'], ['ผ่านบานระบาย', '#6366f1'], ['ระบายทราย/ตะกอน', '#c2410c'], ['ท้ายน้ำ', '#0ea5e9']],
+  legend: [['น้ำต้นน้ำ', '#3b82f6'], ['ส่งเข้าคลองปัตตามัง', '#14b8a6'], ['ล้นสันฝาย', '#22d3ee'], ['ผ่านบานระบาย', '#6366f1'], ['ระบายทราย/ตะกอน', '#c2410c'], ['ท้ายน้ำ', '#0ea5e9']],
   groups: [
     { th: 'ต้นน้ำ', en: 'Upstream', parts: [
       { id: 'pond', th: 'แอ่งน้ำเหนือฝาย', en: 'Upstream pool', color: '#3b82f6',
@@ -445,6 +446,14 @@ const SYSTEM = {
         spec: [['ความหนา', '0.60 ม.'], ['ความยาว', '60.00 ม.'], ['ระดับ', '+9.00 ม.รทก.']], kpis: [] },
     ] },
     { th: 'การใช้น้ำและท้ายน้ำ', en: 'Water use & downstream', parts: [
+      { id: 'intake', th: 'ประตูปากคลองปัตตามัง', en: 'Canal head regulator', color: '#14b8a6',
+        desc: 'ประตูรับน้ำฝั่งขวาเหนือฝาย ฝายยกระดับน้ำให้สูงกว่าธรณีปากคลอง น้ำจึงไหลเข้าคลองส่งน้ำปัตตามังได้เองโดยไม่ต้องสูบ ควบคุมปริมาณด้วยการยกบานปากคลอง',
+        spec: [['ช่องเปิด', '1 ช่อง · กว้าง 2.50 ม.'], ['ระดับธรณีปากคลอง', '+12.00 ม.รทก.'], ['ความสูงบาน', '1.60 ม.']], kpis: ['Qc', 'aC'],
+        cam: { pos: [-28, 26, 52], tgt: [-60, 14, 36] } },
+      { id: 'canal', th: 'คลองส่งน้ำปัตตามัง', en: 'Pattamang irrigation canal', color: '#0d9488',
+        desc: 'คลองดินส่งน้ำจากฝายไปพื้นที่เกษตรฝั่งขวา ระดับน้ำในคลองคำนวณจากปริมาณน้ำที่รับเข้า (สมการแมนนิง) ยิ่งเปิดบานปากคลองมาก น้ำล้นสันฝายลงคลองบางสะพานก็ยิ่งน้อยลง',
+        spec: [['กว้างก้นคลอง', '3.00 ม.'], ['ลาดตลิ่ง', '1 : 1.5'], ['ความลาดท้องคลอง', '1 : 2,500']], kpis: ['Qc', 'yC'],
+        cam: { pos: [-30, 60, 150], tgt: [70, 11, 74] } },
       { id: 'river', th: 'คลองบางสะพาน (ท้ายน้ำ)', en: 'Downstream channel', color: '#0ea5e9',
         desc: 'น้ำที่ผ่านฝายทั้งหมดไหลลงคลองบางสะพาน ระดับน้ำท้ายฝายขึ้นกับปริมาณน้ำ (คำนวณด้วยสมการแมนนิง) และต้องสูงพอให้น้ำกระโดดเกิดในแอ่ง',
         spec: [['ปริมาณน้ำสูงสุดออกแบบ', '670 ลบ.ม./วินาที'], ['ตลิ่งท้ายน้ำ', '+14.50 ม.รทก.']], kpis: ['TW', 'Qout'],
@@ -457,7 +466,7 @@ const findPart = id => PARTS.find(p => p.id === id);
 
 /* ================= state + ชลศาสตร์ ================= */
 const g = 9.81;
-const S = { t: 6 * 3600, h: 13.70, TW: 8.9, TWb: 9.1, Qin: 8, a1: 0, a2: 0, aS: 0, c1: 0, c2: 0, cS: 0, nP: 0, valve: 0.3,
+const S = { t: 6 * 3600, h: 13.70, TW: 8.9, TWb: 9.1, Qin: 8, a1: 0, a2: 0, aS: 0, c1: 0, c2: 0, cS: 0, aC: 0.5, cC: 0.5, Qc: 0, nP: 0, valve: 0.3,
   Qw: 0, Qg1: 0, Qg2: 0, Qs: 0, Qp: 0, Qpipe: 0, Qout: 0, speed: 1, auto: true, hyd: null, hist: [], jump: null, peakH: 0 };
 const SIM_PER_SEC = 60;  // 1 วินาทีจริง = 1 นาทีจำลอง (ที่ 1×)
 
@@ -501,14 +510,15 @@ function step(dtReal) {
       else if (S.h < 14.0 && S.c1 > 0) { S.c1 = S.c2 = clamp(S.c1 - 0.003 * d, 0, 7); }
     }
     const mv = 0.005 * d; // 0.30 ม./นาที
-    S.a1 += clamp(S.c1 - S.a1, -mv, mv); S.a2 += clamp(S.c2 - S.a2, -mv, mv); S.aS += clamp(S.cS - S.aS, -mv, mv);
+    S.a1 += clamp(S.c1 - S.a1, -mv, mv); S.a2 += clamp(S.c2 - S.a2, -mv, mv); S.aS += clamp(S.cS - S.aS, -mv, mv); S.aC += clamp(S.cC - S.aC, -mv, mv);
     const tw = S.TW;
     S.Qw = weirQ(S.h, tw);
     S.Qg1 = gateQ(S.h, tw, S.a1, GSILL, GW); S.Qg2 = gateQ(S.h, tw, S.a2, GSILL, GW);
     S.Qs = gateQ(S.h, tw, S.aS, SSILL, SW);
+    S.Qc = gateQ(S.h, CBED0 + canalYn(S.Qc), S.aC, CSILL, CB);   // ทดน้ำเข้าคลองปัตตามัง
     S.Qp = 0;
     S.Qpipe = 0;
-    const out = S.Qw + S.Qg1 + S.Qg2 + S.Qs + S.Qp + S.Qpipe;
+    const out = S.Qw + S.Qg1 + S.Qg2 + S.Qs + S.Qp + S.Qpipe + S.Qc;
     S.h = Math.max(UPFLOOR - 0.3, S.h + (S.Qin - out) * d / areaH(S.h));
     S.Qout = S.Qw + S.Qg1 + S.Qg2 + S.Qs;
     S.TW = tailwater(S.Qout);
@@ -690,6 +700,15 @@ const RIVER = [[-480, -330], [-380, -250], [-300, -170], [-220, -90], [-150, -35
 const RSEG = []; { let acc = 0; for (let i = 0; i < RIVER.length - 1; i++) { const [ax, az] = RIVER[i], [bx, bz] = RIVER[i + 1]; const L = Math.hypot(bx - ax, bz - az); RSEG.push({ ax, az, dx: bx - ax, dz: bz - az, L, s0: acc }); acc += L; } }
 const S0 = RSEG[6].s0 + 50;
 function riverInfo(x, z) { let best = 1e9, bs = 0; for (const s of RSEG) { const t = clamp(((x - s.ax) * s.dx + (z - s.az) * s.dz) / (s.L * s.L), 0, 1); const d = Math.hypot(x - s.ax - s.dx * t, z - s.az - s.dz * t); if (d < best) { best = d; bs = s.s0 + t * s.L; } } return [best, bs - S0]; }
+/* ---- คลองส่งน้ำปัตตามัง (ฝั่งขวา) ---- */
+const CANAL_PTS = [[-60, 16], [-60, 46], [-44, 58], [-6, 64], [40, 70], [110, 82], [180, 104], [250, 135], [340, 172]];
+const CSILL = 12.0, CB = 2.5, CGATE_H = 1.6, CBED0 = 11.6, CSLOPE = 0.0004, CGATE_Z = 38, CULV = [-7.6, 63.8];
+const CSAMP = []; { const cv = new THREE.CatmullRomCurve3(CANAL_PTS.map(([x, z]) => V3(x, 0, z)), false, 'centripetal'); const L = cv.getLength(), n = Math.ceil(L / 2);
+  for (let i = 0; i <= n; i++) { const p = cv.getPointAt(i / n), t = cv.getTangentAt(i / n); CSAMP.push({ x: p.x, z: p.z, tx: t.x, tz: t.z, s: L * i / n }); } }
+const CS_GATE = CSAMP.reduce((b, q) => Math.abs(q.z - CGATE_Z) < Math.abs(b.z - CGATE_Z) && q.s < 40 ? q : b, CSAMP[0]).s;
+const canalBed = sc => CBED0 - CSLOPE * Math.max(0, sc - CS_GATE);
+function canalInfo(x, z) { if (x < -80 || z < 4) return null; let best = 1e9, bs = 0; for (const q of CSAMP) { const d = (x - q.x) ** 2 + (z - q.z) ** 2; if (d < best) { best = d; bs = q.s; } } return [Math.sqrt(best), bs]; }
+const canalYn = Q => Q > 0.01 ? Math.pow(Q * 0.025 / (3 * Math.sqrt(CSLOPE)), 0.6) : 0;
 const bump = (x, z, cx, cz, r, a) => a * Math.exp(-((x - cx) ** 2 + (z - cz) ** 2) / (r * r));
 function groundH(x, z) {
   return 18.3 - 1.2 * smooth(-20, 140, x) + 0.55 * Math.sin(x * 0.021 + 1) * Math.cos(z * 0.017) + 0.35 * Math.sin(x * 0.053 + z * 0.041) + 0.22 * Math.sin(z * 0.07 - x * 0.03)
@@ -706,6 +725,11 @@ function zoneH(x, z) {
   const hb = Math.max(30, 42.4 - (x - 42.76) * 0.25); return a < hb ? 8.85 : Math.min(14.6, 8.85 + (a - hb) * 0.5);
 }
 function terrainH(x, z) {
+  const h0 = terrainH0(x, z), ci = canalInfo(x, z); if (!ci || ci[0] > 18) return h0;
+  if (Math.hypot(x - CULV[0], z - CULV[1]) < 5) return h0;   // ท่อลอดถนน
+  return Math.min(h0, canalBed(ci[1]) + Math.max(0, ci[0] - 1.5) * 0.67);
+}
+function terrainH0(x, z) {
   const [nat] = natural(x, z);
   const w = smooth(-62, -46, x) * (1 - smooth(92, 112, x)) * (1 - smooth(70, 96, Math.abs(z)));
   return w > 0 ? lerp(nat, zoneH(x, z), w) : nat;
@@ -899,7 +923,25 @@ function buildGates() {
 const PUMP_PATH = [[-33, 10.4, -29.5], [-34.5, 13.5, -36], [-36.5, 0, -46], [-42, 0, -57], [-44, 0, -61]];
 const PIPE_PATH_UNUSED = [[-27.5, 11.25, 27.2], [-27.5, 11.25, 30.2], [-24, 0, 31.8], [-6, 0, 31.8], [10, 0, 31.8], [29, 0, 32.2], [36, 0, 46], [60, 0, 46], [100, 0, 46], [103.5, 0, 46]];
 const fixPath = P => P.map(([x, y, z]) => V3(x, y || terrainH(x, z) + 0.45, z));
+function buildIntake() {
+  const x0 = -60, hw = CB / 2, zA = CGATE_Z - 4, zB = CGATE_Z + 3, top = 18.4, bed = CSILL - 0.4;
+  box('intake', x0 - hw - 0.4, x0 - hw, bed, top, zA, zB, M.concreteOld); box('intake', x0 + hw, x0 + hw + 0.4, bed, top, zA, zB, M.concreteOld);   // ผนังข้าง
+  box('intake', x0 - hw, x0 + hw, bed, CSILL, zA, zB, M.concrete);   // พื้น/ธรณี
+  box('intake', x0 - 7, x0 - hw - 0.4, bed, top, zA - 0.4, zA, M.concreteOld); box('intake', x0 + hw + 0.4, x0 + 7, bed, top, zA - 0.4, zA, M.concreteOld);   // กำแพงหน้า
+  box('intake', x0 - hw - 0.4, x0 + hw + 0.4, CSILL + CGATE_H + 1.7, top, CGATE_Z - 0.3, CGATE_Z + 0.3, M.concreteOld);   // ผนังกันหน้า (breast wall)
+  box('intake', x0 - hw - 0.6, x0 + hw + 0.6, top, top + 0.25, CGATE_Z - 1.2, CGATE_Z + 1.2, M.deck);   // ชานยกบาน
+  const gate = box('intake', x0 - hw + 0.05, x0 + hw - 0.05, -CGATE_H / 2, CGATE_H / 2, CGATE_Z - 0.07, CGATE_Z + 0.07, M.gate);
+  const stem = box('intake', x0 - 0.05, x0 + 0.05, -0.5, 0.5, CGATE_Z - 0.05, CGATE_Z + 0.05, M.steel);
+  const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.06, 6, 18), M.yellow); wheel.position.set(x0, top + 1.0, CGATE_Z); add('intake', wheel);
+  box('intake', x0 - 0.18, x0 + 0.18, top + 0.25, top + 0.95, CGATE_Z - 0.18, CGATE_Z + 0.18, M.hoistM);
+  GATES.c = { g: gate, stem };
+  // ท่อลอดถนน
+  for (const s of [-1, 1]) { const q = CSAMP.reduce((b, p) => Math.hypot(p.x - CULV[0], p.z - CULV[1]) < Math.hypot(b.x - CULV[0], b.z - CULV[1]) ? p : b, CSAMP[0]);
+    const cx = CULV[0] + q.tx * 5 * s, cz = CULV[1] + q.tz * 5 * s, m = new THREE.Mesh(new THREE.BoxGeometry(6, 3.2, 0.5), M.concreteOld);
+    m.position.set(cx, CBED0 + 1.2, cz); m.rotation.y = Math.atan2(q.tx, q.tz); add('canal', m); }
+}
 function buildUse() {
+  buildIntake();
   // ถนนลูกรัง
   const road = (P, w = 5) => { const c = new THREE.CatmullRomCurve3(P.map(([x, z]) => V3(x, 0, z))); const n = 160, v = [], idx = [];
     for (let i = 0; i <= n; i++) { const p = c.getPointAt(i / n), t = c.getTangentAt(i / n); const nx = -t.z, nz = t.x;
@@ -917,7 +959,7 @@ function buildTrees() {
   const tall = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.2, 0), std('#ffffff', { flatShading: true }), 260);
   const o = new THREE.Object3D(), c = new THREE.Color(); let k = 0, kt = 0;
   const roadPts = ROADS.flatMap(rc => rc.getSpacedPoints(80));
-  const ok = (x, z) => { const [, d, w] = natural(x, z); if (d < w + 12) return false; if (x > -70 && x < 120 && Math.abs(z) < 62) return false; if (x > -60 && x < -30 && z > -75 && z < -50) return false;
+  const ok = (x, z) => { const [, d, w] = natural(x, z); if (d < w + 12) return false; { const ci = canalInfo(x, z); if (ci && ci[0] < 13) return false; } if (x > -70 && x < 120 && Math.abs(z) < 62) return false; if (x > -60 && x < -30 && z > -75 && z < -50) return false;
     for (const p of roadPts) if (Math.abs(p.x - x) < 7 && Math.abs(p.z - z) < 7) return false; return true; };
   for (let t = 0; t < 12000 && k < N; t++) {
     const x = lerp(TX[0] + 8, TX[1] - 8, Math.random()), z = lerp(TZ[0] + 8, TZ[1] - 8, Math.random());
@@ -984,11 +1026,18 @@ function updateJet(m, q, B, d0, ctrlX, up, freeSurf) {
   m.geometry.attributes.position.needsUpdate = true; m.geometry.computeVertexNormals();
 }
 function buildWater() {
-  W.pond = plane(TX[0], -0.12, TZ[0], TZ[1], waterMat('#5b9fb6', 0.82), 'pond');
+  W.pond = plane(TX[0], -48, TZ[0], 31, waterMat('#5b9fb6', 0.82), 'pond');   // เว้นแนวคลองปัตตามัง
+  W.pondB = plane(-48, -0.12, TZ[0], 48, W.pond.material, 'pond');
   W.pond2 = plane(-0.12, GX - 0.1, Z.nW[1], Z.p2[1], W.pond.material, 'pond');
   W.pond3 = plane(-0.12, GX - 0.1, Z.p3[0], Z.sW[0], W.pond.material, 'pond');
   W.basin = plane(1.0, 29.26, Z.nW[1], Z.sW[0], waterMat('#5fa9bd', 0.78), 'basin');
-  W.down = plane(29.26, TX[1], TZ[0], TZ[1], waterMat('#5b9fb6', 0.82), 'river');
+  W.down = plane(29.26, 140, TZ[0], 58, waterMat('#5b9fb6', 0.82), 'river');
+  W.downB = plane(140, TX[1], TZ[0], 88, W.down.material, 'river');
+  // ผิวน้ำในคลองปัตตามัง
+  { const smp = CSAMP.filter(q => q.z >= 30 || q.s > CS_GATE), n = smp.length, pos = new Float32Array(n * 2 * 3), uv = new Float32Array(n * 2 * 2), idx = [];
+    smp.forEach((q, i) => { uv.set([0, q.s / 6, 1, q.s / 6], i * 4); if (i) { const a = (i - 1) * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } });
+    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); gg.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); gg.setIndex(idx);
+    W.canal = new THREE.Mesh(gg, waterMat('#4fa3a5', 0.86)); W.canal.userData.water = 'canal'; W.canal.renderOrder = 2; W.canal.frustumCulled = false; W.canal.userData.smp = smp; grp('canal').add(W.canal); }
   const sm = () => new THREE.MeshStandardMaterial({ color: '#ffffff', map: (() => { const t = sheetTex.clone(); t.needsUpdate = true; return t; })(), transparent: true, opacity: 0.85, roughness: 0.06, metalness: 0.12, emissive: '#2c6a78', emissiveIntensity: 0.08, depthWrite: false, side: THREE.DoubleSide });
   // กระแสน้ำผ่านสันฝาย/ช่องบาน แบบมีความหนา (ผิวน้ำลาดต่อเนื่องจากระดับเหนือฝายลงแอ่ง)
   const wsurf = weirSurf.filter(p => p[0] >= -0.6).concat([[10.5, BASIN], [13, BASIN]]);
@@ -1039,6 +1088,7 @@ function buildFlows() {
   F.g1 = new Flow({ pts: gp(Z.g1, GSILL), color: '#6366f1', n: 170, width: 2.6 });
   F.g2 = new Flow({ pts: gp(Z.g2, GSILL), color: '#6366f1', n: 170, width: 2.6 });
   F.s = new Flow({ pts: [[-6, 10.0], [1.6, 9.8], [4.4, 8.45], [9, 8.4], ...down].map(([x, y]) => [x, y, zc(Z.sand)]), color: '#c2410c', n: 80, width: 0.8 });
+  F.canal = new Flow({ pts: CSAMP.filter(q => q.s > CS_GATE - 2 && Math.hypot(q.x - CULV[0], q.z - CULV[1]) > 6).filter((q, i) => i % 3 === 0).map(q => [q.x, canalBed(q.s) - CBED0, q.z]), color: '#14b8a6', n: 220, width: 0.9, yOff: () => CBED0 + canalYn(S.Qc) + 0.06 });
   F.down = new Flow({ pts: [[30, 0, 0], [70, 0, 0], [100, 0, 0.5], [170, 0, 6], [250, 0, 22], [345, 0, 43]], color: '#0ea5e9', n: 380, width: 15, yOff: () => S.TW + 0.08 });
 }
 
@@ -1080,6 +1130,9 @@ const KPI = {
   Hw: ['ความลึกน้ำบนสัน', () => Math.max(0, S.h - CREST).toFixed(2), 'ม.'],
   Qg: ['ผ่านบานระบาย', () => fq(S.Qg1 + S.Qg2), 'ลบ.ม./วิ'],
   Qs: ['ระบายทราย', () => fq(S.Qs), 'ลบ.ม./วิ'],
+  Qc: ['ส่งเข้าคลองปัตตามัง', () => fq(S.Qc), 'ลบ.ม./วิ'],
+  aC: ['ยกบานปากคลอง', () => S.aC.toFixed(2), 'ม.'],
+  yC: ['ความลึกน้ำในคลอง', () => canalYn(S.Qc).toFixed(2), 'ม.'],
   Qp: ['สูบน้ำ', () => fq(S.Qp), 'ลบ.ม./วิ', () => S.nP && S.h < 11 ? 'w' : ''],
   Qpipe: ['ท่อส่งน้ำ', () => fq(S.Qpipe), 'ลบ.ม./วิ'],
   use: ['สูบน้ำ', () => fq(S.Qp), 'ลบ.ม./วิ', () => S.nP && S.h < 11 ? 'w' : ''],
@@ -1107,7 +1160,7 @@ function buildUI() {
   for (const e of ELEVS) { const d = document.createElement('div'); d.className = 'el' + (e.w ? ' w' : ''); $('labels').appendChild(d); e.el = d; }
 }
 const LBL = [];
-const LPOS = { pond: () => [-72, S.h + 0.6, 2], riprapUp: [-37, 10.6, -16], apron: [-16, 10.1, 12], weir: [1, 14.6, 10], gates: [GX, 18.6, -18.65], sand: [GX, 12.6, 27.2], bridge: [BX, 18.8, 16],
+const LPOS = { intake: [-60, 20.6, CGATE_Z], canal: () => [40, canalBed(130) + canalYn(S.Qc) + 1.2, 70], pond: () => [-72, S.h + 0.6, 2], riprapUp: [-37, 10.6, -16], apron: [-16, 10.1, 12], weir: [1, 14.6, 10], gates: [GX, 18.6, -18.65], sand: [GX, 12.6, 27.2], bridge: [BX, 18.8, 16],
   hoist: [HX, 26, -25], walls: [18, 15.6, -29], basin: [19, 9.4, 4], blocks: [14.5, 9.6, -9], endsill: [28.4, 9.8, 16], riprapDown: [62, 10.2, -8], pump: () => [-46, terrainH(-46, -64) + 7, -64],
   pipe: () => [104, terrainH(104, 46) + 3, 46], river: () => [150, S.TW + 1.2, 5] };
 const ELEVS = [
@@ -1466,8 +1519,8 @@ document.addEventListener('fullscreenchange', () => { resize(); if (!document.fu
 function setScenOn(k) { document.querySelectorAll('#scen button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); }
 $('qin').oninput = () => { S.Qin = +$('qin').value; S.hyd = null; setScenOn(null); };
 $('qin').onchange = () => log(`ปรับน้ำไหลเข้าเป็น ${fq(S.Qin)} ลบ.ม./วินาที`);
-for (const [id, key, name] of [['a1', 'c1', 'บาน 1'], ['a2', 'c2', 'บาน 2'], ['aS', 'cS', 'บานระบายทราย']]) {
-  $(id).oninput = () => { S[key] = +$(id).value; if (S.auto && id !== 'aS') { S.auto = false; $('auto').checked = false; } };
+for (const [id, key, name] of [['a1', 'c1', 'บาน 1'], ['a2', 'c2', 'บาน 2'], ['aS', 'cS', 'บานระบายทราย'], ['aC', 'cC', 'บานปากคลองปัตตามัง']]) {
+  $(id).oninput = () => { S[key] = +$(id).value; if (S.auto && id !== 'aS' && id !== 'aC') { S.auto = false; $('auto').checked = false; } };
   $(id).onchange = () => log(`สั่งยก${name} ${S[key].toFixed(2)} ม. (เครื่องกว้านยก 0.30 ม./นาที)`);
 }
 $('auto').onchange = () => { S.auto = $('auto').checked; log(S.auto ? 'เปิดโหมดควบคุมบานอัตโนมัติ (รักษาระดับไม่เกิน +14.50)' : 'ปิดโหมดอัตโนมัติ'); };
@@ -1484,10 +1537,10 @@ document.querySelectorAll('#scen button').forEach(b => b.onclick = () => {
 function syncUI() {
   $('vQin').textContent = fq(S.Qin); if (document.activeElement !== $('qin')) $('qin').value = Math.min(900, S.Qin);
   const gl = (v, c, ok) => { $('v' + v).textContent = (v === 'AS' ? S.aS : S['a' + v.slice(1)]).toFixed(2) + ' ม.'; };
-  gl('A1'); gl('A2'); gl('AS');
+  gl('A1'); gl('A2'); gl('AS'); $('vAC').textContent = S.aC.toFixed(2) + ' ม.'; $('eAC').textContent = Math.abs(S.cC - S.aC) > 0.01 ? `→ สั่ง ${S.cC.toFixed(2)}` : '';
   $('eA1').textContent = Math.abs(S.c1 - S.a1) > 0.01 ? `→ สั่ง ${S.c1.toFixed(2)}` : ''; $('eA2').textContent = Math.abs(S.c2 - S.a2) > 0.01 ? `→ สั่ง ${S.c2.toFixed(2)}` : ''; $('eAS').textContent = Math.abs(S.cS - S.aS) > 0.01 ? `→ สั่ง ${S.cS.toFixed(2)}` : '';
-  for (const [id, key] of [['a1', 'c1'], ['a2', 'c2'], ['aS', 'cS']]) if (document.activeElement !== $(id)) $(id).value = S[key];
-  $('kpis').innerHTML = kpiHTML(['h', 'TW', 'Qin', 'Qw', 'Qg', 'Qs', 'Qout', 'fb', 'jump', 'F1']);
+  for (const [id, key] of [['a1', 'c1'], ['a2', 'c2'], ['aS', 'cS'], ['aC', 'cC']]) if (document.activeElement !== $(id)) $(id).value = S[key];
+  $('kpis').innerHTML = kpiHTML(['h', 'TW', 'Qin', 'Qw', 'Qg', 'Qs', 'Qc', 'Qout', 'fb', 'jump']);
   { const st = $('status').className; $('miniStat').className = st; $('hud').className = 'card ' + st; $('hudSt').textContent = $('status').textContent.replace('● ', ''); $('hudH').textContent = '+' + S.h.toFixed(2); $('hudTW').textContent = '+' + S.TW.toFixed(2); $('hudQ').textContent = fq(S.Qout); $('hudClock').textContent = clockStr(S.t); $('miniTxt').textContent = `${$('status').textContent.replace('● ', '')} · เหนือฝาย +${S.h.toFixed(2)} · ท้ายฝาย +${S.TW.toFixed(2)} · ไหลผ่าน ${fq(S.Qout)} ลบ.ม./วิ`; }
   $('clock').textContent = clockStr(S.t);
   const il = $('infoLive'); if (il && selId) il.innerHTML = kpiHTML(findPart(selId).kpis);
@@ -1532,7 +1585,12 @@ function drawChart(c, big) {
 /* ================= อัปเดตฉากตามการจำลอง ================= */
 function updateScene(dt, time) {
   atmUpdate(dt);
-  W.pond.position.y = W.pond2.position.y = W.pond3.position.y = S.h; W.basin.position.y = S.TWb; W.down.position.y = S.TW;
+  W.pond.position.y = W.pondB.position.y = W.pond2.position.y = W.pond3.position.y = S.h; W.basin.position.y = S.TWb; W.down.position.y = W.downB.position.y = S.TW;
+  { const P = W.canal.geometry.attributes.position.array, yn = canalYn(S.Qc);
+    W.canal.userData.smp.forEach((q, i) => { const bed = canalBed(q.s), lvl = q.s <= CS_GATE ? S.h : bed + Math.max(yn, 0.02), hw = 1.5 + Math.max(0, lvl - bed) * 1.5, nx = -q.tz, nz = q.tx;
+      P.set([q.x + nx * hw, lvl, q.z + nz * hw, q.x - nx * hw, lvl, q.z - nz * hw], i * 6); });
+    W.canal.geometry.attributes.position.needsUpdate = true; W.canal.geometry.computeVertexNormals(); W.canal.geometry.computeBoundingSphere(); }
+  if (GATES.c) { const G = GATES.c; G.g.position.y = CSILL + S.aC + CGATE_H / 2; const top = CSILL + S.aC + CGATE_H, L = 19.1 - top; G.stem.scale.y = Math.max(0.01, L); G.stem.position.y = top + L / 2; }
   waterTex.offset.x = (waterTex.offset.x + dt * 0.004 * (1 + S.Qout / 100)) % 1;
   const anim = (m, q, ref) => { m.visible = q > 0.01; m.material.opacity = clamp(0.55 + q / ref, 0.55, 0.9); m.material.map.offset.y = (m.material.map.offset.y - dt * (0.5 + Math.sqrt(q) * 0.2)) % 1;
     const ov = m.userData.ov; if (ov) { ov.material.opacity = clamp(0.3 + q / ref * 0.6, 0.3, 0.75); ov.material.map.offset.y = (ov.material.map.offset.y - dt * (1.1 + Math.sqrt(q) * 0.35)) % 1; } };
@@ -1566,7 +1624,7 @@ function updateScene(dt, time) {
   }
   // อนุภาค
   F.up.update(dt, S.Qin, 300); F.weir.update(dt, S.Qw, 400); F.g1.update(dt, S.Qg1, 120); F.g2.update(dt, S.Qg2, 120); F.s.update(dt, S.Qs, 15);
-  F.down.update(dt, S.Qout, 400);
+  F.down.update(dt, S.Qout, 400); F.canal.update(dt, S.Qc, 8);
   if (mode === 'cut' && frame % 6 === 0) updateCaps();
 }
 
