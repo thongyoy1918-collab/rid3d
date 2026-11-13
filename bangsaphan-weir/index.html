@@ -1207,7 +1207,7 @@ function tourGo(i) {
   const head = `<div class="k">${s.intro ? 'เริ่มต้น' : s.quiz ? 'ท้ายทัวร์' : `ขั้นที่ ${tIdx}/${TOUR.length - 2} · ${findPart(s.id).group.th}`}</div><h3>${s.title}</h3>`;
   let body = '';
   if (s.quiz) body = QUIZ.map((q, qi) => `<div class="quiz"><p><b>${qi + 1}. ${q.q}</b></p>${q.a.map((a, ai) => `<label data-q="${qi}" data-a="${ai}">${a}</label>`).join('')}</div>`).join('') + '<p style="color:#64748b">ลองต่อ: กด “🌧 น้ำหลากตามแบบ 670” ที่แผงด้านล่าง แล้วดูว่าระดับน้ำขึ้นสูงสุดเท่าไร และน้ำกระโดดยังอยู่ในแอ่งหรือไม่</p>';
-  else body = (s.id ? pimgHTML(s.id) : '') + `<p>${s.text}</p>` + (s.id ? `<div class="live">${kpiHTML(findPart(s.id).kpis.slice(0, 4))}</div>` : '');
+  else body = (s.id ? pimgHTML(s.id) : '') + `<p>${s.text}</p>`;
   el.innerHTML = `<button class="x" id="tourX">✕</button>${head}${body}<div class="prog"><i style="width:${tIdx / (TOUR.length - 1) * 100}%"></i></div>
     <div class="btnrow"><button class="btn" id="tPrev" ${tIdx ? '' : 'disabled'}>← ย้อนกลับ</button><button class="btn ${tAuto ? 'on' : ''}" id="tPlay">${tAuto ? '❚❚ หยุด' : '▶ เล่นอัตโนมัติ'}</button><button class="btn pri" id="tNext">${tIdx < TOUR.length - 1 ? 'ถัดไป →' : 'จบทัวร์'}</button></div>`;
   $('tourX').onclick = () => setMode('explore'); $('tPrev').onclick = () => tourGo(tIdx - 1);
