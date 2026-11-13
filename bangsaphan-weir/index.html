@@ -548,9 +548,11 @@ const hatchTex = canvasTex(64, 64, (x, w, h) => {
   for (let i = 0; i < 18; i++) { x.fillStyle = '#8d877c'; x.beginPath(); x.arc(Math.random() * w, Math.random() * h, 1.3, 0, 7); x.fill(); }
 }, [0.5, 0.5]);
 const meshTex = canvasTex(64, 64, (x, w, h) => {
-  x.clearRect(0, 0, w, h); x.strokeStyle = 'rgba(70,80,90,.85)'; x.lineWidth = 1.2;
-  for (let i = -64; i < 128; i += 8) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 64, 64); x.stroke(); x.beginPath(); x.moveTo(i + 64, 0); x.lineTo(i, 64); x.stroke(); }
-}, [3, 1]);
+  x.clearRect(0, 0, w, h); x.strokeStyle = 'rgba(175,181,188,1)'; x.lineWidth = 2.2;
+  for (let i = -64; i < 128; i += 16) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 64, 64); x.stroke(); x.beginPath(); x.moveTo(i + 64, 0); x.lineTo(i, 64); x.stroke(); }
+}, [1, 1]);
+// ตะแกรงลวดช่องเล็ก: ปรับ UV ให้ 1 แผ่นลาย = 0.45 ม. (ช่องตาข่าย ≈ 0.11 ม.)
+const meshPlane = (w, h) => { const g0 = new THREE.PlaneGeometry(w, h), uv = g0.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 0.45, uv.getY(i) * h / 0.45); return g0; };
 const gaugeTex = canvasTex(64, 512, (x, w, h) => {
   x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
   for (let i = 0; i < 60; i++) { const y = h - i * h / 60; x.fillStyle = (Math.floor(i / 10) % 2) ? '#dc2626' : '#111'; x.fillRect(0, y - 4, i % 10 === 0 ? 50 : (i % 2 ? 22 : 34), 3); if (i % 10 === 0) { x.font = 'bold 20px sans-serif'; x.fillText(String(11 + i / 10), 34, y - 8); } }
@@ -567,7 +569,7 @@ const M = {
   deck: std('#d8cbb2', { map: concreteTex }),
   roof: std('#2f6fd6', { roughness: 0.5, metalness: 0.3, side: THREE.DoubleSide }),
   fascia: std('#f4f6f8'), post: std('#1f2937', { roughness: 0.5 }),
-  meshWall: new THREE.MeshStandardMaterial({ color: '#5b6470', map: meshTex, transparent: true, alphaTest: 0.2, side: THREE.DoubleSide, metalness: 0.4, roughness: 0.6 }),
+  meshWall: new THREE.MeshStandardMaterial({ color: '#b9bec4', map: meshTex, transparent: true, alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.4, roughness: 0.6 }),
   hoistM: std('#202326', { roughness: 0.6, metalness: 0.3 }),
   yellow: std('#f2b705'), soil: std('#8b6f4e'), gravel: std('#bdb7ab'),
   road: std('#d8c39b', { roughness: 1 }), white: std('#f8fafc'), roofHouse: std('#3b6fb6', { side: THREE.DoubleSide }),
@@ -774,9 +776,9 @@ function buildGates() {
   // ห้องเครื่อง: เสาเหล็กดำ + ผนังตะแกรงลวด + หลังคาเหล็กสีฟ้า (ตามภาพถ่าย)
   const H0 = HOIST, H1 = HOIST + 2.6, xs = [HX - 1.5, HX + 1.5];
   for (let z = zA + 0.2; z <= zB - 0.1; z += (zB - zA - 0.3) / 4) for (const x of xs) box('hoist', x - 0.07, x + 0.07, H0, H1, z - 0.07, z + 0.07, M.post);
-  for (const x of xs) { const mw = new THREE.Mesh(new THREE.PlaneGeometry(zB - zA - 0.4, 2.3), M.meshWall); mw.rotation.y = Math.PI / 2; mw.position.set(x, H0 + 1.2, (zA + zB) / 2); add('hoist', mw, false);
+  for (const x of xs) { const mw = new THREE.Mesh(meshPlane(zB - zA - 0.4, 2.3), M.meshWall); mw.rotation.y = Math.PI / 2; mw.position.set(x, H0 + 1.2, (zA + zB) / 2); add('hoist', mw, false);
     box('hoist', x - 0.04, x + 0.04, H0 + 1.0, H0 + 1.06, zA + 0.2, zB - 0.2, M.rail); }
-  for (const z of [zA + 0.2, zB - 0.2]) { const mw = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 2.3), M.meshWall); mw.position.set(HX, H0 + 1.2, z); add('hoist', mw, false); }
+  for (const z of [zA + 0.2, zB - 0.2]) { const mw = new THREE.Mesh(meshPlane(3.0, 2.3), M.meshWall); mw.position.set(HX, H0 + 1.2, z); add('hoist', mw, false); }
   const rw = 5.6, rl = zB - zA + 2.4, rh = 0.9;
   const roofG = new THREE.CylinderGeometry(0.5, Math.SQRT2 * 0.5, 1, 4, 1, true); roofG.rotateY(Math.PI / 4);
   const roof = new THREE.Mesh(roofG, M.roof); roof.scale.set(rw, rh, rl); roof.position.set(HX, H1 + rh / 2, (zA + zB) / 2); add('hoist', roof);
