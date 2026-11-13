@@ -108,7 +108,7 @@ input[type=range]{width:100%;accent-color:var(--dark)}
 .art .eq{font-family:'IBM Plex Mono',monospace;background:#eceae2;border-radius:6px;padding:2px 7px;font-size:12.5px}
 .art hr{border:0;border-top:1px solid var(--line);margin:22px 0}
 /* แถบล่าง */
-#dock{position:fixed;left:50%;transform:translateX(-50%);bottom:36px;display:flex;gap:2px;padding:6px;background:#f2f0ea;border:1px solid #e0ddd3;border-radius:40px;box-shadow:0 10px 30px #1f2f2918;z-index:7;transition:left .35s}
+#dock{scrollbar-width:none;position:fixed;left:50%;transform:translateX(-50%);bottom:36px;display:flex;gap:2px;padding:6px;background:#f2f0ea;border:1px solid #e0ddd3;border-radius:40px;box-shadow:0 10px 30px #1f2f2918;z-index:7;transition:left .35s}
 #dock button{border:0;background:none;padding:9px 13px;border-radius:24px;font-size:13.5px;color:#2f3e37;white-space:nowrap}
 #dock button.on{background:var(--pill)}
 #dock button:hover:not(.on){background:#e7e5dd}
@@ -162,6 +162,7 @@ body.sideopen #compass{right:430px}
 #musicBox input[type=range]{flex:1}
 #musicBox .now{font-size:11px;color:var(--mut);margin-top:6px;min-height:15px}
 #tSound.on,#tMusic.on{background:var(--pill)}
+#dock::-webkit-scrollbar{display:none}
 [hidden]{display:none!important}
 @media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
 @media (max-width:560px){#tabs{top:70px;transform:translateX(-50%);position:fixed}#hero{top:118px}#hero .k{margin-bottom:8px}#hero p{display:none}#side{top:118px}}
@@ -469,7 +470,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color('#dcdbd5');
 scene.fog = new THREE.Fog('#dcdbd5', 520, 1200);
 const camera = new THREE.PerspectiveCamera(36, 1, 0.5, 3000);
-const HOME = { pos: [-92, 52, 96], tgt: [6, 11, 0] };
+const HOME = { pos: [-150, 98, 168], tgt: [10, 9, 6] };
 camera.position.set(...HOME.pos);
 const controls = new OrbitControls(camera, canvas);
 controls.target.set(...HOME.tgt); controls.enableDamping = true; controls.dampingFactor = 0.08;
