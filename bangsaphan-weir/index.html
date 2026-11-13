@@ -86,7 +86,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .spd button{border:0;background:none;padding:3px 9px;border-radius:6px;font-size:12px}
 .spd button.on{background:#fff;box-shadow:0 1px 3px #0002;font-weight:600}
 #fold{border:0;background:#f1f5f9;border-radius:7px;padding:3px 9px}
-#simBody{display:grid;grid-template-columns:104px 1.05fr 1.1fr 1.55fr 340px;gap:14px;align-items:start}
+#simBody{display:grid;grid-template-columns:104px 1.1fr 1.2fr 1.9fr;gap:14px;align-items:start}
 #sim.folded #simBody{display:none}
 .gauge{position:relative;width:100px;height:100px;text-align:center}
 .gauge svg{width:100px;height:100px}
@@ -109,7 +109,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .kpis small{display:block;color:var(--mut);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpis b{font-size:15.5px;font-variant-numeric:tabular-nums}.kpis i{font-style:normal;color:var(--mut);font-size:10px;margin-left:2px}
 .kpis .w{background:#fef3c7}.kpis .d{background:#fee2e2}.kpis .g{background:#dcfce7}
-#spark{width:340px;height:150px;background:#f8fafc;border-radius:8px;cursor:zoom-in}
+#chartCard{position:fixed;right:10px;bottom:240px;width:400px;padding:8px 10px 10px}
+#chartCard .ch{display:flex;align-items:center;gap:6px;font-weight:600;font-size:12.5px;margin-bottom:5px}
+#chartCard .ch button{border:0;background:#f1f5f9;border-radius:6px;padding:1px 8px;font-size:12px}
+#chartCard .ch span{margin-right:auto}
+#chartCard.folded #spark{display:none}
+#spark{width:100%;height:auto;aspect-ratio:760/400;display:block;background:#f8fafc;border-radius:8px;cursor:zoom-in}
 #chartBig{position:fixed;inset:0;background:#0f172a66;display:grid;place-items:center;z-index:45}
 #chartBig .card{position:relative;padding:16px 18px 12px;width:min(1100px,94vw)}
 #chartBig canvas{width:100%;height:auto;display:block;background:#f8fafc;border-radius:10px}
@@ -124,7 +129,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .el{position:absolute;transform:translate(-50%,-50%);font-size:10.5px;font-weight:700;color:#0f172a;background:#fde68aee;border-radius:4px;padding:0 4px;white-space:nowrap}
 .el.w{background:#bae6fdee}
 #hint{position:fixed;left:256px;bottom:236px;font-size:11px;color:#475569;background:#ffffffc0;border-radius:7px;padding:3px 8px}
-#compass{position:fixed;right:16px;bottom:240px;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700}
+#compass{position:fixed;left:256px;bottom:270px;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700}
 #compass .n{position:absolute;inset:4px;transition:none}
 #compass .n:before{content:'';position:absolute;left:50%;top:2px;transform:translateX(-50%);border:6px solid transparent;border-bottom:13px solid #dc2626;border-top:0}
 #compass .n span{position:absolute;left:50%;top:-14px;transform:translateX(-50%);color:#dc2626}
@@ -149,8 +154,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 #tMusic.on{background:#dbeafe;color:#1d4ed8}
 #tSound.on{background:#dcfce7;color:#15803d}
 [hidden]{display:none!important}
-@media (max-width:1100px){#simBody{grid-template-columns:96px 1fr 1fr}.kpis{grid-column:1/-1}#spark{grid-column:1/-1;width:100%;height:130px}#parts,#info{max-height:calc(100vh - 420px)}#hint,#compass{display:none}}
-@media (max-width:760px){#parts{display:none}#parts.open{display:block;max-height:50vh;z-index:5}#brand small{display:none}#modes{position:fixed;top:62px;left:50%;transform:translateX(-50%)}#tools button.hm{display:none}#info,#tour{left:10px;right:10px;width:auto;top:112px;max-height:35vh}#simBody{grid-template-columns:1fr 1fr}.gauge{display:none}.kpis{grid-template-columns:repeat(3,1fr)}#sim{max-height:48vh;overflow:auto}}
+@media (max-width:1100px){#simBody{grid-template-columns:96px 1fr 1fr}.kpis{grid-column:1/-1}#chartCard{width:330px}#parts,#info{max-height:calc(100vh - 420px)}#hint,#compass{display:none}}
+@media (max-width:760px){#chartCard{display:none}#parts{display:none}#parts.open{display:block;max-height:50vh;z-index:5}#brand small{display:none}#modes{position:fixed;top:62px;left:50%;transform:translateX(-50%)}#tools button.hm{display:none}#info,#tour{left:10px;right:10px;width:auto;top:112px;max-height:35vh}#simBody{grid-template-columns:1fr 1fr}.gauge{display:none}.kpis{grid-template-columns:repeat(3,1fr)}#sim{max-height:48vh;overflow:auto}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
@@ -217,10 +222,10 @@ button{font:inherit;color:inherit;cursor:pointer}
             <div class="btnrow" style="margin-top:2px"><button class="btn red" id="emerg">⚠ เปิดบานเต็มที่</button><button class="btn" id="closeAll">ปิดบานทั้งหมด</button></div>
     </div>
     <div class="kpis" id="kpis"></div>
-    <canvas id="spark" width="680" height="300" title="คลิกเพื่อขยายกราฟ"></canvas>
   </div>
   <div id="log" title="คลิกเพื่อดูบันทึกทั้งหมด"></div>
 </section>
+<aside id="chartCard" class="card"><div class="ch"><span>📈 กราฟระดับน้ำ</span><button id="chartMax" title="ขยาย">⤢ ขยาย</button><button id="chartFold" title="ย่อ/แสดง">–</button></div><canvas id="spark" width="760" height="400" title="คลิกเพื่อขยายกราฟ"></canvas></aside>
 <div id="logFull" class="card" hidden></div>
 <div id="musicBox" class="card" hidden>
   <button class="x" id="musicX">✕</button>
@@ -1088,6 +1093,8 @@ $('tShot').onclick = () => {
   resize();
 };
 $('fold').onclick = () => { $('sim').classList.toggle('folded'); $('fold').textContent = $('sim').classList.contains('folded') ? '▴' : '▾'; };
+$('chartFold').onclick = () => { $('chartCard').classList.toggle('folded'); $('chartFold').textContent = $('chartCard').classList.contains('folded') ? '+' : '–'; layoutPanels(); };
+$('chartMax').onclick = () => $('spark').onclick();
 $('spark').onclick = () => { $('chartBig').hidden = false; drawChart($('sparkBig'), true); };
 $('chartX').onclick = () => $('chartBig').hidden = true;
 $('chartBig').onclick = e => { if (e.target.id === 'chartBig') $('chartBig').hidden = true; };
@@ -1281,8 +1288,16 @@ function updateScene(dt, time) {
 }
 
 /* ================= loop ================= */
+function layoutPanels() {
+  const sh = $('sim').offsetHeight + 20, cc = $('chartCard');
+  cc.style.bottom = sh + 'px'; $('hint').style.bottom = sh + 'px'; $('compass').style.bottom = (sh + 30) + 'px'; $('logFull').style.bottom = sh + 'px';
+  const ch = cc.offsetParent ? cc.offsetHeight + 10 : 0, avail = innerHeight - sh - ch - 82;
+  for (const id of ['info', 'tour']) $(id).style.maxHeight = Math.max(160, avail) + 'px';
+  $('tour').style.overflow = 'auto'; $('parts').style.maxHeight = Math.max(160, innerHeight - sh - 82) + 'px';
+}
 function resize() { renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
-addEventListener('resize', resize);
+addEventListener('resize', () => { resize(); layoutPanels(); });
+new ResizeObserver(layoutPanels).observe(document.getElementById('sim'));
 const clock = new THREE.Clock();
 function loop() {
   const dt = Math.min(clock.getDelta(), 0.1), time = clock.elapsedTime;
@@ -1307,7 +1322,7 @@ async function init() {
   for (let i = 0; i < 400; i++) step(0.5 / 60 * 0 + 0.05); // ให้ระบบเข้าสู่สมดุล
   S.hist = []; LOG.length = 0;
   log('เริ่มจำลอง: น้ำไหลเข้า 8 ลบ.ม./วินาที บานปิด น้ำล้นสันฝายตามธรรมชาติ');
-  $('loader').hidden = true; syncUI();
+  $('loader').hidden = true; syncUI(); layoutPanels();
   renderer.setAnimationLoop(loop);
 }
 init().catch(e => { $('ldTh').textContent = 'เกิดข้อผิดพลาด: ' + e.message; console.error(e); });
