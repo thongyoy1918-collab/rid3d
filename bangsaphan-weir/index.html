@@ -609,10 +609,18 @@ const waterTex = canvasTex(256, 256, (x, w, h) => {
   for (let i = 0; i < 90; i++) { x.strokeStyle = `rgba(150,185,195,${0.15 + Math.random() * 0.3})`; x.lineWidth = 1 + Math.random() * 2; const y = Math.random() * h, x0 = Math.random() * w;
     x.beginPath(); x.moveTo(x0, y); x.quadraticCurveTo(x0 + 15, y - 4, x0 + 30 + Math.random() * 30, y); x.stroke(); }
 }, [24, 24]);
-const sheetTex = canvasTex(128, 256, (x, w, h) => {
-  x.fillStyle = '#e8fbff'; x.fillRect(0, 0, w, h);
-  for (let i = 0; i < 70; i++) { x.fillStyle = `rgba(255,255,255,${0.4 + Math.random() * 0.6})`; x.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 3, 14 + Math.random() * 50); }
-  for (let i = 0; i < 40; i++) { x.fillStyle = `rgba(120,190,210,${0.2 + Math.random() * 0.3})`; x.fillRect(Math.random() * w, Math.random() * h, 2, 20 + Math.random() * 40); }
+const sheetTex = canvasTex(256, 256, (x, w, h) => {   // ผิวน้ำล้น: ฟ้าอมเขียวโปร่ง มีลายคลื่นยาวตามแนวไหล
+  const gr = x.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, 'rgba(150,205,214,.82)'); gr.addColorStop(.5, 'rgba(175,222,228,.78)'); gr.addColorStop(1, 'rgba(150,205,214,.82)');
+  x.fillStyle = gr; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 120; i++) { const x0 = Math.random() * w, y0 = Math.random() * h, L = 30 + Math.random() * 90, wd = 1 + Math.random() * 3;
+    x.strokeStyle = Math.random() < 0.55 ? `rgba(255,255,255,${0.25 + Math.random() * 0.45})` : `rgba(70,140,155,${0.15 + Math.random() * 0.25})`; x.lineWidth = wd;
+    x.beginPath(); x.moveTo(x0, y0); x.bezierCurveTo(x0 + 3, y0 + L * 0.33, x0 - 3, y0 + L * 0.66, x0 + (Math.random() - 0.5) * 4, y0 + L); x.stroke(); }
+}, [1, 1]);
+const streakTex = canvasTex(256, 256, (x, w, h) => {   // ชั้นประกายน้ำ/ฟองที่ไหลเร็วกว่า
+  x.clearRect(0, 0, w, h);
+  for (let i = 0; i < 160; i++) { const x0 = Math.random() * w, y0 = Math.random() * h, L = 10 + Math.random() * 60;
+    x.strokeStyle = `rgba(255,255,255,${0.2 + Math.random() * 0.6})`; x.lineWidth = 0.6 + Math.random() * 1.8; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x0 + (Math.random() - 0.5) * 3, y0 + L); x.stroke(); }
+  for (let i = 0; i < 50; i++) { x.fillStyle = `rgba(255,255,255,${0.3 + Math.random() * 0.5})`; x.beginPath(); x.ellipse(Math.random() * w, Math.random() * h, 1 + Math.random() * 3, 3 + Math.random() * 7, 0, 0, 7); x.fill(); }
 }, [1, 1]);
 const hatchTex = canvasTex(64, 64, (x, w, h) => {
   x.fillStyle = '#b9b5ad'; x.fillRect(0, 0, w, h); x.strokeStyle = '#7d786e'; x.lineWidth = 1.4;
@@ -947,7 +955,10 @@ function makeJet(id, prof, z0, z1, mat) {
   for (let i = 0; i <= n; i++) { const k = Math.max(0, i - 1); if (i > 1) acc += Math.hypot(prof[k][0] - prof[k - 1][0], prof[k][1] - prof[k - 1][1]);
     uv.set([0, acc / 3, (z1 - z0) / 3, acc / 3], i * 4); if (i) { const a = i * 2; idx.push(a - 2, a, a - 1, a - 1, a, a + 1); } }
   const g0 = new THREE.BufferGeometry(); g0.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g0.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g0.setIndex(idx);
-  const m = new THREE.Mesh(g0, mat); m.renderOrder = 3; m.userData.water = id; m.frustumCulled = false; m.userData.jet = { prof, z0, z1 }; grp(id).add(m); return m;
+  const m = new THREE.Mesh(g0, mat); m.renderOrder = 3;
+  const st = streakTex.clone(); st.needsUpdate = true;
+  const ov = new THREE.Mesh(g0, new THREE.MeshBasicMaterial({ map: st, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }));
+  ov.renderOrder = 4; ov.raycast = () => {}; ov.position.y = 0.015; m.add(ov); m.userData.ov = ov; m.userData.water = id; m.frustumCulled = false; m.userData.jet = { prof, z0, z1 }; grp(id).add(m); return m;
 }
 // d0: ความลึกน้ำที่จุดควบคุม (ใต้บาน/บนสัน), up: ระดับน้ำเหนือ (ให้ผิวน้ำลาดต่อเนื่อง), dEnd: ความลึกที่ตีนฝาย
 function updateJet(m, q, B, d0, ctrlX, up, freeSurf) {
@@ -972,7 +983,7 @@ function buildWater() {
   W.pond3 = plane(-0.12, GX - 0.1, Z.p3[0], Z.sW[0], W.pond.material, 'pond');
   W.basin = plane(1.0, 29.26, Z.nW[1], Z.sW[0], waterMat('#5fa9bd', 0.78), 'basin');
   W.down = plane(29.26, TX[1], TZ[0], TZ[1], waterMat('#5b9fb6', 0.82), 'river');
-  const sm = () => new THREE.MeshStandardMaterial({ color: '#ffffff', map: (() => { const t = sheetTex.clone(); t.needsUpdate = true; return t; })(), transparent: true, opacity: 0.85, roughness: 0.2, depthWrite: false, side: THREE.DoubleSide });
+  const sm = () => new THREE.MeshStandardMaterial({ color: '#ffffff', map: (() => { const t = sheetTex.clone(); t.needsUpdate = true; return t; })(), transparent: true, opacity: 0.85, roughness: 0.06, metalness: 0.12, emissive: '#2c6a78', emissiveIntensity: 0.08, depthWrite: false, side: THREE.DoubleSide });
   // กระแสน้ำผ่านสันฝาย/ช่องบาน แบบมีความหนา (ผิวน้ำลาดต่อเนื่องจากระดับเหนือฝายลงแอ่ง)
   const wsurf = weirSurf.filter(p => p[0] >= -0.6).concat([[10.5, BASIN], [13, BASIN]]);
   const gsurf = [[GX - 0.6, GSILL], [GX, GSILL]].concat(gateSurf.slice(2), [[10.5, BASIN], [13, BASIN]]);
@@ -1517,7 +1528,8 @@ function updateScene(dt, time) {
   atmUpdate(dt);
   W.pond.position.y = W.pond2.position.y = W.pond3.position.y = S.h; W.basin.position.y = S.TWb; W.down.position.y = S.TW;
   waterTex.offset.x = (waterTex.offset.x + dt * 0.004 * (1 + S.Qout / 100)) % 1;
-  const anim = (m, q, ref) => { m.visible = q > 0.01; m.material.opacity = clamp(0.35 + q / ref, 0.35, 0.92); m.material.map.offset.y = (m.material.map.offset.y - dt * (0.6 + Math.sqrt(q) * 0.25)) % 1; };
+  const anim = (m, q, ref) => { m.visible = q > 0.01; m.material.opacity = clamp(0.55 + q / ref, 0.55, 0.9); m.material.map.offset.y = (m.material.map.offset.y - dt * (0.5 + Math.sqrt(q) * 0.2)) % 1;
+    const ov = m.userData.ov; if (ov) { ov.material.opacity = clamp(0.3 + q / ref * 0.6, 0.3, 0.75); ov.material.map.offset.y = (ov.material.map.offset.y - dt * (1.1 + Math.sqrt(q) * 0.35)) % 1; } };
   const Hw = Math.max(0, S.h - CREST);
   updateJet(W.jW, S.Qw, LW, 0.68 * Hw, 0.0, S.h, true);
   const gj = (m, q, a, sill, B) => { const H = Math.max(0, S.h - sill), free = a >= H * 0.95; updateJet(m, q, B, free ? 0.67 * H : Math.min(0.61 * a, H), GX, S.h, free); };
