@@ -168,6 +168,8 @@ body.sideopen #compass{right:430px}
 #atmBox .segs button{text-align:left;padding:10px 12px}
 body.night #hero h1,body.night #hero .k{color:#eef2f7}body.night #hero h2{color:#c9d6cf}body.night #hero p{color:#d5dde6}
 #dock::-webkit-scrollbar{display:none}
+body.zen #topbar,body.zen #hero,body.zen #side,body.zen #dock,body.zen #hint,body.zen #compass,body.zen #labels,body.zen #tour,body.zen #cutbar,body.zen #musicBox,body.zen #atmBox{opacity:0;pointer-events:none;transition:opacity .8s}
+#zenHint{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);color:#e6edf5;font-size:12.5px;background:#0f172a66;padding:6px 14px;border-radius:20px;z-index:20;transition:opacity 1.2s}
 [hidden]{display:none!important}
 @media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
 @media (max-width:560px){#tabs{top:70px;transform:translateX(-50%);position:fixed}#hero{top:118px}#hero .k{margin-bottom:8px}#hero p{display:none}#side{top:118px}}
@@ -260,6 +262,7 @@ body.night #hero h1,body.night #hero .k{color:#eef2f7}body.night #hero h2{color:
   <button id="tRot" title="หมุนชม">⟳ หมุนชม</button>
   <button id="tReset" title="เริ่มใหม่">↺ เริ่มใหม่</button>
   <button id="tSound" title="เปิด/ปิดเพลง">🔇 เพลง</button>
+  <button id="tZen" title="โหมดพักสายตา: กลางคืน + หมุนช้า + เพลงชิล">☾ พักสายตา</button>
   <button id="tAtm" title="เลือกบรรยากาศ">🌤 บรรยากาศ</button>
   <button id="tMusic" title="ลิสต์เพลง">♫ ลิสต์เพลง</button>
   <button id="tShot" class="hm" title="บันทึกภาพ 4K">📷</button>
@@ -275,6 +278,7 @@ body.night #hero h1,body.night #hero .k{color:#eef2f7}body.night #hero h2{color:
   <span id="cutName" style="min-width:150px"></span>
 </div>
 <div id="logFull" class="card" hidden></div>
+<div id="zenHint" hidden>☾ โหมดพักสายตา · แตะหน้าจอหรือกดปุ่มใดก็ได้เพื่อออก</div>
 <div id="atmBox" class="card" hidden>
   <button class="x" id="atmX">✕</button>
   <h4 style="margin:0 0 10px;font-size:14px">🌤 เลือกบรรยากาศ</h4>
@@ -1197,6 +1201,7 @@ function keys(f, t, vol) { const C = AU.ctx, o = C.createOscillator(), o2 = C.cr
   const g3 = C.createGain(); g3.gain.value = 0.25; o2.connect(g3); g3.connect(g2);
   g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(vol, t + 0.01); g2.gain.exponentialRampToValueAtTime(0.0008, t + 1.6); o.connect(g2); g2.connect(AU.music); o.start(t); o2.start(t); o.stop(t + 1.7); o2.stop(t + 1.7); }
 const TRACKS = [
+  { id: 'chill', name: 'ชิลยามค่ำ · พักสายตา', tag: '70 BPM · เปียโนนุ่ม', bpm: 70, chords: [[41, 52, 57, 60, 64, 67], [40, 50, 55, 59, 62], [38, 50, 53, 57, 60, 64], [36, 48, 52, 55, 59, 62]], scale: [72, 74, 76, 79, 81, 84, 86], bass: 'soft', hat: 'swing', lead: 'keys', dens: 0.32, hold: 1, kick: 'soft', crackle: true, padMul: 1.25 },
   { id: 'calm', name: 'ริมน้ำผ่อนคลาย', tag: '92 BPM', bpm: 92, chords: [[48, 55, 64, 71], [45, 52, 60, 67], [41, 48, 57, 64], [43, 50, 59, 62]], scale: [72, 74, 76, 79, 81, 84, 86, 88], bass: 'walk', hat: '8', lead: 'bell', dens: 0.75, hold: 2 },
   { id: 'morning', name: 'เช้าในสวนมะพร้าว', tag: '66 BPM · ช้า', bpm: 66, chords: [[41, 48, 57, 64, 67], [43, 50, 59, 62, 69], [45, 52, 60, 64, 67], [41, 48, 55, 64, 69]], scale: [77, 79, 81, 84, 86, 88, 91], bass: 'root', hat: 'none', lead: 'bell', dens: 0.45, hold: 1 },
   { id: 'breeze', name: 'ลมทะเลบางสะพาน', tag: '112 BPM · บอสซ่า', bpm: 112, chords: [[50, 57, 65, 72], [55, 62, 65, 71], [50, 57, 64, 69], [52, 59, 67, 74]], scale: [74, 76, 77, 79, 81, 83, 86], bass: 'bossa', hat: '16', lead: 'keys', dens: 0.55, hold: 1 },
@@ -1208,14 +1213,16 @@ function musicTick() {
   const C = AU.ctx, T = AU.track, beat = 60 / T.bpm, BAR = beat * 4, e8 = beat / 2, e16 = beat / 4;
   while (AU.nextT < C.currentTime + 1.2) {
     const t = AU.nextT, ch = T.chords[Math.floor(AU.step / T.hold) % T.chords.length], r = ch[0] - 12;
-    if (AU.step % T.hold === 0) ch.forEach((n, i) => pad(NOTE(n), t, BAR * T.hold, i ? 0.026 : 0.036));
+    if (AU.step % T.hold === 0) ch.forEach((n, i) => pad(NOTE(n), t, BAR * T.hold, (i ? 0.026 : 0.036) * (T.padMul || 1)));
+    if (T.lead === 'keys' && T.id === 'chill') ch.slice(1).forEach((n, i) => keys(NOTE(n + 12), t + i * 0.05, 0.022));   // คอร์ดเปียโนแบบรูดนิ้ว
     if (T.bass === 'walk') for (let k = 0; k < 4; k++) pluck(NOTE(r + [0, 4, 7, 9][k]), t + k * beat, k % 2 ? 0.05 : 0.08);
+    else if (T.bass === 'soft') { pluck(NOTE(r), t, 0.05); pluck(NOTE(r + 7), t + beat * 2.5, 0.035); }
     else if (T.bass === 'root') { pluck(NOTE(r), t, 0.08); pluck(NOTE(r + 7), t + beat * 2, 0.06); }
     else if (T.bass === 'bossa') for (const [b, iv] of [[0, 0], [1.5, 7], [2, 0], [3.5, 7]]) pluck(NOTE(r + iv), t + b * beat, 0.07);
     if (T.hat === '8') for (let k = 0; k < 8; k++) shaker(t + k * e8, k % 2 ? 0.05 : 0.022);
     else if (T.hat === '16') for (let k = 0; k < 16; k++) shaker(t + k * e16, k % 4 === 2 ? 0.05 : 0.02);
-    else if (T.hat === 'swing') for (let k = 0; k < 4; k++) { shaker(t + k * beat, 0.03); shaker(t + k * beat + beat * 0.66, 0.045); }
-    if (T.kick) for (let k = 0; k < 4; k += 2) kick(t + k * beat, 0.32);
+    else if (T.hat === 'swing') for (let k = 0; k < 4; k++) { shaker(t + k * beat, T.id === 'chill' ? 0.014 : 0.03); shaker(t + k * beat + beat * 0.66, T.id === 'chill' ? 0.022 : 0.045); }
+    if (T.kick) for (let k = 0; k < 4; k += 2) kick(t + k * beat, T.kick === 'soft' ? 0.16 : 0.32);
     const steps = T.lead === 'ranat' ? 16 : 8, dt = BAR / steps; let last = AU.lastNote && T.scale.includes(AU.lastNote) ? AU.lastNote : T.scale[2];
     for (let k = 0; k < steps; k++) if (Math.random() < T.dens * (k % 2 ? 0.7 : 1)) {
       last = T.scale[clamp(T.scale.indexOf(last) + Math.floor(Math.random() * 5) - 2, 0, T.scale.length - 1)];
@@ -1223,10 +1230,16 @@ function musicTick() {
       if (T.lead === 'ranat') ranat(f, tt, 0.045); else if (T.lead === 'keys') keys(f, tt, 0.05); else bell(f, tt, 0.04);
     }
     AU.lastNote = last; AU.nextT += BAR; AU.step++; AU.bars = (AU.bars || 0) + 1;
-    if ($('musAuto').checked && AU.bars * BAR > 90) { const i = (TRACKS.indexOf(T) + 1) % TRACKS.length; AU.bars = 0; AU.track = TRACKS[i]; AU.step = 0; markTrack(); }
+    if ($('musAuto').checked && !document.body.classList.contains('zen') && AU.bars * BAR > 90) { const i = (TRACKS.indexOf(T) + 1) % TRACKS.length; AU.bars = 0; AU.track = TRACKS[i]; AU.step = 0; markTrack(); }
   }
 }
-function markTrack() { const id = AU.track && AU.mode.startsWith('t:') ? 't:' + AU.track.id : AU.mode;
+function crackle(on) { const C = AU.ctx; if (!C) return;
+  if (on && !AU.crk) { const len = C.sampleRate * 3, b = C.createBuffer(1, len, C.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() < 0.0009 ? (Math.random() * 2 - 1) * 0.9 : 0) + (Math.random() * 2 - 1) * 0.012;
+    const s0 = C.createBufferSource(), bp = C.createBiquadFilter(), g2 = C.createGain(); s0.buffer = b; s0.loop = true; bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 0.6; g2.gain.value = 0.22;
+    s0.connect(bp); bp.connect(g2); g2.connect(AU.music); s0.start(); AU.crk = s0; }
+  if (!on && AU.crk) { AU.crk.stop(); AU.crk = null; } }
+function markTrack() { crackle(!!(AU.track && AU.track.crackle && AU.mode.startsWith('t:'))); const id = AU.track && AU.mode.startsWith('t:') ? 't:' + AU.track.id : AU.mode;
   document.querySelectorAll('#musicBox label').forEach(l => { const inp = l.querySelector('input'); l.classList.toggle('playing', !!inp && inp.value === id && id !== 'off'); if (inp) inp.checked = inp.value === id; });
   if (AU.mode.startsWith('t:')) $('musNow').textContent = `กำลังเล่น: ${AU.track.name} (${AU.track.tag}) · ทำนองสุ่มใหม่ตลอด`; }
 function setMusic(mode) {
@@ -1244,7 +1257,7 @@ function toggleSound() {
   auInit(); AU.ctx.resume?.();
   const playing = !AU.muted && AU.mode !== 'off';
   if (playing) { const lm = AU.mode; AU.muted = true; setMusic('off'); AU.lastMode = lm; AU.master.gain.setTargetAtTime(0, AU.ctx.currentTime, 0.15); }
-  else { AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); const m = AU.lastMode && AU.lastMode !== 'off' && (AU.lastMode !== 'file' || AU.el) ? AU.lastMode : 't:calm'; setMusic(m); }
+  else { AU.muted = false; AU.started = true; AU.master.gain.setTargetAtTime(1, AU.ctx.currentTime, 0.15); const m = AU.lastMode && AU.lastMode !== 'off' && (AU.lastMode !== 'file' || AU.el) ? AU.lastMode : 't:chill'; setMusic(m); }
   soundBtn();
 }
 function audioUpdate() {
@@ -1261,7 +1274,7 @@ document.querySelectorAll('input[name=mus]').forEach(r => r.onchange = () => {
 $('musFile').onchange = () => { const f = $('musFile').files[0]; if (!f) return; auInit();
   if (!AU.el) { AU.el = new Audio(); AU.el.loop = true; AU.src = AU.ctx.createMediaElementSource(AU.el); AU.src.connect(AU.music); }
   AU.el.src = URL.createObjectURL(f); AU.fname = f.name; setMusic('file'); };
-let musPref = 't:calm';
+let musPref = 't:chill';
 try { const sv = JSON.parse(localStorage.getItem('weirMusic') || 'null'); if (sv) { musPref = sv.mode || 'calm'; $('musVol').value = sv.vol; } } catch (e) {}
 // เริ่มเพลงบรรเลงอัตโนมัติเมื่อแตะ/คลิกหน้าเว็บครั้งแรก (ค่าเริ่มต้น) — ถ้าเคยปิดไว้จะไม่เปิดเอง
 const firstTouch = e => { removeEventListener('pointerdown', firstTouch, true); removeEventListener('keydown', firstTouch, true);
@@ -1324,6 +1337,25 @@ $('atmList').innerHTML = Object.entries(ATM).map(([k, a]) => `<button data-a="${
 document.querySelectorAll('#atmList button').forEach(b => b.onclick = () => setAtm(b.dataset.a));
 $('tAtm').onclick = () => { $('atmBox').hidden = !$('atmBox').hidden; $('musicBox').hidden = true; };
 $('atmX').onclick = () => $('atmBox').hidden = true;
+
+/* ---- โหมดพักสายตา (กลางคืน + หมุนช้า + เพลงชิล + ซ่อนเมนู) ---- */
+const ZEN = { on: false, prev: null };
+function zen(on) {
+  if (on === ZEN.on) return; ZEN.on = on;
+  if (on) {
+    ZEN.prev = { atm: ATMC.cur, rot: controls.autoRotate, rs: controls.autoRotateSpeed, labels: showLabels, music: AU.mode };
+    closeSide(); $('atmBox').hidden = $('musicBox').hidden = true; document.body.classList.add('zen');
+    setAtm('night'); controls.autoRotate = true; controls.autoRotateSpeed = 0.35; showLabels = false; flyTo({ pos: [-130, 70, 150], tgt: [10, 10, 4] }, 2.2);
+    if (!AU.mode || AU.mode === 'off' || AU.muted) { auInit(); AU.ctx.resume?.(); setMusic('t:chill'); }
+    const h = $('zenHint'); h.hidden = false; h.style.opacity = 1; setTimeout(() => { if (ZEN.on) h.style.opacity = 0; }, 3500);
+    setTimeout(() => { addEventListener('pointerdown', zenExit, true); addEventListener('keydown', zenExit, true); }, 400);
+  } else {
+    document.body.classList.remove('zen'); $('zenHint').hidden = true; removeEventListener('pointerdown', zenExit, true); removeEventListener('keydown', zenExit, true);
+    const P = ZEN.prev || {}; setAtm(P.atm || 'day'); controls.autoRotate = !!P.rot; controls.autoRotateSpeed = P.rs || 0.5; showLabels = P.labels !== false;
+  }
+}
+function zenExit(e) { e.stopPropagation(); zen(false); }
+$('tZen').onclick = () => zen(true);
 
 /* ---- แผงควบคุม ---- */
 function setScenOn(k) { document.querySelectorAll('#scen button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); }
