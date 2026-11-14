@@ -449,7 +449,7 @@ const SYSTEM = {
       { id: 'intake', th: 'ประตูปากคลองปัตตามัง', en: 'Canal head regulator', color: '#14b8a6',
         desc: 'ประตูรับน้ำฝั่งขวาเหนือฝาย ฝายยกระดับน้ำให้สูงกว่าธรณีปากคลอง น้ำจึงไหลเข้าคลองส่งน้ำปัตตามังได้เองโดยไม่ต้องสูบ ควบคุมปริมาณด้วยการยกบานปากคลอง',
         spec: [['ช่องเปิด', '1 ช่อง · กว้าง 2.50 ม.'], ['ระดับธรณีปากคลอง', '+12.00 ม.รทก.'], ['ความสูงบาน', '1.60 ม.']], kpis: ['Qc', 'aC'],
-        cam: { pos: [-28, 26, 52], tgt: [-60, 14, 36] } },
+        cam: { pos: [-28, 26, 60], tgt: [-60, 14, 44] } },
       { id: 'canal', th: 'คลองส่งน้ำปัตตามัง', en: 'Pattamang irrigation canal', color: '#0d9488',
         desc: 'คลองดินส่งน้ำจากฝายไปพื้นที่เกษตรฝั่งขวา ระดับน้ำในคลองคำนวณจากปริมาณน้ำที่รับเข้า (สมการแมนนิง) ยิ่งเปิดบานปากคลองมาก น้ำล้นสันฝายลงคลองบางสะพานก็ยิ่งน้อยลง',
         spec: [['กว้างก้นคลอง', '3.00 ม.'], ['ลาดตลิ่ง', '1 : 1.5'], ['ความลาดท้องคลอง', '1 : 2,500']], kpis: ['Qc', 'yC'],
@@ -702,7 +702,7 @@ const S0 = RSEG[6].s0 + 50;
 function riverInfo(x, z) { let best = 1e9, bs = 0; for (const s of RSEG) { const t = clamp(((x - s.ax) * s.dx + (z - s.az) * s.dz) / (s.L * s.L), 0, 1); const d = Math.hypot(x - s.ax - s.dx * t, z - s.az - s.dz * t); if (d < best) { best = d; bs = s.s0 + t * s.L; } } return [best, bs - S0]; }
 /* ---- คลองส่งน้ำปัตตามัง (ฝั่งขวา) ---- */
 const CANAL_PTS = [[-60, 16], [-60, 46], [-44, 58], [-6, 64], [40, 70], [110, 82], [180, 104], [250, 135], [340, 172]];
-const CSILL = 12.0, CB = 2.5, CGATE_H = 1.6, CBED0 = 11.6, CSLOPE = 0.0004, CGATE_Z = 38, CULV = [-7.6, 63.8];
+const CSILL = 12.0, CB = 2.5, CGATE_H = 1.6, CBED0 = 11.6, CSLOPE = 0.0004, CGATE_Z = 44, CULV = [-7.6, 63.8];
 const CSAMP = []; { const cv = new THREE.CatmullRomCurve3(CANAL_PTS.map(([x, z]) => V3(x, 0, z)), false, 'centripetal'); const L = cv.getLength(), n = Math.ceil(L / 2);
   for (let i = 0; i <= n; i++) { const p = cv.getPointAt(i / n), t = cv.getTangentAt(i / n); CSAMP.push({ x: p.x, z: p.z, tx: t.x, tz: t.z, s: L * i / n }); } }
 const CS_GATE = CSAMP.reduce((b, q) => Math.abs(q.z - CGATE_Z) < Math.abs(b.z - CGATE_Z) && q.s < 40 ? q : b, CSAMP[0]).s;
