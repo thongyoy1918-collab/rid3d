@@ -217,6 +217,9 @@ body.zen #hud,body:has(#tour:not([hidden])) #hud{opacity:0;pointer-events:none}
 .pimg figcaption{font-size:10.5px;color:#8b968e;margin-top:4px}
 #pzoom{position:fixed;inset:0;z-index:90;background:#0b1410d9;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:4vh 4vw}
 #pzoom img{max-width:100%;max-height:100%;border-radius:12px;box-shadow:0 20px 60px #0008}
+[hidden]{display:none!important}
+@media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
+@media (max-width:560px){#tabs{top:70px;transform:translateX(-50%);position:fixed}#hero{top:118px}#hero .k{margin-bottom:8px}#hero p{display:none}#side{top:118px}}
 /* --- มือถือ / จอแคบ --- */
 @media (max-width:700px){
 #topbar{height:56px;padding:0 10px}
@@ -244,9 +247,6 @@ body.sideopen #dock{opacity:0;pointer-events:none}
 #cutbar{top:108px;left:8px;right:52px;transform:none;flex-wrap:wrap;font-size:12px;padding:8px 10px}
 [data-tip]:hover::after{display:none}
 }
-[hidden]{display:none!important}
-@media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
-@media (max-width:560px){#tabs{top:70px;transform:translateX(-50%);position:fixed}#hero{top:118px}#hero .k{margin-bottom:8px}#hero p{display:none}#side{top:118px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
