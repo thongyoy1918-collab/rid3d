@@ -217,6 +217,33 @@ body.zen #hud,body:has(#tour:not([hidden])) #hud{opacity:0;pointer-events:none}
 .pimg figcaption{font-size:10.5px;color:#8b968e;margin-top:4px}
 #pzoom{position:fixed;inset:0;z-index:90;background:#0b1410d9;display:flex;align-items:center;justify-content:center;cursor:zoom-out;padding:4vh 4vw}
 #pzoom img{max-width:100%;max-height:100%;border-radius:12px;box-shadow:0 20px 60px #0008}
+/* --- มือถือ / จอแคบ --- */
+@media (max-width:700px){
+#topbar{height:56px;padding:0 10px}
+#tabs{position:fixed;top:62px;left:8px;right:8px;transform:none;justify-content:space-between;padding:3px;background:#f1efe9f0;backdrop-filter:blur(6px);z-index:9}
+#tabs button{flex:1;padding:7px 2px;font-size:12px}
+#hero{top:110px;left:12px;max-width:calc(100vw - 72px)}
+#hero .k,#hero h2,.chips{display:none}
+#hero h1{font-size:22px;letter-spacing:-.4px}
+#atmList{position:fixed;right:8px;top:108px;flex-direction:column;padding:3px;border-radius:20px;background:#f1efe9f0;z-index:9}
+#atmList:not(.open) button:not(.on){display:none}
+#atmList button{width:36px;height:36px}
+#dock{left:8px;right:8px;transform:none;bottom:calc(10px + env(safe-area-inset-bottom));max-width:none;overflow-x:auto;justify-content:flex-start;border-radius:14px;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);padding-right:30px}
+#dock button{padding:10px 10px;font-size:12px;flex:none}
+#dock .sep{margin:6px 3px}
+#dock .hm{display:inline-flex!important}
+body.sideopen #dock{opacity:0;pointer-events:none}
+.lb{font-size:0;padding:3px;gap:0}.lb em{font-size:10px}
+.lb.sel{font-size:11px;padding:3px 9px 3px 3px;gap:5px}
+#tour{left:8px;right:8px;width:auto;bottom:calc(70px + env(safe-area-inset-bottom));max-height:46vh;overflow:auto;padding:14px}
+#tour h3{font-size:17px}
+.pimg img{aspect-ratio:16/7}
+#side{top:auto;bottom:0;height:62vh;width:100%;border-left:0;border-top:1px solid #dcd9cf;border-radius:18px 18px 0 0;transform:translateY(105%);padding:16px 16px 28px;box-shadow:0 -10px 30px #0002}
+#side.open{transform:none}
+#side::before{content:'';display:block;width:42px;height:4px;border-radius:3px;background:#cfccc1;margin:-6px auto 10px}
+#cutbar{top:108px;left:8px;right:52px;transform:none;flex-wrap:wrap;font-size:12px;padding:8px 10px}
+[data-tip]:hover::after{display:none}
+}
 [hidden]{display:none!important}
 @media (max-width:900px){#tabs button{padding:7px 10px;font-size:13px}#logo div:last-child{display:none}#logo .d{display:none}#dock{max-width:calc(100vw - 20px);overflow-x:auto}#hero h1{font-size:30px}#hero{max-width:calc(100vw - 48px)}#side{width:100%}body.sideopen #dock,body.sideopen #hint{left:50%}#hint{display:none}#compass{display:none}#dock .hm{display:none}}
 @media (max-width:560px){#tabs{top:70px;transform:translateX(-50%);position:fixed}#hero{top:118px}#hero .k{margin-bottom:8px}#hero p{display:none}#side{top:118px}}
@@ -557,7 +584,8 @@ function log(msg) {
 /* ================= renderer / scene ================= */
 const canvas = $('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: false });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const MOB = matchMedia('(max-width:700px)').matches, PORTRAIT = () => innerWidth / innerHeight < 0.85;
+renderer.setPixelRatio(Math.min(devicePixelRatio, MOB ? 1.5 : 2));
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -569,7 +597,7 @@ const HOME = { pos: [-150, 98, 168], tgt: [10, 9, 6] };
 // ฉากเปิด: ไกลด้านเหนือน้ำ → ซูมเข้า → หมุนขวาไปท้ายน้ำ → เข้าทัวร์
 const INTRO_A = { pos: [-430, 95, 35], tgt: [0, 10, 0] }, INTRO_B = { pos: [-95, 55, 0], tgt: [5, 8, -2] }, INTRO_END = { pos: [72, 48, 72], tgt: [0, 8, -6] };
 let INTRO = null;
-camera.position.set(...HOME.pos);
+camera.position.copy(fitPos(HOME));
 const controls = new OrbitControls(camera, canvas);
 controls.target.set(...HOME.tgt); controls.enableDamping = true; controls.dampingFactor = 0.08;
 controls.maxPolarAngle = 1.48; controls.minDistance = 6; controls.maxDistance = 750; controls.autoRotateSpeed = 0.5;
@@ -599,7 +627,7 @@ function smoothZoom(dt) {
 const hemi = new THREE.HemisphereLight('#ffffff', '#9b927e', 1.05); scene.add(hemi);
 const sun = new THREE.DirectionalLight('#fff6e8', 2.5);
 sun.position.set(-90, 160, 70); sun.target.position.set(10, 10, 0);
-sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096);
+sun.castShadow = true; sun.shadow.mapSize.set(MOB ? 2048 : 4096, MOB ? 2048 : 4096);
 Object.assign(sun.shadow.camera, { left: -150, right: 150, top: 150, bottom: -150, near: 10, far: 500 });
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
 scene.add(sun, sun.target);
@@ -1220,7 +1248,8 @@ function highlight(id, on) {
 }
 let flyAnim = null;
 window.__weir = { camera, controls, flyTo: v => flyTo(v) };
-function flyTo(v, dur = 1.3) { flyAnim = { t: 0, dur, p0: camera.position.clone(), t0: controls.target.clone(), p1: V3(...v.pos), t1: V3(...v.tgt) }; }
+function fitPos(v) { if (!PORTRAIT()) return V3(...v.pos); const t = V3(...v.tgt); return V3(...v.pos).sub(t).multiplyScalar(1.55).add(t); }   // จอแนวตั้ง: ถอยกล้องให้เห็นครบ
+function flyTo(v, dur = 1.3) { flyAnim = { t: 0, dur, p0: camera.position.clone(), t0: controls.target.clone(), p1: fitPos(v), t1: V3(...v.tgt) }; }
 const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 function camFor(p) {
   if (p.cam) return p.cam;
@@ -1272,8 +1301,9 @@ function closeSide() { $('side').classList.remove('open'); document.body.classLi
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => curPane === b.dataset.p && $('side').classList.contains('open') ? closeSide() : openSide(b.dataset.p));
 let shiftK = 0, shiftT = 0;
 function viewShift(on) { shiftT = on && innerWidth > 900 ? 1 : 0; }
-function applyShift(dt) { shiftK += (shiftT - shiftK) * Math.min(1, dt * 6); const w = innerWidth, h = innerHeight, pw = 410 * shiftK;
+function applyShift(dt) { shiftK += (shiftT - shiftK) * Math.min(1, dt * 6); const w = innerWidth, h = innerHeight, sheet = w <= 700, pw = sheet ? 0 : 410 * shiftK, ph = sheet ? h * 0.62 * shiftK : 0;
   if (shiftK < 0.001) { if (camera.view && camera.view.enabled) { camera.clearViewOffset(); camera.aspect = w / h; camera.updateProjectionMatrix(); } }
+  else if (sheet) { camera.aspect = w / (h + ph); camera.setViewOffset(w, h + ph, 0, ph, w, h); }   // มือถือ: แผงเลื่อนขึ้นจากล่าง ดันภาพขึ้นด้านบน
   else { camera.aspect = (w + pw) / h; camera.setViewOffset(w + pw, h, pw, 0, w, h); } }
 $('startTour').onclick = () => { closeSide(); setMode('tour'); };
 // มุมกล้องลัด
@@ -1518,7 +1548,9 @@ const ATM_ICON = {   // ไอคอนเส้นชุดเดียวก�
   rain: '<path d="M7 14.5h10.5a3.6 3.6 0 0 0 .4-7.2A5.3 5.3 0 0 0 7.3 6.3 4.1 4.1 0 0 0 7 14.5z"/><path d="M8.5 17.5l-1 2.5M12.5 17.5l-1 2.5M16.5 17.5l-1 2.5"/>',
 };
 $('atmList').innerHTML = Object.entries(ATM).map(([k, a]) => `<button data-a="${k}" title="${a.name.split(' ').slice(1).join(' ')}" aria-label="${a.name.split(' ').slice(1).join(' ')}"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ATM_ICON[k]}</svg></button>`).join('');
-document.querySelectorAll('#atmList button').forEach(b => b.onclick = () => setAtm(b.dataset.a));
+document.querySelectorAll('#atmList button').forEach(b => b.onclick = () => { const L = $('atmList');
+  if (innerWidth <= 700 && !L.classList.contains('open')) { L.classList.add('open'); return; }   // มือถือ: แตะเพื่อกางรายการก่อน
+  L.classList.remove('open'); setAtm(b.dataset.a); });
 
 /* ---- โหมดพักสายตา (กลางคืน + หมุนช้า + เพลงชิล + ซ่อนเมนู) ---- */
 const ZEN = { on: false, prev: null };
@@ -1669,7 +1701,7 @@ function runIntro(dt) {
 }
 function stopIntro(e) { if (e && e.target && e.target.closest && e.target.closest('#tSound,#atmList')) return; if (INTRO) { INTRO = null; flyAnim = null; } }
 ['pointerdown', 'wheel', 'keydown', 'touchstart'].forEach(ev => addEventListener(ev, stopIntro, { capture: true, passive: true }));
-function resize() { renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
+function resize() { renderer.setPixelRatio(Math.min(devicePixelRatio, MOB ? 1.5 : 2)); renderer.setSize(innerWidth, innerHeight, false); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); }
 addEventListener('resize', () => { resize(); layoutPanels(); });
 const clock = new THREE.Clock();
 function loop() {
