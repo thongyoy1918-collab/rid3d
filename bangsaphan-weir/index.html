@@ -1301,7 +1301,7 @@ function closeSide() { $('side').classList.remove('open'); document.body.classLi
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => curPane === b.dataset.p && $('side').classList.contains('open') ? closeSide() : openSide(b.dataset.p));
 let shiftK = 0, shiftT = 0;
 function viewShift(on) { shiftT = on && (innerWidth > 900 || innerWidth <= 700) ? 1 : 0; }
-function applyShift(dt) { shiftK += (shiftT - shiftK) * Math.min(1, dt * 6); const w = innerWidth, h = innerHeight, sheet = w <= 700, pw = sheet ? 0 : 410 * shiftK, ph = sheet ? h * 0.62 * shiftK : 0;
+function applyShift(dt) { shiftK += (shiftT - shiftK) * Math.min(1, dt * 6); const w = innerWidth, h = innerHeight, sheet = w <= 700, pw = sheet ? 0 : 410 * shiftK, ph = sheet ? h * 0.3 * shiftK : 0;
   if (shiftK < 0.001) { if (camera.view && camera.view.enabled) { camera.clearViewOffset(); camera.aspect = w / h; camera.updateProjectionMatrix(); } }
   else if (sheet) { camera.aspect = w / (h + ph); camera.setViewOffset(w, h + ph, 0, ph, w, h); }   // มือถือ: แผงเลื่อนขึ้นจากล่าง ดันภาพขึ้นด้านบน
   else { camera.aspect = (w + pw) / h; camera.setViewOffset(w + pw, h, pw, 0, w, h); } }
